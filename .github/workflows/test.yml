@@ -41,13 +41,13 @@ jobs:
       run: npm run test:integration
       
     - name: Run accessibility tests
-      run: node tests/run-tests.js tests/accessibility/**/*.test.js --verbose || echo "Accessibility tests failed but continuing..."
+      run: node tests/run-tests.js tests/accessibility/**/*.test.js --verbose
 
     - name: Run performance tests
-      run: node tests/run-tests.js tests/performance/**/*.test.js --verbose || echo "Performance tests failed but continuing..."
+      run: node tests/run-tests.js tests/performance/**/*.test.js --verbose
 
     - name: Run visual regression tests
-      run: node tests/run-tests.js tests/visual/**/*.test.js --verbose || echo "Visual tests failed but continuing..."
+      run: node tests/run-tests.js tests/visual/**/*.test.js --verbose
       
     - name: Generate coverage report
       run: npm run test:coverage
@@ -90,11 +90,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y google-chrome-stable
 
-        # Run browser tests (allow failure for now)
-        node tests/browser-test-runner.js --browser=chrome || echo "Browser tests failed but continuing..."
-        
+        # Run browser tests
+        node tests/browser-test-runner.js --browser=chrome
+
     - name: Test theme system
-      run: npm run test:theme-system || echo "Theme system tests failed but continuing..."
+      run: npm run test:theme-system
 
   security-scan:
     name: Security Scan
@@ -219,10 +219,10 @@ jobs:
       
     - name: Run accessibility audit
       run: |
-        axe http://localhost:8000 --exit || echo "Axe accessibility audit failed but continuing..."
+        axe http://localhost:8000 --exit
 
     - name: Run custom accessibility tests
-      run: npm run test:accessibility || echo "Custom accessibility tests failed but continuing..."
+      run: npm run test:accessibility
 
   cross-platform-test:
     name: Cross-Platform Tests
@@ -246,11 +246,11 @@ jobs:
       run: npm ci
       
     - name: Run core tests
-      run: npm test || echo "Core tests failed but continuing..."
+      run: npm test
 
     - name: Test theme system (Unix only)
       if: runner.os != 'Windows'
-      run: npm run test:theme-system || echo "Theme system tests failed but continuing..."
+      run: npm run test:theme-system
 
   notification:
     name: Notify Results

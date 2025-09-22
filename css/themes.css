@@ -1,0 +1,228 @@
+/**
+ * Theme System CSS
+ * Defines theme-specific styles and CSS custom properties
+ */
+
+/* Light Theme (Default) */
+:root {
+    /* Primary Colors */
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    
+    /* Background Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    
+    /* Text Colors */
+    --text-primary: #2c3e50;
+    --text-secondary: #6c757d;
+    --text-muted: #adb5bd;
+    
+    /* Border Colors */
+    --border-color: #dee2e6;
+    --border-hover: #adb5bd;
+    
+    /* Circle of Fifths Colors */
+    --circle-bg: #ffffff;
+    --circle-border: #dee2e6;
+    --key-bg: #f8f9fa;
+    --key-bg-hover: #e9ecef;
+    --key-bg-active: #3498db;
+    --key-text: #2c3e50;
+    --key-text-active: #ffffff;
+    
+    /* Audio Controls */
+    --control-bg: #f8f9fa;
+    --control-border: #dee2e6;
+    --control-hover: #e9ecef;
+    --control-active: #3498db;
+    
+    /* Shadows */
+    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+    /* Primary Colors */
+    --primary-color: #ecf0f1;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    
+    /* Background Colors */
+    --bg-primary: #2c3e50;
+    --bg-secondary: #34495e;
+    --bg-tertiary: #3c4f66;
+    
+    /* Text Colors */
+    --text-primary: #ecf0f1;
+    --text-secondary: #bdc3c7;
+    --text-muted: #95a5a6;
+    
+    /* Border Colors */
+    --border-color: #4a5f7a;
+    --border-hover: #5d6d7e;
+    
+    /* Circle of Fifths Colors */
+    --circle-bg: #34495e;
+    --circle-border: #4a5f7a;
+    --key-bg: #3c4f66;
+    --key-bg-hover: #4a5f7a;
+    --key-bg-active: #3498db;
+    --key-text: #ecf0f1;
+    --key-text-active: #ffffff;
+    
+    /* Audio Controls */
+    --control-bg: #3c4f66;
+    --control-border: #4a5f7a;
+    --control-hover: #4a5f7a;
+    --control-active: #3498db;
+    
+    /* Shadows */
+    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* High Contrast Theme */
+[data-theme="high-contrast"] {
+    /* Primary Colors */
+    --primary-color: #000000;
+    --secondary-color: #0066cc;
+    --accent-color: #ff0000;
+    
+    /* Background Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f0f0f0;
+    --bg-tertiary: #e0e0e0;
+    
+    /* Text Colors */
+    --text-primary: #000000;
+    --text-secondary: #333333;
+    --text-muted: #666666;
+    
+    /* Border Colors */
+    --border-color: #000000;
+    --border-hover: #333333;
+    
+    /* Circle of Fifths Colors */
+    --circle-bg: #ffffff;
+    --circle-border: #000000;
+    --key-bg: #f0f0f0;
+    --key-bg-hover: #e0e0e0;
+    --key-bg-active: #0066cc;
+    --key-text: #000000;
+    --key-text-active: #ffffff;
+    
+    /* Audio Controls */
+    --control-bg: #f0f0f0;
+    --control-border: #000000;
+    --control-hover: #e0e0e0;
+    --control-active: #0066cc;
+    
+    /* Shadows */
+    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.5);
+    --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.6);
+    --shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.7);
+}
+
+/* Sepia Theme */
+[data-theme="sepia"] {
+    /* Primary Colors */
+    --primary-color: #5d4037;
+    --secondary-color: #8d6e63;
+    --accent-color: #d84315;
+    
+    /* Background Colors */
+    --bg-primary: #fdf6e3;
+    --bg-secondary: #f4e8d0;
+    --bg-tertiary: #eee0c6;
+    
+    /* Text Colors */
+    --text-primary: #5d4037;
+    --text-secondary: #795548;
+    --text-muted: #8d6e63;
+    
+    /* Border Colors */
+    --border-color: #d7ccc8;
+    --border-hover: #bcaaa4;
+    
+    /* Circle of Fifths Colors */
+    --circle-bg: #fdf6e3;
+    --circle-border: #d7ccc8;
+    --key-bg: #f4e8d0;
+    --key-bg-hover: #eee0c6;
+    --key-bg-active: #8d6e63;
+    --key-text: #5d4037;
+    --key-text-active: #fdf6e3;
+    
+    /* Audio Controls */
+    --control-bg: #f4e8d0;
+    --control-border: #d7ccc8;
+    --control-hover: #eee0c6;
+    --control-active: #8d6e63;
+    
+    /* Shadows */
+    --shadow-light: 0 2px 4px rgba(93, 64, 55, 0.1);
+    --shadow-medium: 0 4px 8px rgba(93, 64, 55, 0.15);
+    --shadow-heavy: 0 8px 16px rgba(93, 64, 55, 0.2);
+}
+
+/* Theme transition animations */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Ensure theme variables are applied to all elements */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Theme-specific component styles */
+.theme-aware {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.theme-aware:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-hover);
+}
+
+/* Accessibility improvements for high contrast theme */
+[data-theme="high-contrast"] button,
+[data-theme="high-contrast"] .interactive {
+    border: 2px solid var(--border-color) !important;
+    font-weight: bold;
+}
+
+[data-theme="high-contrast"] button:focus,
+[data-theme="high-contrast"] .interactive:focus {
+    outline: 3px solid var(--accent-color) !important;
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    :root {
+        --bg-primary: white;
+        --bg-secondary: white;
+        --bg-tertiary: white;
+        --text-primary: black;
+        --text-secondary: black;
+        --border-color: black;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}

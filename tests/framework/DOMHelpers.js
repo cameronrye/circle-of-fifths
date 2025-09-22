@@ -448,6 +448,7 @@ class MockOscillatorNode extends MockAudioNode {
         this.type = 'sine';
         this.started = false;
         this.stopped = false;
+        this.eventListeners = {};
     }
 
     start(when = 0) {
@@ -456,6 +457,33 @@ class MockOscillatorNode extends MockAudioNode {
 
     stop(when = 0) {
         this.stopped = true;
+        // Simulate the 'ended' event
+        setTimeout(() => {
+            if (this.eventListeners['ended']) {
+                this.eventListeners['ended'].forEach(listener => {
+                    if (typeof listener === 'function') {
+                        listener();
+                    } else if (listener.listener) {
+                        listener.listener();
+                    }
+                });
+            }
+        }, 0);
+    }
+
+    addEventListener(type, listener, options) {
+        if (!this.eventListeners[type]) {
+            this.eventListeners[type] = [];
+        }
+        this.eventListeners[type].push({ listener, options });
+    }
+
+    removeEventListener(type, listener) {
+        if (this.eventListeners[type]) {
+            this.eventListeners[type] = this.eventListeners[type].filter(
+                item => item.listener !== listener
+            );
+        }
     }
 }
 
@@ -495,9 +523,81 @@ function setupDOMEnvironment() {
         global.Event = MockEvent;
         global.requestAnimationFrame = mockWindow.requestAnimationFrame.bind(mockWindow);
         global.cancelAnimationFrame = mockWindow.cancelAnimationFrame.bind(mockWindow);
+
+        // Load application modules into the test environment
+        loadApplicationModules();
     }
 
     return mockWindow;
+}
+
+/**
+ * Load application modules into the global scope for testing
+ */
+function loadApplicationModules() {
+    const path = require('path');
+    const fs = require('fs');
+
+    // Define the modules to load in dependency order
+    const modules = [
+        'js/musicTheory.js',
+        'js/audioEngine.js',
+        'js/circleRenderer.js',
+        'js/themeManager.js',
+        'js/themeToggle.js',
+        'js/interactions.js'
+    ];
+
+    // Get the project root directory
+    const projectRoot = path.resolve(__dirname, '../..');
+
+    for (const modulePath of modules) {
+        const fullPath = path.join(projectRoot, modulePath);
+
+        try {
+            if (fs.existsSync(fullPath)) {
+                // Read the module file
+                const moduleCode = fs.readFileSync(fullPath, 'utf8');
+
+                // Execute the module code in the global context
+                // This will make the modules available as global variables
+                const vm = require('vm');
+                const context = {
+                    ...global,
+                    module: { exports: {} },
+                    exports: {},
+                    require: require,
+                    __filename: fullPath,
+                    __dirname: path.dirname(fullPath),
+                    console: console
+                };
+
+                vm.createContext(context);
+                vm.runInContext(moduleCode, context);
+
+                // If the module exported anything, make it available globally
+                if (Object.keys(context.module.exports).length > 0) {
+                    Object.assign(global, context.module.exports);
+                }
+
+                // Also check if the module attached anything to the window object
+                if (context.window && typeof context.window === 'object') {
+                    // Copy window properties to global
+                    for (const prop in context.window) {
+                        if (context.window.hasOwnProperty(prop) && prop !== 'window' && prop !== 'document') {
+                            global[prop] = context.window[prop];
+                        }
+                    }
+                }
+
+                console.log(`✅ Loaded application module: ${modulePath}`);
+            } else {
+                console.warn(`⚠️ Module not found: ${fullPath}`);
+            }
+        } catch (error) {
+            console.error(`❌ Failed to load module ${modulePath}:`, error.message);
+        }
+    }
 }
 
 /**

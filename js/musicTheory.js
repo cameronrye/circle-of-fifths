@@ -326,9 +326,17 @@ class MusicTheory {
 
         // Handle case insensitivity
         key = key.charAt(0).toUpperCase() + key.slice(1);
-        mode = mode.toLowerCase();
 
-        const pattern = SCALE_PATTERNS[mode];
+        // Normalize mode names to match SCALE_PATTERNS keys
+        const modeMap = {
+            'major': 'major',
+            'minor': 'minor',
+            'harmonicminor': 'harmonicMinor',
+            'melodicminor': 'melodicMinor'
+        };
+
+        const normalizedMode = modeMap[mode.toLowerCase()] || mode.toLowerCase();
+        const pattern = SCALE_PATTERNS[normalizedMode];
         if (!pattern) {
             return [];
         }
@@ -338,7 +346,9 @@ class MusicTheory {
         let currentIndex = startIndex;
 
         // Get the key signature to determine proper accidentals
-        const keySignature = this.getKeySignature(key, mode === 'minor' ? 'minor' : 'major');
+        // For harmonic and melodic minor, use the natural minor key signature as base
+        const baseMode = (normalizedMode === 'harmonicMinor' || normalizedMode === 'melodicMinor') ? 'minor' : normalizedMode;
+        const keySignature = this.getKeySignature(key, baseMode === 'minor' ? 'minor' : 'major');
         const useFlats = keySignature.flats > 0;
 
         // Add the root note
@@ -417,18 +427,25 @@ class MusicTheory {
             return null;
         }
 
-        const dominant = CIRCLE_OF_FIFTHS[(keyIndex + 1) % 12];
-        const subdominant = CIRCLE_OF_FIFTHS[(keyIndex - 1 + 12) % 12];
+        // Determine if we should use flat notation based on the original key
+        const useFlats = key.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(key);
+
+        const dominantRaw = CIRCLE_OF_FIFTHS[(keyIndex + 1) % 12];
+        const subdominantRaw = CIRCLE_OF_FIFTHS[(keyIndex - 1 + 12) % 12];
+
+        // Convert to proper enharmonic equivalents if needed
+        const dominant = useFlats && NOTES.enharmonic[dominantRaw] ? NOTES.enharmonic[dominantRaw] : dominantRaw;
+        const subdominant = useFlats && NOTES.enharmonic[subdominantRaw] ? NOTES.enharmonic[subdominantRaw] : subdominantRaw;
 
         let relative;
         if (mode === 'major') {
             // Relative minor is a minor third down
             const relativeIndex = (this.getNoteIndex(key) - 3 + 12) % 12;
-            relative = this.getProperNoteName(relativeIndex, null, false);
+            relative = this.getProperNoteName(relativeIndex, null, useFlats);
         } else {
             // Relative major is a minor third up
             const relativeIndex = (this.getNoteIndex(key) + 3) % 12;
-            relative = this.getProperNoteName(relativeIndex, null, false);
+            relative = this.getProperNoteName(relativeIndex, null, useFlats);
         }
 
         return {
@@ -507,11 +524,24 @@ class MusicTheory {
 
         const chordIntervals = intervals[quality] || intervals.major;
 
-        // Determine if we should use flats based on the root note
+        // Determine if we should use flats based on the root note and chord context
         const useFlats = root.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(root);
 
         return chordIntervals.map(interval => {
             const noteIndex = (rootIndex + interval) % 12;
+            const chromaticNote = NOTES.chromatic[noteIndex];
+
+            // For specific chord contexts, override the general flat/sharp preference
+            if (quality === 'dominant7' && interval === 10) {
+                // Dominant 7th should use flat notation (e.g., Bb not A#)
+                return NOTES.enharmonic[chromaticNote] || chromaticNote;
+            }
+
+            // For augmented chords, prefer sharp notation for consistency
+            if (quality === 'augmented') {
+                return chromaticNote; // Use the sharp version from chromatic scale
+            }
+
             return this.getProperNoteName(noteIndex, null, useFlats);
         });
     }
