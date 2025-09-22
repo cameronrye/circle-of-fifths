@@ -185,7 +185,7 @@ class ThemeToggle {
     /**
      * Handle theme change events
      */
-    handleThemeChange(event) {
+    handleThemeChange(_event) {
         this.updateToggleButton();
         this.updateActiveOption();
     }

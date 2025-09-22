@@ -99,7 +99,7 @@ class CircleOfFifthsApp {
             );
 
             return true;
-        } catch (_error) {
+        } catch (error) {
             console.error('Failed to initialize Circle of Fifths application:', error);
             this.handleInitializationError(error);
             return false;
@@ -288,7 +288,7 @@ class CircleOfFifthsApp {
     /**
      * Handle initialization errors
      */
-    handleInitializationError(error) {
+    handleInitializationError(_error) {
         const loading = document.getElementById('loading');
         if (loading) {
             const loadingText = loading.querySelector('.loading-text');
@@ -304,9 +304,10 @@ class CircleOfFifthsApp {
 
         // Show error message to user
         setTimeout(() => {
-            alert(
+            console.error(
                 'Failed to initialize the Circle of Fifths application. Please refresh the page and try again.'
             );
+            // Could implement a proper error modal here instead of alert
         }, 1000);
     }
 
@@ -321,9 +322,9 @@ class CircleOfFifthsApp {
         const errorMessage = this.getUserFriendlyErrorMessage(error);
 
         // Could implement a proper error modal here
-        // For now, use console and optionally alert for critical errors
+        // For now, use console and optionally log for critical errors
         if (this.isCriticalError(error)) {
-            alert(errorMessage);
+            console.error('Critical error:', errorMessage);
         }
     }
 
@@ -368,7 +369,8 @@ class CircleOfFifthsApp {
             'F1 or Shift+?: Show this help'
         ];
 
-        alert('Keyboard Shortcuts:\n\n' + shortcuts.join('\n'));
+        console.log('Keyboard Shortcuts:\n\n' + shortcuts.join('\n'));
+        // Could implement a proper help modal here instead of alert
     }
 
     /**
@@ -399,9 +401,9 @@ class CircleOfFifthsApp {
             interactions: this.interactionsHandler ? this.interactionsHandler.getState() : null,
             theme: this.themeManager
                 ? {
-                      current: this.themeManager.getCurrentTheme(),
-                      effective: this.themeManager.getEffectiveTheme()
-                  }
+                    current: this.themeManager.getCurrentTheme(),
+                    effective: this.themeManager.getEffectiveTheme()
+                }
                 : null
         };
     }
@@ -466,7 +468,7 @@ class CircleOfFifthsApp {
 // Initialize application when DOM is ready
 let app;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async() => {
     try {
         app = new CircleOfFifthsApp();
         await app.init();

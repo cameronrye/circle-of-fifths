@@ -45,68 +45,68 @@ function setupTestEnvironment() {
     window.testConfig = testConfig;
 
     // Simple expect function
-    window.expect = function (actual) {
+    window.expect = function(actual) {
         return {
-            toBe: function (expected) {
+            toBe: function(expected) {
                 if (actual !== expected) {
                     throw new Error(`Expected ${actual} to be ${expected}`);
                 }
             },
-            toEqual: function (expected) {
+            toEqual: function(expected) {
                 if (JSON.stringify(actual) !== JSON.stringify(expected)) {
                     throw new Error(
                         `Expected ${JSON.stringify(actual)} to equal ${JSON.stringify(expected)}`
                     );
                 }
             },
-            toBeTruthy: function () {
+            toBeTruthy: function() {
                 if (!actual) {
                     throw new Error(`Expected ${actual} to be truthy`);
                 }
             },
-            toBeFalsy: function () {
+            toBeFalsy: function() {
                 if (actual) {
                     throw new Error(`Expected ${actual} to be falsy`);
                 }
             },
-            toBeNull: function () {
+            toBeNull: function() {
                 if (actual !== null) {
                     throw new Error(`Expected ${actual} to be null`);
                 }
             },
-            toBeUndefined: function () {
+            toBeUndefined: function() {
                 if (actual !== undefined) {
                     throw new Error(`Expected ${actual} to be undefined`);
                 }
             },
-            toBeDefined: function () {
+            toBeDefined: function() {
                 if (actual === undefined) {
                     throw new Error(`Expected ${actual} to be defined`);
                 }
             },
-            toBeInstanceOf: function (expected) {
+            toBeInstanceOf: function(expected) {
                 if (!(actual instanceof expected)) {
                     throw new Error(`Expected ${actual} to be instance of ${expected.name}`);
                 }
             },
-            toBeGreaterThan: function (expected) {
+            toBeGreaterThan: function(expected) {
                 if (actual <= expected) {
                     throw new Error(`Expected ${actual} to be greater than ${expected}`);
                 }
             },
-            toBeLessThan: function (expected) {
+            toBeLessThan: function(expected) {
                 if (actual >= expected) {
                     throw new Error(`Expected ${actual} to be less than ${expected}`);
                 }
             },
-            toBeCloseTo: function (expected, precision = 2) {
+            toBeCloseTo: function(expected, precision = 2) {
                 const diff = Math.abs(actual - expected);
                 const tolerance = Math.pow(10, -precision) / 2;
                 if (diff >= tolerance) {
                     throw new Error(`Expected ${actual} to be close to ${expected}`);
                 }
             },
-            toContain: function (expected) {
+            toContain: function(expected) {
                 if (typeof actual === 'string') {
                     if (!actual.includes(expected)) {
                         throw new Error(`Expected "${actual}" to contain "${expected}"`);
@@ -119,12 +119,12 @@ function setupTestEnvironment() {
                     throw new Error(`Cannot check if ${actual} contains ${expected}`);
                 }
             },
-            toHaveLength: function (expected) {
+            toHaveLength: function(expected) {
                 if (!actual || actual.length !== expected) {
                     throw new Error(`Expected ${actual} to have length ${expected}`);
                 }
             },
-            toHaveProperty: function (property, value) {
+            toHaveProperty: function(property, value) {
                 if (!(property in actual)) {
                     throw new Error(
                         `Expected ${JSON.stringify(actual)} to have property "${property}"`
@@ -136,7 +136,7 @@ function setupTestEnvironment() {
                     );
                 }
             },
-            toThrow: function (expected) {
+            toThrow: function(expected) {
                 if (typeof actual !== 'function') {
                     throw new Error('Expected value must be a function');
                 }
@@ -164,19 +164,19 @@ function setupTestEnvironment() {
                 }
             },
             not: {
-                toBe: function (expected) {
+                toBe: function(expected) {
                     if (actual === expected) {
                         throw new Error(`Expected ${actual} not to be ${expected}`);
                     }
                 },
-                toEqual: function (expected) {
+                toEqual: function(expected) {
                     if (JSON.stringify(actual) === JSON.stringify(expected)) {
                         throw new Error(
                             `Expected ${JSON.stringify(actual)} not to equal ${JSON.stringify(expected)}`
                         );
                     }
                 },
-                toThrow: function () {
+                toThrow: function() {
                     if (typeof actual !== 'function') {
                         throw new Error('Expected value must be a function');
                     }

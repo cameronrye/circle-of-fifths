@@ -524,10 +524,10 @@ class InteractionsHandler {
 
     showError(message) {
         // Simple error display - could be enhanced with a proper modal
-        alert(message);
+        console.error('User error:', message);
     }
 
-    showKeyTooltip(key, event) {
+    showKeyTooltip(_key, _event) {
         // Could implement tooltip functionality here
         // For now, we rely on the info panel updates
     }

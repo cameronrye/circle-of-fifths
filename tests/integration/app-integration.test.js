@@ -175,7 +175,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('MusicTheory and AudioEngine Integration', () => {
-        test('should play correct frequencies for notes', async () => {
+        test('should play correct frequencies for notes', async() => {
             await audioEngine.initialize();
             await audioEngine.playNote('A', 4, 1);
 
@@ -186,7 +186,7 @@ describe('Circle of Fifths Application Integration', () => {
             );
         });
 
-        test('should play correct scale notes', async () => {
+        test('should play correct scale notes', async() => {
             await audioEngine.initialize();
             await audioEngine.playScale('C', 'major', 4);
 
@@ -194,7 +194,7 @@ describe('Circle of Fifths Application Integration', () => {
             expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(7);
         });
 
-        test('should play chord with correct notes', async () => {
+        test('should play chord with correct notes', async() => {
             await audioEngine.initialize();
             const chordNotes = musicTheory.getChordNotes('C', 'major');
 
@@ -204,7 +204,7 @@ describe('Circle of Fifths Application Integration', () => {
             expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(3);
         });
 
-        test('should play chord progression using music theory', async () => {
+        test('should play chord progression using music theory', async() => {
             await audioEngine.initialize();
             await audioEngine.playProgression('C', 'major', 'I-V-vi-IV');
 
@@ -221,7 +221,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('CircleRenderer and AudioEngine Integration', () => {
-        test('should trigger audio playback when key is selected', async () => {
+        test('should trigger audio playback when key is selected', async() => {
             const playNoteSpy = jest.spyOn(audioEngine, 'playNote');
 
             // Simulate key selection triggering audio
@@ -235,7 +235,7 @@ describe('Circle of Fifths Application Integration', () => {
             playNoteSpy.mockRestore();
         });
 
-        test('should play scale for selected key and mode', async () => {
+        test('should play scale for selected key and mode', async() => {
             const playScaleSpy = jest.spyOn(audioEngine, 'playScale');
 
             circleRenderer.selectKey('D');
@@ -265,7 +265,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('Full Application Workflow', () => {
-        test('should handle complete key selection workflow', async () => {
+        test('should handle complete key selection workflow', async() => {
             // 1. Select a key in the visual interface
             circleRenderer.selectKey('E');
 
@@ -287,7 +287,7 @@ describe('Circle of Fifths Application Integration', () => {
             expect(mockAudioContext.createOscillator).toHaveBeenCalled();
         });
 
-        test('should handle mode switching workflow', async () => {
+        test('should handle mode switching workflow', async() => {
             // 1. Start with major mode
             expect(circleRenderer.currentMode).toBe('major');
 
@@ -313,7 +313,7 @@ describe('Circle of Fifths Application Integration', () => {
             expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(7);
         });
 
-        test('should handle chord progression playback', async () => {
+        test('should handle chord progression playback', async() => {
             // 1. Select key and mode
             circleRenderer.selectKey('G');
             circleRenderer.switchMode('major');
@@ -363,7 +363,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('Error Handling and Edge Cases', () => {
-        test('should handle audio initialization failure gracefully', async () => {
+        test('should handle audio initialization failure gracefully', async() => {
             global.AudioContext = jest.fn(() => {
                 throw new Error('AudioContext not supported');
             });
@@ -398,7 +398,7 @@ describe('Circle of Fifths Application Integration', () => {
             }).not.toThrow();
         });
 
-        test('should handle audio playback errors gracefully', async () => {
+        test('should handle audio playback errors gracefully', async() => {
             mockAudioContext.createOscillator.mockImplementation(() => {
                 throw new Error('Oscillator creation failed');
             });
@@ -410,7 +410,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('Performance and Resource Management', () => {
-        test('should clean up audio resources properly', async () => {
+        test('should clean up audio resources properly', async() => {
             await audioEngine.initialize();
             await audioEngine.playNote('C', 4, 1);
 
@@ -422,7 +422,7 @@ describe('Circle of Fifths Application Integration', () => {
             expect(mockAudioContext.createOscillator().stop).toHaveBeenCalled();
         });
 
-        test('should dispose of resources on cleanup', async () => {
+        test('should dispose of resources on cleanup', async() => {
             await audioEngine.initialize();
 
             audioEngine.dispose();

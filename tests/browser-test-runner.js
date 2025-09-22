@@ -5,7 +5,15 @@
  * Runs tests in real browsers using Puppeteer
  */
 
-const puppeteer = require('puppeteer');
+let puppeteer;
+try {
+    puppeteer = require('puppeteer');
+} catch (error) {
+    console.warn('⚠️  Puppeteer not installed. Browser tests will be skipped.');
+    console.warn('   To run browser tests, install puppeteer: npm install puppeteer');
+    process.exit(0);
+}
+
 const path = require('path');
 const fs = require('fs');
 

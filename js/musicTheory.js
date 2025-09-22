@@ -357,7 +357,7 @@ class MusicTheory {
     /**
      * Get the proper note name based on key signature context
      */
-    getProperNoteName(noteIndex, rootNote = null, useFlats = false) {
+    getProperNoteName(noteIndex, _rootNote = null, useFlats = false) {
         const chromaticNote = NOTES.chromatic[noteIndex];
 
         // If it's a natural note, return as-is

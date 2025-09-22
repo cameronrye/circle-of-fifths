@@ -11,12 +11,12 @@ class ThemeVerificationTest {
 
     async runAllTests() {
         console.log('🎨 Starting Theme Verification Tests...');
-        
+
         for (const theme of this.themes) {
             console.log(`\n📋 Testing ${theme} theme...`);
             await this.testTheme(theme);
         }
-        
+
         this.generateReport();
     }
 
@@ -55,7 +55,7 @@ class ThemeVerificationTest {
     testCSSCustomProperties(theme) {
         const root = document.documentElement;
         const computedStyle = getComputedStyle(root);
-        
+
         const requiredProperties = [
             '--primary-color',
             '--secondary-color',
@@ -163,15 +163,15 @@ class ThemeVerificationTest {
 
     testRelatedKeys(theme) {
         const relatedKeys = document.querySelectorAll('.related-key');
-        
+
         relatedKeys.forEach((key, index) => {
             const relationship = key.getAttribute('data-relationship');
             const computedStyle = getComputedStyle(key);
             const backgroundColor = computedStyle.backgroundColor;
             const color = computedStyle.color;
             const borderColor = computedStyle.borderColor;
-            
-            this.addResult(theme, 
+
+            this.addResult(theme,
                 backgroundColor !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Related key ${relationship} - bg: ${backgroundColor}, color: ${color}, border: ${borderColor}`
             );
@@ -180,14 +180,14 @@ class ThemeVerificationTest {
 
     testAudioControls(theme) {
         const audioButtons = document.querySelectorAll('.audio-btn');
-        
+
         audioButtons.forEach((button, index) => {
             const computedStyle = getComputedStyle(button);
             const backgroundColor = computedStyle.backgroundColor;
             const color = computedStyle.color;
             const borderColor = computedStyle.borderColor;
-            
-            this.addResult(theme, 
+
+            this.addResult(theme,
                 backgroundColor !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Audio button ${index} - bg: ${backgroundColor}, color: ${color}, border: ${borderColor}`
             );
@@ -200,8 +200,8 @@ class ThemeVerificationTest {
             const computedStyle = getComputedStyle(infoPanel);
             const backgroundColor = computedStyle.backgroundColor;
             const boxShadow = computedStyle.boxShadow;
-            
-            this.addResult(theme, 
+
+            this.addResult(theme,
                 backgroundColor !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Info panel - bg: ${backgroundColor}, shadow: ${boxShadow}`
             );
@@ -220,7 +220,7 @@ class ThemeVerificationTest {
         if (themeBtn) {
             const computedStyle = getComputedStyle(themeBtn);
             const color = computedStyle.color;
-            
+
             this.addResult(theme, color !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Theme button color: ${color}`);
         }
@@ -229,7 +229,7 @@ class ThemeVerificationTest {
         themeOptions.forEach((option, index) => {
             const computedStyle = getComputedStyle(option);
             const color = computedStyle.color;
-            
+
             this.addResult(theme, color !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Theme option ${index} color: ${color}`);
         });
@@ -241,8 +241,8 @@ class ThemeVerificationTest {
             const computedStyle = getComputedStyle(loadingSpinner);
             const borderColor = computedStyle.borderColor;
             const borderTopColor = computedStyle.borderTopColor;
-            
-            this.addResult(theme, 
+
+            this.addResult(theme,
                 borderColor !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Loading spinner - border: ${borderColor}, top: ${borderTopColor}`
             );
@@ -280,7 +280,7 @@ class ThemeVerificationTest {
                     console.log(`    • ${failure}`);
                 });
             }
-            if (counts.ERROR > 0) console.log(`  ⚠️ ${counts.ERROR} errors`);
+            if (counts.ERROR > 0) { console.log(`  ⚠️ ${counts.ERROR} errors`); }
         }
 
         const overallPass = this.results.filter(r => r.status === 'PASS').length;
