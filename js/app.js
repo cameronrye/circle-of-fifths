@@ -3,23 +3,53 @@
  * Main application entry point and initialization
  */
 
+/**
+ * Main application class for the Circle of Fifths interactive music theory tool.
+ * Manages initialization, component coordination, and application lifecycle.
+ *
+ * @class CircleOfFifthsApp
+ * @example
+ * const app = new CircleOfFifthsApp();
+ * await app.init();
+ */
 class CircleOfFifthsApp {
+    /**
+     * Creates a new CircleOfFifthsApp instance.
+     * Initializes all component references and binds event handlers.
+     *
+     * @constructor
+     */
     constructor() {
         this.musicTheory = null;
         this.audioEngine = null;
         this.circleRenderer = null;
         this.interactionsHandler = null;
-        
+        this.themeManager = null;
+        this.themeToggle = null;
+
         this.isInitialized = false;
         this.initializationPromise = null;
-        
+
         // Bind methods
         this.handleResize = this.handleResize.bind(this);
         this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     }
 
     /**
-     * Initialize the application
+     * Initialize the application asynchronously.
+     * Sets up all components, event listeners, and performs initial render.
+     * Can be called multiple times safely - subsequent calls return the same promise.
+     *
+     * @async
+     * @returns {Promise<void>} Promise that resolves when initialization is complete
+     * @throws {Error} If initialization fails
+     * @example
+     * try {
+     *     await app.init();
+     *     console.log('App ready!');
+     * } catch (error) {
+     *     console.error('Failed to initialize:', error);
+     * }
      */
     async init() {
         if (this.initializationPromise) {
@@ -31,7 +61,13 @@ class CircleOfFifthsApp {
     }
 
     /**
-     * Perform the actual initialization
+     * Perform the actual initialization process.
+     * Private method that handles the core initialization steps.
+     *
+     * @private
+     * @async
+     * @returns {Promise<void>} Promise that resolves when initialization is complete
+     * @throws {Error} If any initialization step fails
      */
     async _performInitialization() {
         try {
@@ -56,12 +92,14 @@ class CircleOfFifthsApp {
             console.log('Circle of Fifths application initialized successfully');
 
             // Dispatch initialization complete event
-            document.dispatchEvent(new CustomEvent('circleOfFifthsReady', {
-                detail: { app: this }
-            }));
+            document.dispatchEvent(
+                new CustomEvent('circleOfFifthsReady', {
+                    detail: { app: this }
+                })
+            );
 
             return true;
-        } catch (error) {
+        } catch (_error) {
             console.error('Failed to initialize Circle of Fifths application:', error);
             this.handleInitializationError(error);
             return false;
@@ -72,7 +110,7 @@ class CircleOfFifthsApp {
      * Wait for DOM to be ready
      */
     waitForDOM() {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', resolve);
             } else {
@@ -85,6 +123,14 @@ class CircleOfFifthsApp {
      * Initialize core components
      */
     initializeComponents() {
+        // Initialize theme manager first (affects visual appearance)
+        this.themeManager = new ThemeManager();
+        console.log('Theme manager initialized');
+
+        // Initialize theme toggle UI
+        this.themeToggle = new ThemeToggle(this.themeManager);
+        console.log('Theme toggle initialized');
+
         // Initialize music theory engine
         this.musicTheory = new MusicTheory();
         console.log('Music theory engine initialized');
@@ -125,7 +171,7 @@ class CircleOfFifthsApp {
         // Prevent context menu on circle (for better mobile experience)
         const svg = document.getElementById('circle-svg');
         if (svg) {
-            svg.addEventListener('contextmenu', (event) => {
+            svg.addEventListener('contextmenu', event => {
                 event.preventDefault();
             });
         }
@@ -136,7 +182,7 @@ class CircleOfFifthsApp {
         });
 
         // Keyboard shortcuts help
-        document.addEventListener('keydown', (event) => {
+        document.addEventListener('keydown', event => {
             if (event.key === 'F1' || (event.key === '?' && event.shiftKey)) {
                 event.preventDefault();
                 this.showKeyboardShortcuts();
@@ -150,10 +196,10 @@ class CircleOfFifthsApp {
     performInitialRender() {
         // Set initial key to C major
         this.circleRenderer.selectKey('C');
-        
+
         // Update initial UI state
         this.updateUIState();
-        
+
         // Hide loading screen
         const loading = document.getElementById('loading');
         if (loading) {
@@ -168,13 +214,13 @@ class CircleOfFifthsApp {
      */
     setupErrorHandling() {
         // Global error handler
-        window.addEventListener('error', (event) => {
+        window.addEventListener('error', event => {
             console.error('Global error:', event.error);
             this.handleError(event.error);
         });
 
         // Unhandled promise rejection handler
-        window.addEventListener('unhandledrejection', (event) => {
+        window.addEventListener('unhandledrejection', event => {
             console.error('Unhandled promise rejection:', event.reason);
             this.handleError(event.reason);
         });
@@ -184,7 +230,9 @@ class CircleOfFifthsApp {
      * Handle window resize
      */
     handleResize() {
-        if (!this.isInitialized) return;
+        if (!this.isInitialized) {
+            return;
+        }
 
         // Debounce resize handling
         clearTimeout(this.resizeTimeout);
@@ -202,7 +250,7 @@ class CircleOfFifthsApp {
         if (svg && this.circleRenderer) {
             const rect = svg.getBoundingClientRect();
             const size = Math.min(rect.width, rect.height);
-            
+
             // Only resize if significant change
             if (Math.abs(size - this.lastSize) > 50) {
                 this.circleRenderer.resize(size);
@@ -247,7 +295,7 @@ class CircleOfFifthsApp {
             if (loadingText) {
                 loadingText.textContent = 'Failed to load application. Please refresh the page.';
             }
-            
+
             const spinner = loading.querySelector('.loading-spinner');
             if (spinner) {
                 spinner.style.display = 'none';
@@ -256,7 +304,9 @@ class CircleOfFifthsApp {
 
         // Show error message to user
         setTimeout(() => {
-            alert('Failed to initialize the Circle of Fifths application. Please refresh the page and try again.');
+            alert(
+                'Failed to initialize the Circle of Fifths application. Please refresh the page and try again.'
+            );
         }, 1000);
     }
 
@@ -269,7 +319,7 @@ class CircleOfFifthsApp {
 
         // Show user-friendly error message
         const errorMessage = this.getUserFriendlyErrorMessage(error);
-        
+
         // Could implement a proper error modal here
         // For now, use console and optionally alert for critical errors
         if (this.isCriticalError(error)) {
@@ -296,9 +346,11 @@ class CircleOfFifthsApp {
      * Check if error is critical
      */
     isCriticalError(error) {
-        return error.name === 'NotSupportedError' || 
-               error.message?.includes('initialization') ||
-               error.message?.includes('critical');
+        return (
+            error.name === 'NotSupportedError' ||
+            error.message?.includes('initialization') ||
+            error.message?.includes('critical')
+        );
     }
 
     /**
@@ -320,7 +372,19 @@ class CircleOfFifthsApp {
     }
 
     /**
-     * Get application state
+     * Get the current application state.
+     * Returns comprehensive state information for debugging and monitoring.
+     *
+     * @returns {Object} Application state object
+     * @returns {boolean} returns.initialized - Whether the app is fully initialized
+     * @returns {boolean|null} returns.musicTheory - Music theory engine status
+     * @returns {Object|null} returns.audioEngine - Audio engine state
+     * @returns {Object|null} returns.circleRenderer - Circle renderer state
+     * @returns {Object|null} returns.interactions - Interactions handler state
+     * @returns {Object|null} returns.theme - Theme manager state
+     * @example
+     * const state = app.getState();
+     * console.log('App initialized:', state.initialized);
      */
     getState() {
         if (!this.isInitialized) {
@@ -332,12 +396,24 @@ class CircleOfFifthsApp {
             musicTheory: this.musicTheory ? true : false,
             audioEngine: this.audioEngine ? this.audioEngine.getState() : null,
             circleRenderer: this.circleRenderer ? this.circleRenderer.getState() : null,
-            interactions: this.interactionsHandler ? this.interactionsHandler.getState() : null
+            interactions: this.interactionsHandler ? this.interactionsHandler.getState() : null,
+            theme: this.themeManager
+                ? {
+                      current: this.themeManager.getCurrentTheme(),
+                      effective: this.themeManager.getEffectiveTheme()
+                  }
+                : null
         };
     }
 
     /**
-     * Cleanup resources
+     * Cleanup all application resources and event listeners.
+     * Properly disposes of all components and resets the application state.
+     * Should be called before page unload or when restarting the application.
+     *
+     * @example
+     * // Clean shutdown
+     * app.destroy();
      */
     destroy() {
         console.log('Destroying Circle of Fifths application...');
@@ -349,6 +425,14 @@ class CircleOfFifthsApp {
         // Cleanup components
         if (this.audioEngine) {
             this.audioEngine.dispose();
+        }
+
+        if (this.themeToggle) {
+            this.themeToggle.destroy();
+        }
+
+        if (this.themeManager) {
+            this.themeManager.destroy();
         }
 
         // Clear timeouts
@@ -364,7 +448,14 @@ class CircleOfFifthsApp {
     }
 
     /**
-     * Restart the application
+     * Restart the application by destroying and reinitializing.
+     * Useful for recovering from errors or applying configuration changes.
+     *
+     * @async
+     * @returns {Promise<void>} Promise that resolves when restart is complete
+     * @example
+     * // Restart after an error
+     * await app.restart();
      */
     async restart() {
         this.destroy();
@@ -395,7 +486,8 @@ if (typeof module !== 'undefined' && module.exports) {
 // Service Worker registration (if available)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker
+            .register('/sw.js')
             .then(registration => {
                 console.log('SW registered: ', registration);
             })

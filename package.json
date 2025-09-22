@@ -1,0 +1,113 @@
+{
+    "name": "circle-of-fifths",
+    "version": "1.0.0",
+    "description": "Interactive Circle of Fifths - Learn music theory through exploration",
+    "main": "index.html",
+    "scripts": {
+        "test": "node tests/run-tests.js",
+        "test:unit": "node tests/run-tests.js --unit",
+        "test:integration": "node tests/run-tests.js --integration",
+        "test:all": "node tests/run-tests.js --all",
+        "test:verbose": "node tests/run-tests.js --all --verbose",
+        "test:coverage": "node tests/run-tests.js --all --coverage",
+        "test:watch": "node tests/run-tests.js --all --watch",
+        "test:bail": "node tests/run-tests.js --all --bail",
+        "test:music-theory": "node tests/run-tests.js --unit --verbose | grep -A 20 'MusicTheory'",
+        "test:audio-engine": "node tests/run-tests.js --unit --verbose | grep -A 20 'AudioEngine'",
+        "test:theme-manager": "node tests/run-tests.js --unit --verbose | grep -A 20 'ThemeManager'",
+        "test:circle-renderer": "node tests/run-tests.js --unit --verbose | grep -A 20 'CircleRenderer'",
+        "test:theme-system": "node test-theme-system.js",
+        "serve": "npx http-server -p 8000 -c-1",
+        "dev": "npm run serve",
+        "lint": "eslint js/ tests/ *.js",
+        "lint:fix": "eslint js/ tests/ *.js --fix",
+        "format": "prettier --write js/ tests/ *.js *.json *.md css/ *.html",
+        "format:check": "prettier --check js/ tests/ *.js *.json *.md css/ *.html",
+        "build": "npm run format:check",
+        "validate": "npm run build",
+        "precommit": "npm run lint:fix && npm run format",
+        "test:unit:basic": "node tests/run-tests.js tests/unit/basic.test.js tests/unit/simple.test.js"
+    },
+    "keywords": [
+        "music",
+        "music-theory",
+        "circle-of-fifths",
+        "education",
+        "interactive",
+        "web-audio",
+        "javascript",
+        "svg",
+        "pwa",
+        "scales",
+        "chords",
+        "key-signatures",
+        "music-education",
+        "audio-synthesis",
+        "music-visualization"
+    ],
+    "author": {
+        "name": "Circle of Fifths Development Team",
+        "email": "contact@circle-of-fifths.dev",
+        "url": "https://github.com/cameronrye/circle-of-fifths"
+    },
+    "license": "MIT",
+    "funding": {
+        "type": "github",
+        "url": "https://github.com/sponsors/cameronrye"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.36.0",
+        "chokidar": "^3.5.3",
+        "eslint": "^9.36.0",
+        "eslint-config-prettier": "^10.1.8",
+        "glob": "^8.1.0",
+        "http-server": "^14.1.1",
+        "prettier": "^3.6.2"
+    },
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/your-username/circle-of-fifths.git"
+    },
+    "bugs": {
+        "url": "https://github.com/your-username/circle-of-fifths/issues"
+    },
+    "homepage": "https://your-username.github.io/circle-of-fifths/",
+    "browserslist": [
+        "> 1%",
+        "last 2 versions",
+        "not dead",
+        "not ie <= 11"
+    ],
+    "files": [
+        "index.html",
+        "js/",
+        "css/",
+        "assets/",
+        "manifest.json",
+        "sw.js",
+        "README.md"
+    ],
+    "directories": {
+        "test": "tests"
+    },
+    "config": {
+        "test": {
+            "timeout": 5000,
+            "verbose": false,
+            "bail": false,
+            "coverage": false
+        }
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "contributors": [
+        {
+            "name": "Circle of Fifths Development Team",
+            "url": "https://github.com/cameronrye/circle-of-fifths/graphs/contributors"
+        }
+    ]
+}

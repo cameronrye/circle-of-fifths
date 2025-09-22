@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Circle of Fifths - Test Runner</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+            }
+            h1 {
+                color: #333;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .test-controls {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            button {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background-color 0.2s;
+            }
+            .btn-primary {
+                background-color: #007bff;
+                color: white;
+            }
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+            .btn-secondary {
+                background-color: #6c757d;
+                color: white;
+            }
+            .btn-secondary:hover {
+                background-color: #545b62;
+            }
+            .test-results {
+                margin-top: 20px;
+            }
+            .test-suite {
+                margin-bottom: 20px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .suite-header {
+                background-color: #f8f9fa;
+                padding: 15px;
+                font-weight: bold;
+                border-bottom: 1px solid #ddd;
+            }
+            .test-case {
+                padding: 10px 15px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .test-case:last-child {
+                border-bottom: none;
+            }
+            .test-status {
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .status-pass {
+                background-color: #d4edda;
+                color: #155724;
+            }
+            .status-fail {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+            .status-skip {
+                background-color: #fff3cd;
+                color: #856404;
+            }
+            .status-running {
+                background-color: #cce7ff;
+                color: #004085;
+            }
+            .error-details {
+                margin-top: 10px;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-left: 4px solid #dc3545;
+                font-family: monospace;
+                font-size: 12px;
+                white-space: pre-wrap;
+            }
+            .summary {
+                margin-top: 20px;
+                padding: 20px;
+                background-color: #f8f9fa;
+                border-radius: 4px;
+                text-align: center;
+            }
+            .summary.success {
+                background-color: #d4edda;
+                color: #155724;
+            }
+            .summary.failure {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+            .progress-bar {
+                width: 100%;
+                height: 20px;
+                background-color: #e9ecef;
+                border-radius: 10px;
+                overflow: hidden;
+                margin: 10px 0;
+            }
+            .progress-fill {
+                height: 100%;
+                background-color: #28a745;
+                transition: width 0.3s ease;
+            }
+            .console-output {
+                margin-top: 20px;
+                padding: 15px;
+                background-color: #000;
+                color: #00ff00;
+                font-family: monospace;
+                font-size: 12px;
+                border-radius: 4px;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🧪 Circle of Fifths Test Suite</h1>
+
+            <div class="test-controls">
+                <button id="runAllTests" class="btn-primary">Run All Tests</button>
+                <button id="runUnitTests" class="btn-secondary">Unit Tests Only</button>
+                <button id="runIntegrationTests" class="btn-secondary">Integration Tests</button>
+                <button id="clearResults" class="btn-secondary">Clear Results</button>
+            </div>
+
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+            </div>
+
+            <div id="testResults" class="test-results"></div>
+
+            <div id="summary" class="summary" style="display: none"></div>
+
+            <div id="consoleOutput" class="console-output" style="display: none"></div>
+        </div>
+
+        <!-- Load modules under test -->
+        <script src="../js/musicTheory.js"></script>
+
+        <!-- Load test configuration -->
+        <script src="browser-test-config.js"></script>
+
+        <script>
+            // Test runner implementation
+            class HTMLTestRunner {
+                constructor() {
+                    this.testResults = document.getElementById('testResults');
+                    this.summary = document.getElementById('summary');
+                    this.progressFill = document.getElementById('progressFill');
+                    this.consoleOutput = document.getElementById('consoleOutput');
+                    this.results = {
+                        passed: 0,
+                        failed: 0,
+                        skipped: 0,
+                        total: 0,
+                        suites: {}
+                    };
+                    this.setupEventListeners();
+                    this.setupConsoleCapture();
+                }
+
+                setupEventListeners() {
+                    document.getElementById('runAllTests').addEventListener('click', () => {
+                        this.runTests(['unit', 'integration']);
+                    });
+
+                    document.getElementById('runUnitTests').addEventListener('click', () => {
+                        this.runTests(['unit']);
+                    });
+
+                    document.getElementById('runIntegrationTests').addEventListener('click', () => {
+                        this.runTests(['integration']);
+                    });
+
+                    document.getElementById('clearResults').addEventListener('click', () => {
+                        this.clearResults();
+                    });
+                }
+
+                setupConsoleCapture() {
+                    const originalLog = console.log;
+                    const originalError = console.error;
+                    const originalWarn = console.warn;
+
+                    console.log = (...args) => {
+                        this.addConsoleOutput('log', args);
+                        originalLog.apply(console, args);
+                    };
+
+                    console.error = (...args) => {
+                        this.addConsoleOutput('error', args);
+                        originalError.apply(console, args);
+                    };
+
+                    console.warn = (...args) => {
+                        this.addConsoleOutput('warn', args);
+                        originalWarn.apply(console, args);
+                    };
+                }
+
+                addConsoleOutput(type, args) {
+                    const output = args
+                        .map(arg =>
+                            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                        )
+                        .join(' ');
+
+                    const line = document.createElement('div');
+                    line.textContent = `[${type.toUpperCase()}] ${output}`;
+                    this.consoleOutput.appendChild(line);
+                    this.consoleOutput.scrollTop = this.consoleOutput.scrollHeight;
+                    this.consoleOutput.style.display = 'block';
+                }
+
+                clearResults() {
+                    this.testResults.innerHTML = '';
+                    this.summary.style.display = 'none';
+                    this.consoleOutput.innerHTML = '';
+                    this.consoleOutput.style.display = 'none';
+                    this.progressFill.style.width = '0%';
+                    this.results = {
+                        passed: 0,
+                        failed: 0,
+                        skipped: 0,
+                        total: 0,
+                        suites: {}
+                    };
+                }
+
+                async runTests(testTypes) {
+                    this.clearResults();
+                    console.log('🚀 Starting test run...');
+
+                    // Setup test environment
+                    setupTestEnvironment();
+
+                    try {
+                        // Load and run tests based on type
+                        if (testTypes.includes('unit')) {
+                            await this.loadAndRunTestFile('unit/musicTheory.test.js');
+                        }
+
+                        this.showSummary();
+                    } catch (error) {
+                        console.error('Test run failed:', error);
+                        this.showError(error);
+                    }
+                }
+
+                async loadAndRunTestFile(testFile) {
+                    console.log(`Loading test file: ${testFile}`);
+
+                    try {
+                        // Since we can't dynamically load JS files in browser easily,
+                        // we'll run the musicTheory tests directly
+                        if (testFile.includes('musicTheory')) {
+                            await this.runMusicTheoryTests();
+                        }
+                    } catch (error) {
+                        console.error(`Failed to run tests from ${testFile}:`, error);
+                        throw error;
+                    }
+                }
+
+                async runMusicTheoryTests() {
+                    const suite = this.createTestSuite('MusicTheory Module');
+
+                    // Run the tests
+                    await this.runTestGroup(suite, 'Constructor and Initial State', [
+                        () => this.testMusicTheoryConstructor()
+                    ]);
+
+                    await this.runTestGroup(suite, 'getNoteIndex()', [
+                        () => this.testGetNoteIndexNaturals(),
+                        () => this.testGetNoteIndexSharps(),
+                        () => this.testGetNoteIndexFlats(),
+                        () => this.testGetNoteIndexEdgeCases()
+                    ]);
+
+                    await this.runTestGroup(suite, 'getScaleNotes()', [
+                        () => this.testGetScaleNotesMajor(),
+                        () => this.testGetScaleNotesMinor(),
+                        () => this.testGetScaleNotesHarmonicMinor(),
+                        () => this.testGetScaleNotesMelodicMinor()
+                    ]);
+
+                    await this.runTestGroup(suite, 'getKeySignature()', [
+                        () => this.testGetKeySignatureMajor(),
+                        () => this.testGetKeySignatureMinor()
+                    ]);
+
+                    await this.runTestGroup(suite, 'getRelatedKeys()', [
+                        () => this.testGetRelatedKeysMajor(),
+                        () => this.testGetRelatedKeysMinor()
+                    ]);
+
+                    await this.runTestGroup(suite, 'getChordNotes()', [
+                        () => this.testGetChordNotesMajor(),
+                        () => this.testGetChordNotesMinor(),
+                        () => this.testGetChordNotesDiminished()
+                    ]);
+
+                    await this.runTestGroup(suite, 'getNoteFrequency()', [
+                        () => this.testGetNoteFrequency()
+                    ]);
+
+                    await this.runTestGroup(suite, 'Utility Methods', [
+                        () => this.testIsValidKey(),
+                        () => this.testGetEnharmonic(),
+                        () => this.testGetCircleOfFifthsKeys()
+                    ]);
+                }
+
+                createTestSuite(name) {
+                    const suiteElement = document.createElement('div');
+                    suiteElement.className = 'test-suite';
+
+                    const header = document.createElement('div');
+                    header.className = 'suite-header';
+                    header.textContent = name;
+                    suiteElement.appendChild(header);
+
+                    this.testResults.appendChild(suiteElement);
+                    this.results.suites[name] = [];
+
+                    return suiteElement;
+                }
+
+                async runTestGroup(suite, groupName, tests) {
+                    console.log(`Running test group: ${groupName}`);
+
+                    for (const test of tests) {
+                        const testName = test.name || 'Anonymous test';
+                        const testCase = this.createTestCase(suite, testName);
+
+                        try {
+                            this.setTestStatus(testCase, 'running');
+                            await test();
+                            this.setTestStatus(testCase, 'pass');
+                            this.results.passed++;
+                        } catch (error) {
+                            this.setTestStatus(testCase, 'fail', error);
+                            this.results.failed++;
+                            console.error(`Test failed: ${testName}`, error);
+                        }
+
+                        this.results.total++;
+                        this.updateProgress();
+                    }
+                }
+
+                createTestCase(suite, name) {
+                    const testCase = document.createElement('div');
+                    testCase.className = 'test-case';
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = name;
+                    testCase.appendChild(nameSpan);
+
+                    const statusSpan = document.createElement('span');
+                    statusSpan.className = 'test-status';
+                    testCase.appendChild(statusSpan);
+
+                    suite.appendChild(testCase);
+                    return testCase;
+                }
+
+                setTestStatus(testCase, status, error = null) {
+                    const statusSpan = testCase.querySelector('.test-status');
+                    statusSpan.className = `test-status status-${status}`;
+
+                    switch (status) {
+                        case 'pass':
+                            statusSpan.textContent = '✓ PASS';
+                            break;
+                        case 'fail':
+                            statusSpan.textContent = '✗ FAIL';
+                            if (error) {
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'error-details';
+                                errorDiv.textContent = error.message || String(error);
+                                testCase.appendChild(errorDiv);
+                            }
+                            break;
+                        case 'skip':
+                            statusSpan.textContent = '⏭ SKIP';
+                            break;
+                        case 'running':
+                            statusSpan.textContent = '⏳ RUNNING';
+                            break;
+                    }
+                }
+
+                updateProgress() {
+                    const progress =
+                        this.results.total > 0
+                            ? ((this.results.passed + this.results.failed) / this.results.total) *
+                              100
+                            : 0;
+                    this.progressFill.style.width = `${progress}%`;
+                }
+
+                showSummary() {
+                    const total = this.results.passed + this.results.failed + this.results.skipped;
+                    const successRate =
+                        total > 0 ? ((this.results.passed / total) * 100).toFixed(1) : 0;
+
+                    this.summary.innerHTML = `
+                    <h3>Test Results Summary</h3>
+                    <p><strong>Passed:</strong> ${this.results.passed}</p>
+                    <p><strong>Failed:</strong> ${this.results.failed}</p>
+                    <p><strong>Skipped:</strong> ${this.results.skipped}</p>
+                    <p><strong>Total:</strong> ${total}</p>
+                    <p><strong>Success Rate:</strong> ${successRate}%</p>
+                `;
+
+                    this.summary.className =
+                        this.results.failed === 0 ? 'summary success' : 'summary failure';
+                    this.summary.style.display = 'block';
+
+                    console.log(
+                        `Test run complete: ${this.results.passed} passed, ${this.results.failed} failed`
+                    );
+                }
+
+                showError(error) {
+                    this.summary.innerHTML = `
+                    <h3>Test Run Failed</h3>
+                    <p style="color: #721c24;">${error.message}</p>
+                `;
+                    this.summary.className = 'summary failure';
+                    this.summary.style.display = 'block';
+                }
+
+                // Test implementations
+                testMusicTheoryConstructor() {
+                    const musicTheory = new MusicTheory();
+                    if (musicTheory.currentKey !== 'C') {
+                        throw new Error(
+                            `Expected currentKey to be 'C', got '${musicTheory.currentKey}'`
+                        );
+                    }
+                    if (musicTheory.currentMode !== 'major') {
+                        throw new Error(
+                            `Expected currentMode to be 'major', got '${musicTheory.currentMode}'`
+                        );
+                    }
+                }
+
+                testGetNoteIndexNaturals() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['C', 0],
+                        ['D', 2],
+                        ['E', 4],
+                        ['F', 5],
+                        ['G', 7],
+                        ['A', 9],
+                        ['B', 11]
+                    ];
+
+                    for (const [note, expected] of tests) {
+                        const result = musicTheory.getNoteIndex(note);
+                        if (result !== expected) {
+                            throw new Error(
+                                `Expected getNoteIndex('${note}') to be ${expected}, got ${result}`
+                            );
+                        }
+                    }
+                }
+
+                testGetNoteIndexSharps() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['C#', 1],
+                        ['D#', 3],
+                        ['F#', 6],
+                        ['G#', 8],
+                        ['A#', 10]
+                    ];
+
+                    for (const [note, expected] of tests) {
+                        const result = musicTheory.getNoteIndex(note);
+                        if (result !== expected) {
+                            throw new Error(
+                                `Expected getNoteIndex('${note}') to be ${expected}, got ${result}`
+                            );
+                        }
+                    }
+                }
+
+                testGetNoteIndexFlats() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['Db', 1],
+                        ['Eb', 3],
+                        ['Gb', 6],
+                        ['Ab', 8],
+                        ['Bb', 10]
+                    ];
+
+                    for (const [note, expected] of tests) {
+                        const result = musicTheory.getNoteIndex(note);
+                        if (result !== expected) {
+                            throw new Error(
+                                `Expected getNoteIndex('${note}') to be ${expected}, got ${result}`
+                            );
+                        }
+                    }
+                }
+
+                testGetNoteIndexEdgeCases() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['B#', 0],
+                        ['Cb', 11],
+                        ['E#', 5],
+                        ['Fb', 4]
+                    ];
+
+                    for (const [note, expected] of tests) {
+                        const result = musicTheory.getNoteIndex(note);
+                        if (result !== expected) {
+                            throw new Error(
+                                `Expected getNoteIndex('${note}') to be ${expected}, got ${result}`
+                            );
+                        }
+                    }
+                }
+
+                testGetScaleNotesMajor() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['C', ['C', 'D', 'E', 'F', 'G', 'A', 'B']],
+                        ['G', ['G', 'A', 'B', 'C', 'D', 'E', 'F#']],
+                        ['F', ['F', 'G', 'A', 'Bb', 'C', 'D', 'E']]
+                    ];
+
+                    for (const [key, expected] of tests) {
+                        const result = musicTheory.getScaleNotes(key, 'major');
+                        if (JSON.stringify(result) !== JSON.stringify(expected)) {
+                            throw new Error(
+                                `Expected getScaleNotes('${key}', 'major') to be [${expected.join(', ')}], got [${result.join(', ')}]`
+                            );
+                        }
+                    }
+                }
+
+                testGetScaleNotesMinor() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['A', ['A', 'B', 'C', 'D', 'E', 'F', 'G']],
+                        ['E', ['E', 'F#', 'G', 'A', 'B', 'C', 'D']],
+                        ['D', ['D', 'E', 'F', 'G', 'A', 'Bb', 'C']]
+                    ];
+
+                    for (const [key, expected] of tests) {
+                        const result = musicTheory.getScaleNotes(key, 'minor');
+                        if (JSON.stringify(result) !== JSON.stringify(expected)) {
+                            throw new Error(
+                                `Expected getScaleNotes('${key}', 'minor') to be [${expected.join(', ')}], got [${result.join(', ')}]`
+                            );
+                        }
+                    }
+                }
+
+                testGetScaleNotesHarmonicMinor() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['A', ['A', 'B', 'C', 'D', 'E', 'F', 'G#']],
+                        ['E', ['E', 'F#', 'G', 'A', 'B', 'C', 'D#']]
+                    ];
+
+                    for (const [key, expected] of tests) {
+                        const result = musicTheory.getScaleNotes(key, 'harmonicMinor');
+                        if (JSON.stringify(result) !== JSON.stringify(expected)) {
+                            throw new Error(
+                                `Expected getScaleNotes('${key}', 'harmonicMinor') to be [${expected.join(', ')}], got [${result.join(', ')}]`
+                            );
+                        }
+                    }
+                }
+
+                testGetScaleNotesMelodicMinor() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['A', ['A', 'B', 'C', 'D', 'E', 'F#', 'G#']],
+                        ['C', ['C', 'D', 'Eb', 'F', 'G', 'A', 'B']]
+                    ];
+
+                    for (const [key, expected] of tests) {
+                        const result = musicTheory.getScaleNotes(key, 'melodicMinor');
+                        if (JSON.stringify(result) !== JSON.stringify(expected)) {
+                            throw new Error(
+                                `Expected getScaleNotes('${key}', 'melodicMinor') to be [${expected.join(', ')}], got [${result.join(', ')}]`
+                            );
+                        }
+                    }
+                }
+
+                testGetKeySignatureMajor() {
+                    const musicTheory = new MusicTheory();
+
+                    const cMajor = musicTheory.getKeySignature('C', 'major');
+                    if (cMajor.sharps !== 0 || cMajor.flats !== 0) {
+                        throw new Error(`Expected C major to have 0 sharps and 0 flats`);
+                    }
+
+                    const gMajor = musicTheory.getKeySignature('G', 'major');
+                    if (gMajor.sharps !== 1 || gMajor.flats !== 0) {
+                        throw new Error(`Expected G major to have 1 sharp and 0 flats`);
+                    }
+
+                    const fMajor = musicTheory.getKeySignature('F', 'major');
+                    if (fMajor.sharps !== 0 || fMajor.flats !== 1) {
+                        throw new Error(`Expected F major to have 0 sharps and 1 flat`);
+                    }
+                }
+
+                testGetKeySignatureMinor() {
+                    const musicTheory = new MusicTheory();
+
+                    const aMinor = musicTheory.getKeySignature('A', 'minor');
+                    if (aMinor.sharps !== 0 || aMinor.flats !== 0) {
+                        throw new Error(`Expected A minor to have 0 sharps and 0 flats`);
+                    }
+
+                    const eMinor = musicTheory.getKeySignature('E', 'minor');
+                    if (eMinor.sharps !== 1 || eMinor.flats !== 0) {
+                        throw new Error(`Expected E minor to have 1 sharp and 0 flats`);
+                    }
+                }
+
+                testGetRelatedKeysMajor() {
+                    const musicTheory = new MusicTheory();
+                    const related = musicTheory.getRelatedKeys('C', 'major');
+
+                    if (related.dominant.key !== 'G' || related.dominant.mode !== 'major') {
+                        throw new Error(`Expected C major dominant to be G major`);
+                    }
+                    if (related.subdominant.key !== 'F' || related.subdominant.mode !== 'major') {
+                        throw new Error(`Expected C major subdominant to be F major`);
+                    }
+                    if (related.relative.key !== 'A' || related.relative.mode !== 'minor') {
+                        throw new Error(`Expected C major relative to be A minor`);
+                    }
+                }
+
+                testGetRelatedKeysMinor() {
+                    const musicTheory = new MusicTheory();
+                    const related = musicTheory.getRelatedKeys('A', 'minor');
+
+                    if (related.dominant.key !== 'E' || related.dominant.mode !== 'minor') {
+                        throw new Error(`Expected A minor dominant to be E minor`);
+                    }
+                    if (related.subdominant.key !== 'D' || related.subdominant.mode !== 'minor') {
+                        throw new Error(`Expected A minor subdominant to be D minor`);
+                    }
+                    if (related.relative.key !== 'C' || related.relative.mode !== 'major') {
+                        throw new Error(`Expected A minor relative to be C major`);
+                    }
+                }
+
+                testGetChordNotesMajor() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['C', ['C', 'E', 'G']],
+                        ['G', ['G', 'B', 'D']],
+                        ['F', ['F', 'A', 'C']]
+                    ];
+
+                    for (const [root, expected] of tests) {
+                        const result = musicTheory.getChordNotes(root, 'major');
+                        if (JSON.stringify(result) !== JSON.stringify(expected)) {
+                            throw new Error(
+                                `Expected getChordNotes('${root}', 'major') to be [${expected.join(', ')}], got [${result.join(', ')}]`
+                            );
+                        }
+                    }
+                }
+
+                testGetChordNotesMinor() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['A', ['A', 'C', 'E']],
+                        ['E', ['E', 'G', 'B']],
+                        ['D', ['D', 'F', 'A']]
+                    ];
+
+                    for (const [root, expected] of tests) {
+                        const result = musicTheory.getChordNotes(root, 'minor');
+                        if (JSON.stringify(result) !== JSON.stringify(expected)) {
+                            throw new Error(
+                                `Expected getChordNotes('${root}', 'minor') to be [${expected.join(', ')}], got [${result.join(', ')}]`
+                            );
+                        }
+                    }
+                }
+
+                testGetChordNotesDiminished() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['B', ['B', 'D', 'F']],
+                        ['F#', ['F#', 'A', 'C']]
+                    ];
+
+                    for (const [root, expected] of tests) {
+                        const result = musicTheory.getChordNotes(root, 'diminished');
+                        if (JSON.stringify(result) !== JSON.stringify(expected)) {
+                            throw new Error(
+                                `Expected getChordNotes('${root}', 'diminished') to be [${expected.join(', ')}], got [${result.join(', ')}]`
+                            );
+                        }
+                    }
+                }
+
+                testGetNoteFrequency() {
+                    const musicTheory = new MusicTheory();
+
+                    const a4 = musicTheory.getNoteFrequency('A', 4);
+                    if (Math.abs(a4 - 440) > 0.1) {
+                        throw new Error(`Expected A4 frequency to be ~440Hz, got ${a4}`);
+                    }
+
+                    const c4 = musicTheory.getNoteFrequency('C', 4);
+                    if (Math.abs(c4 - 261.63) > 1) {
+                        throw new Error(`Expected C4 frequency to be ~261.63Hz, got ${c4}`);
+                    }
+                }
+
+                testIsValidKey() {
+                    const musicTheory = new MusicTheory();
+
+                    if (!musicTheory.isValidKey('C', 'major')) {
+                        throw new Error(`Expected C major to be valid`);
+                    }
+                    if (!musicTheory.isValidKey('A', 'minor')) {
+                        throw new Error(`Expected A minor to be valid`);
+                    }
+                    if (musicTheory.isValidKey('X', 'major')) {
+                        throw new Error(`Expected X major to be invalid`);
+                    }
+                }
+
+                testGetEnharmonic() {
+                    const musicTheory = new MusicTheory();
+                    const tests = [
+                        ['C#', 'Db'],
+                        ['D#', 'Eb'],
+                        ['F#', 'Gb'],
+                        ['G#', 'Ab'],
+                        ['A#', 'Bb'],
+                        ['C', 'C'], // No enharmonic
+                        ['D', 'D'] // No enharmonic
+                    ];
+
+                    for (const [note, expected] of tests) {
+                        const result = musicTheory.getEnharmonic(note);
+                        if (result !== expected) {
+                            throw new Error(
+                                `Expected getEnharmonic('${note}') to be '${expected}', got '${result}'`
+                            );
+                        }
+                    }
+                }
+
+                testGetCircleOfFifthsKeys() {
+                    const musicTheory = new MusicTheory();
+                    const keys = musicTheory.getCircleOfFifthsKeys();
+
+                    if (keys.length !== 12) {
+                        throw new Error(`Expected 12 keys in circle of fifths, got ${keys.length}`);
+                    }
+                    if (keys[0] !== 'C') {
+                        throw new Error(`Expected first key to be 'C', got '${keys[0]}'`);
+                    }
+                    if (keys[11] !== 'F') {
+                        throw new Error(`Expected last key to be 'F', got '${keys[11]}'`);
+                    }
+                }
+            }
+
+            // Initialize the test runner when page loads
+            document.addEventListener('DOMContentLoaded', () => {
+                new HTMLTestRunner();
+            });
+        </script>
+    </body>
+</html>

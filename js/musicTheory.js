@@ -7,51 +7,165 @@
 const NOTES = {
     chromatic: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
     enharmonic: {
-        'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'Bb'
+        'C#': 'Db',
+        'D#': 'Eb',
+        'F#': 'Gb',
+        'G#': 'Ab',
+        'A#': 'Bb'
     }
 };
 
 // Circle of Fifths order (clockwise from C)
-const CIRCLE_OF_FIFTHS = [
-    'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F'
-];
+const CIRCLE_OF_FIFTHS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F'];
 
 // Major key signatures
 const MAJOR_KEYS = {
-    'C': { sharps: 0, flats: 0, signature: 'No sharps or flats', accidentals: [] },
-    'G': { sharps: 1, flats: 0, signature: '1 sharp (F#)', accidentals: ['F#'] },
-    'D': { sharps: 2, flats: 0, signature: '2 sharps (F#, C#)', accidentals: ['F#', 'C#'] },
-    'A': { sharps: 3, flats: 0, signature: '3 sharps (F#, C#, G#)', accidentals: ['F#', 'C#', 'G#'] },
-    'E': { sharps: 4, flats: 0, signature: '4 sharps (F#, C#, G#, D#)', accidentals: ['F#', 'C#', 'G#', 'D#'] },
-    'B': { sharps: 5, flats: 0, signature: '5 sharps (F#, C#, G#, D#, A#)', accidentals: ['F#', 'C#', 'G#', 'D#', 'A#'] },
-    'F#': { sharps: 6, flats: 0, signature: '6 sharps (F#, C#, G#, D#, A#, E#)', accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#'] },
-    'C#': { sharps: 7, flats: 0, signature: '7 sharps (F#, C#, G#, D#, A#, E#, B#)', accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#'] },
-    'F': { sharps: 0, flats: 1, signature: '1 flat (Bb)', accidentals: ['Bb'] },
-    'Bb': { sharps: 0, flats: 2, signature: '2 flats (Bb, Eb)', accidentals: ['Bb', 'Eb'] },
-    'Eb': { sharps: 0, flats: 3, signature: '3 flats (Bb, Eb, Ab)', accidentals: ['Bb', 'Eb', 'Ab'] },
-    'Ab': { sharps: 0, flats: 4, signature: '4 flats (Bb, Eb, Ab, Db)', accidentals: ['Bb', 'Eb', 'Ab', 'Db'] },
-    'Db': { sharps: 0, flats: 5, signature: '5 flats (Bb, Eb, Ab, Db, Gb)', accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb'] },
-    'Gb': { sharps: 0, flats: 6, signature: '6 flats (Bb, Eb, Ab, Db, Gb, Cb)', accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'] },
-    'Cb': { sharps: 0, flats: 7, signature: '7 flats (Bb, Eb, Ab, Db, Gb, Cb, Fb)', accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb'] }
+    C: { sharps: 0, flats: 0, signature: 'No sharps or flats', accidentals: [] },
+    G: { sharps: 1, flats: 0, signature: '1 sharp (F#)', accidentals: ['F#'] },
+    D: { sharps: 2, flats: 0, signature: '2 sharps (F#, C#)', accidentals: ['F#', 'C#'] },
+    A: { sharps: 3, flats: 0, signature: '3 sharps (F#, C#, G#)', accidentals: ['F#', 'C#', 'G#'] },
+    E: {
+        sharps: 4,
+        flats: 0,
+        signature: '4 sharps (F#, C#, G#, D#)',
+        accidentals: ['F#', 'C#', 'G#', 'D#']
+    },
+    B: {
+        sharps: 5,
+        flats: 0,
+        signature: '5 sharps (F#, C#, G#, D#, A#)',
+        accidentals: ['F#', 'C#', 'G#', 'D#', 'A#']
+    },
+    'F#': {
+        sharps: 6,
+        flats: 0,
+        signature: '6 sharps (F#, C#, G#, D#, A#, E#)',
+        accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#']
+    },
+    'C#': {
+        sharps: 7,
+        flats: 0,
+        signature: '7 sharps (F#, C#, G#, D#, A#, E#, B#)',
+        accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#']
+    },
+    F: { sharps: 0, flats: 1, signature: '1 flat (Bb)', accidentals: ['Bb'] },
+    Bb: { sharps: 0, flats: 2, signature: '2 flats (Bb, Eb)', accidentals: ['Bb', 'Eb'] },
+    Eb: { sharps: 0, flats: 3, signature: '3 flats (Bb, Eb, Ab)', accidentals: ['Bb', 'Eb', 'Ab'] },
+    Ab: {
+        sharps: 0,
+        flats: 4,
+        signature: '4 flats (Bb, Eb, Ab, Db)',
+        accidentals: ['Bb', 'Eb', 'Ab', 'Db']
+    },
+    Db: {
+        sharps: 0,
+        flats: 5,
+        signature: '5 flats (Bb, Eb, Ab, Db, Gb)',
+        accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb']
+    },
+    Gb: {
+        sharps: 0,
+        flats: 6,
+        signature: '6 flats (Bb, Eb, Ab, Db, Gb, Cb)',
+        accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb']
+    },
+    Cb: {
+        sharps: 0,
+        flats: 7,
+        signature: '7 flats (Bb, Eb, Ab, Db, Gb, Cb, Fb)',
+        accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb']
+    }
 };
 
 // Minor key signatures (relative to major)
 const MINOR_KEYS = {
-    'A': { relative: 'C', sharps: 0, flats: 0, signature: 'No sharps or flats', accidentals: [] },
-    'E': { relative: 'G', sharps: 1, flats: 0, signature: '1 sharp (F#)', accidentals: ['F#'] },
-    'B': { relative: 'D', sharps: 2, flats: 0, signature: '2 sharps (F#, C#)', accidentals: ['F#', 'C#'] },
-    'F#': { relative: 'A', sharps: 3, flats: 0, signature: '3 sharps (F#, C#, G#)', accidentals: ['F#', 'C#', 'G#'] },
-    'C#': { relative: 'E', sharps: 4, flats: 0, signature: '4 sharps (F#, C#, G#, D#)', accidentals: ['F#', 'C#', 'G#', 'D#'] },
-    'G#': { relative: 'B', sharps: 5, flats: 0, signature: '5 sharps (F#, C#, G#, D#, A#)', accidentals: ['F#', 'C#', 'G#', 'D#', 'A#'] },
-    'D#': { relative: 'F#', sharps: 6, flats: 0, signature: '6 sharps (F#, C#, G#, D#, A#, E#)', accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#'] },
-    'A#': { relative: 'C#', sharps: 7, flats: 0, signature: '7 sharps (F#, C#, G#, D#, A#, E#, B#)', accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#'] },
-    'D': { relative: 'F', sharps: 0, flats: 1, signature: '1 flat (Bb)', accidentals: ['Bb'] },
-    'G': { relative: 'Bb', sharps: 0, flats: 2, signature: '2 flats (Bb, Eb)', accidentals: ['Bb', 'Eb'] },
-    'C': { relative: 'Eb', sharps: 0, flats: 3, signature: '3 flats (Bb, Eb, Ab)', accidentals: ['Bb', 'Eb', 'Ab'] },
-    'F': { relative: 'Ab', sharps: 0, flats: 4, signature: '4 flats (Bb, Eb, Ab, Db)', accidentals: ['Bb', 'Eb', 'Ab', 'Db'] },
-    'Bb': { relative: 'Db', sharps: 0, flats: 5, signature: '5 flats (Bb, Eb, Ab, Db, Gb)', accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb'] },
-    'Eb': { relative: 'Gb', sharps: 0, flats: 6, signature: '6 flats (Bb, Eb, Ab, Db, Gb, Cb)', accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'] },
-    'Ab': { relative: 'Cb', sharps: 0, flats: 7, signature: '7 flats (Bb, Eb, Ab, Db, Gb, Cb, Fb)', accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb'] }
+    A: { relative: 'C', sharps: 0, flats: 0, signature: 'No sharps or flats', accidentals: [] },
+    E: { relative: 'G', sharps: 1, flats: 0, signature: '1 sharp (F#)', accidentals: ['F#'] },
+    B: {
+        relative: 'D',
+        sharps: 2,
+        flats: 0,
+        signature: '2 sharps (F#, C#)',
+        accidentals: ['F#', 'C#']
+    },
+    'F#': {
+        relative: 'A',
+        sharps: 3,
+        flats: 0,
+        signature: '3 sharps (F#, C#, G#)',
+        accidentals: ['F#', 'C#', 'G#']
+    },
+    'C#': {
+        relative: 'E',
+        sharps: 4,
+        flats: 0,
+        signature: '4 sharps (F#, C#, G#, D#)',
+        accidentals: ['F#', 'C#', 'G#', 'D#']
+    },
+    'G#': {
+        relative: 'B',
+        sharps: 5,
+        flats: 0,
+        signature: '5 sharps (F#, C#, G#, D#, A#)',
+        accidentals: ['F#', 'C#', 'G#', 'D#', 'A#']
+    },
+    'D#': {
+        relative: 'F#',
+        sharps: 6,
+        flats: 0,
+        signature: '6 sharps (F#, C#, G#, D#, A#, E#)',
+        accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#']
+    },
+    'A#': {
+        relative: 'C#',
+        sharps: 7,
+        flats: 0,
+        signature: '7 sharps (F#, C#, G#, D#, A#, E#, B#)',
+        accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#']
+    },
+    D: { relative: 'F', sharps: 0, flats: 1, signature: '1 flat (Bb)', accidentals: ['Bb'] },
+    G: {
+        relative: 'Bb',
+        sharps: 0,
+        flats: 2,
+        signature: '2 flats (Bb, Eb)',
+        accidentals: ['Bb', 'Eb']
+    },
+    C: {
+        relative: 'Eb',
+        sharps: 0,
+        flats: 3,
+        signature: '3 flats (Bb, Eb, Ab)',
+        accidentals: ['Bb', 'Eb', 'Ab']
+    },
+    F: {
+        relative: 'Ab',
+        sharps: 0,
+        flats: 4,
+        signature: '4 flats (Bb, Eb, Ab, Db)',
+        accidentals: ['Bb', 'Eb', 'Ab', 'Db']
+    },
+    Bb: {
+        relative: 'Db',
+        sharps: 0,
+        flats: 5,
+        signature: '5 flats (Bb, Eb, Ab, Db, Gb)',
+        accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb']
+    },
+    Eb: {
+        relative: 'Gb',
+        sharps: 0,
+        flats: 6,
+        signature: '6 flats (Bb, Eb, Ab, Db, Gb, Cb)',
+        accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb']
+    },
+    Ab: {
+        relative: 'Cb',
+        sharps: 0,
+        flats: 7,
+        signature: '7 flats (Bb, Eb, Ab, Db, Gb, Cb, Fb)',
+        accidentals: ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb']
+    }
 };
 
 // Scale patterns (intervals in semitones)
@@ -65,24 +179,74 @@ const SCALE_PATTERNS = {
 // Chord progressions for each key
 const CHORD_PROGRESSIONS = {
     major: {
-        'I-V-vi-IV': { name: 'Pop Progression', roman: ['I', 'V', 'vi', 'IV'], description: 'Most popular progression in modern music' },
-        'ii-V-I': { name: 'Jazz Progression', roman: ['ii', 'V', 'I'], description: 'Essential jazz cadence' },
-        'vi-IV-I-V': { name: 'Circle Progression', roman: ['vi', 'IV', 'I', 'V'], description: 'Follows circle of fifths backwards' },
-        'I-vi-ii-V': { name: 'Doo-Wop Progression', roman: ['I', 'vi', 'ii', 'V'], description: 'Classic 1950s progression' },
-        'I-IV-V-I': { name: 'Basic Cadence', roman: ['I', 'IV', 'V', 'I'], description: 'Fundamental tonic-subdominant-dominant-tonic' }
+        'I-V-vi-IV': {
+            name: 'Pop Progression',
+            roman: ['I', 'V', 'vi', 'IV'],
+            description: 'Most popular progression in modern music'
+        },
+        'ii-V-I': {
+            name: 'Jazz Progression',
+            roman: ['ii', 'V', 'I'],
+            description: 'Essential jazz cadence'
+        },
+        'vi-IV-I-V': {
+            name: 'Circle Progression',
+            roman: ['vi', 'IV', 'I', 'V'],
+            description: 'Follows circle of fifths backwards'
+        },
+        'I-vi-ii-V': {
+            name: 'Doo-Wop Progression',
+            roman: ['I', 'vi', 'ii', 'V'],
+            description: 'Classic 1950s progression'
+        },
+        'I-IV-V-I': {
+            name: 'Basic Cadence',
+            roman: ['I', 'IV', 'V', 'I'],
+            description: 'Fundamental tonic-subdominant-dominant-tonic'
+        }
     },
     minor: {
-        'i-VII-VI-VII': { name: 'Minor Pop', roman: ['i', 'VII', 'VI', 'VII'], description: 'Popular minor progression' },
-        'i-iv-V-i': { name: 'Minor Cadence', roman: ['i', 'iv', 'V', 'i'], description: 'Basic minor cadence' },
-        'i-VI-III-VII': { name: 'Andalusian', roman: ['i', 'VI', 'III', 'VII'], description: 'Spanish/Flamenco progression' },
-        'i-v-iv-i': { name: 'Natural Minor', roman: ['i', 'v', 'iv', 'i'], description: 'All natural minor chords' }
+        'i-VII-VI-VII': {
+            name: 'Minor Pop',
+            roman: ['i', 'VII', 'VI', 'VII'],
+            description: 'Popular minor progression'
+        },
+        'i-iv-V-i': {
+            name: 'Minor Cadence',
+            roman: ['i', 'iv', 'V', 'i'],
+            description: 'Basic minor cadence'
+        },
+        'i-VI-III-VII': {
+            name: 'Andalusian',
+            roman: ['i', 'VI', 'III', 'VII'],
+            description: 'Spanish/Flamenco progression'
+        },
+        'i-v-iv-i': {
+            name: 'Natural Minor',
+            roman: ['i', 'v', 'iv', 'i'],
+            description: 'All natural minor chords'
+        }
     }
 };
 
 /**
  * Music Theory Utility Class
+ * Provides comprehensive music theory calculations and data for the Circle of Fifths.
+ * Handles key signatures, scales, chords, and their relationships.
+ *
+ * @class MusicTheory
+ * @example
+ * const theory = new MusicTheory();
+ * const scale = theory.getScaleNotes('G', 'major');
+ * const chord = theory.getChordNotes('Am', 'minor');
  */
 class MusicTheory {
+    /**
+     * Creates a new MusicTheory instance.
+     * Initializes with C major as the default key and mode.
+     *
+     * @constructor
+     */
     constructor() {
         this.currentKey = 'C';
         this.currentMode = 'major';
@@ -92,58 +256,179 @@ class MusicTheory {
      * Get note index in chromatic scale
      */
     getNoteIndex(note) {
+        if (!note || typeof note !== 'string') {
+            return 0;
+        }
+
+        // Handle case insensitivity
+        note = note.charAt(0).toUpperCase() + note.slice(1);
+
+        // Handle special enharmonic cases
+        const enharmonicMap = {
+            'B#': 'C',
+            Cb: 'B',
+            'E#': 'F',
+            Fb: 'E'
+        };
+
+        if (enharmonicMap[note]) {
+            note = enharmonicMap[note];
+        }
+
+        // Direct lookup in chromatic scale
+        const directIndex = NOTES.chromatic.indexOf(note);
+        if (directIndex !== -1) {
+            return directIndex;
+        }
+
+        // Handle flat notes by converting to sharp equivalents
+        const flatToSharp = {
+            Db: 'C#',
+            Eb: 'D#',
+            Gb: 'F#',
+            Ab: 'G#',
+            Bb: 'A#'
+        };
+
+        if (flatToSharp[note]) {
+            return NOTES.chromatic.indexOf(flatToSharp[note]);
+        }
+
+        // Fallback: parse note manually
         const cleanNote = note.replace(/[#b]/g, '');
         const accidental = note.includes('#') ? 1 : note.includes('b') ? -1 : 0;
-        const baseIndex = NOTES.chromatic.indexOf(cleanNote);
-        return (baseIndex + accidental + 12) % 12;
+        const naturalNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+        const naturalIndices = [0, 2, 4, 5, 7, 9, 11];
+
+        const naturalIndex = naturalNotes.indexOf(cleanNote);
+        if (naturalIndex !== -1) {
+            return (naturalIndices[naturalIndex] + accidental + 12) % 12;
+        }
+
+        return 0; // Default to C if note not found
     }
 
     /**
-     * Generate scale notes for a given key and mode
+     * Generate scale notes for a given key and mode.
+     * Returns the seven notes of the scale in order.
+     *
+     * @param {string} key - The root key (e.g., 'C', 'F#', 'Bb')
+     * @param {string} [mode='major'] - The mode ('major' or 'minor')
+     * @returns {string[]} Array of note names in the scale
+     * @example
+     * theory.getScaleNotes('G', 'major'); // ['G', 'A', 'B', 'C', 'D', 'E', 'F#']
+     * theory.getScaleNotes('A', 'minor'); // ['A', 'B', 'C', 'D', 'E', 'F', 'G']
      */
     getScaleNotes(key, mode = 'major') {
+        if (!key || typeof key !== 'string') {
+            return [];
+        }
+
+        // Handle case insensitivity
+        key = key.charAt(0).toUpperCase() + key.slice(1);
+        mode = mode.toLowerCase();
+
         const pattern = SCALE_PATTERNS[mode];
+        if (!pattern) {
+            return [];
+        }
+
         const startIndex = this.getNoteIndex(key);
         const notes = [];
         let currentIndex = startIndex;
 
-        notes.push(NOTES.chromatic[currentIndex]);
-        
+        // Get the key signature to determine proper accidentals
+        const keySignature = this.getKeySignature(key, mode === 'minor' ? 'minor' : 'major');
+        const useFlats = keySignature.flats > 0;
+
+        // Add the root note
+        notes.push(this.getProperNoteName(currentIndex, key, useFlats));
+
+        // Generate the rest of the scale
         for (let i = 0; i < pattern.length - 1; i++) {
             currentIndex = (currentIndex + pattern[i]) % 12;
-            notes.push(NOTES.chromatic[currentIndex]);
+            const noteName = this.getProperNoteName(currentIndex, null, useFlats);
+            notes.push(noteName);
         }
 
         return notes;
     }
 
     /**
+     * Get the proper note name based on key signature context
+     */
+    getProperNoteName(noteIndex, rootNote = null, useFlats = false) {
+        const chromaticNote = NOTES.chromatic[noteIndex];
+
+        // If it's a natural note, return as-is
+        if (!chromaticNote.includes('#')) {
+            return chromaticNote;
+        }
+
+        // For accidentals, choose sharp or flat based on key signature
+        if (useFlats && NOTES.enharmonic[chromaticNote]) {
+            return NOTES.enharmonic[chromaticNote];
+        }
+
+        return chromaticNote;
+    }
+
+    /**
      * Get key signature information
      */
     getKeySignature(key, mode = 'major') {
+        if (!key || typeof key !== 'string') {
+            return { sharps: 0, flats: 0, signature: 'Unknown key', accidentals: [] };
+        }
+
+        // Handle case insensitivity
+        key = key.charAt(0).toUpperCase() + key.slice(1);
+        mode = mode.toLowerCase();
+
         const keyData = mode === 'major' ? MAJOR_KEYS[key] : MINOR_KEYS[key];
         return keyData || { sharps: 0, flats: 0, signature: 'Unknown key', accidentals: [] };
     }
 
     /**
-     * Get related keys (dominant, subdominant, relative)
+     * Get related keys (dominant, subdominant, relative) for a given key and mode.
+     * Returns an object with the three most important related keys.
+     *
+     * @param {string} key - The root key (e.g., 'C', 'F#', 'Bb')
+     * @param {string} [mode='major'] - The mode ('major' or 'minor')
+     * @returns {Object|null} Object with dominant, subdominant, and relative keys
+     * @returns {Object} returns.dominant - Dominant key information
+     * @returns {Object} returns.subdominant - Subdominant key information
+     * @returns {Object} returns.relative - Relative key information
+     * @example
+     * theory.getRelatedKeys('C', 'major');
+     * // Returns: { dominant: {key: 'G', mode: 'major'}, subdominant: {key: 'F', mode: 'major'}, relative: {key: 'A', mode: 'minor'} }
      */
     getRelatedKeys(key, mode = 'major') {
+        if (!key || typeof key !== 'string') {
+            return null;
+        }
+
+        // Handle case insensitivity
+        key = key.charAt(0).toUpperCase() + key.slice(1);
+        mode = mode.toLowerCase();
+
         const keyIndex = CIRCLE_OF_FIFTHS.indexOf(key);
-        if (keyIndex === -1) return null;
+        if (keyIndex === -1) {
+            return null;
+        }
 
         const dominant = CIRCLE_OF_FIFTHS[(keyIndex + 1) % 12];
         const subdominant = CIRCLE_OF_FIFTHS[(keyIndex - 1 + 12) % 12];
-        
+
         let relative;
         if (mode === 'major') {
             // Relative minor is a minor third down
             const relativeIndex = (this.getNoteIndex(key) - 3 + 12) % 12;
-            relative = NOTES.chromatic[relativeIndex];
+            relative = this.getProperNoteName(relativeIndex, null, false);
         } else {
             // Relative major is a minor third up
             const relativeIndex = (this.getNoteIndex(key) + 3) % 12;
-            relative = NOTES.chromatic[relativeIndex];
+            relative = this.getProperNoteName(relativeIndex, null, false);
         }
 
         return {
@@ -164,11 +449,24 @@ class MusicTheory {
      * Convert roman numeral to actual chord name
      */
     romanToChord(roman, key, mode = 'major') {
+        if (!roman || !key) {
+            return roman;
+        }
+
+        // Handle case insensitivity
+        key = key.charAt(0).toUpperCase() + key.slice(1);
+        mode = mode.toLowerCase();
+
         const scaleNotes = this.getScaleNotes(key, mode);
-        const romanNumerals = mode === 'major' 
-            ? ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°']
-            : ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
-        
+        if (scaleNotes.length === 0) {
+            return roman;
+        }
+
+        const romanNumerals =
+            mode === 'major'
+                ? ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°']
+                : ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
+
         const index = romanNumerals.findIndex(r => r.toLowerCase() === roman.toLowerCase());
         if (index !== -1 && scaleNotes[index]) {
             return scaleNotes[index];
@@ -177,9 +475,25 @@ class MusicTheory {
     }
 
     /**
-     * Get chord notes for a given root and quality
+     * Get chord notes for a given root and quality.
+     * Returns the notes that make up the specified chord.
+     *
+     * @param {string} root - The root note of the chord (e.g., 'C', 'F#', 'Bb')
+     * @param {string} [quality='major'] - The chord quality ('major', 'minor', 'diminished', 'augmented')
+     * @returns {string[]} Array of note names in the chord
+     * @example
+     * theory.getChordNotes('C', 'major'); // ['C', 'E', 'G']
+     * theory.getChordNotes('A', 'minor'); // ['A', 'C', 'E']
+     * theory.getChordNotes('B', 'diminished'); // ['B', 'D', 'F']
      */
     getChordNotes(root, quality = 'major') {
+        if (!root) {
+            return [];
+        }
+
+        // Handle case insensitivity
+        root = root.charAt(0).toUpperCase() + root.slice(1);
+
         const rootIndex = this.getNoteIndex(root);
         const intervals = {
             major: [0, 4, 7],
@@ -192,9 +506,14 @@ class MusicTheory {
         };
 
         const chordIntervals = intervals[quality] || intervals.major;
-        return chordIntervals.map(interval => 
-            NOTES.chromatic[(rootIndex + interval) % 12]
-        );
+
+        // Determine if we should use flats based on the root note
+        const useFlats = root.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(root);
+
+        return chordIntervals.map(interval => {
+            const noteIndex = (rootIndex + interval) % 12;
+            return this.getProperNoteName(noteIndex, null, useFlats);
+        });
     }
 
     /**
@@ -211,6 +530,14 @@ class MusicTheory {
      * Validate if a key exists in our system
      */
     isValidKey(key, mode = 'major') {
+        if (!key || typeof key !== 'string') {
+            return false;
+        }
+
+        // Handle case insensitivity
+        key = key.charAt(0).toUpperCase() + key.slice(1);
+        mode = mode.toLowerCase();
+
         const keyData = mode === 'major' ? MAJOR_KEYS : MINOR_KEYS;
         return key in keyData;
     }

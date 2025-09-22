@@ -3,21 +3,40 @@
  * Handles SVG rendering and visual updates
  */
 
+/**
+ * Renders and manages the interactive Circle of Fifths visualization using SVG.
+ * Handles key selection, mode switching, highlighting, and visual feedback.
+ *
+ * @class CircleRenderer
+ * @example
+ * const svg = document.getElementById('circle-svg');
+ * const musicTheory = new MusicTheory();
+ * const renderer = new CircleRenderer(svg, musicTheory);
+ */
 class CircleRenderer {
+    /**
+     * Creates a new CircleRenderer instance.
+     * Initializes the SVG visualization with default settings and renders the circle.
+     *
+     * @constructor
+     * @param {SVGElement} svgElement - The SVG element to render the circle into
+     * @param {MusicTheory} musicTheory - Music theory engine for key relationships
+     * @throws {Error} If svgElement is not a valid SVG element
+     */
     constructor(svgElement, musicTheory) {
         this.svg = svgElement;
         this.musicTheory = musicTheory;
         this.currentMode = 'major';
         this.selectedKey = 'C';
         this.highlightedKeys = new Set();
-        
+
         // Circle dimensions
         this.centerX = 400;
         this.centerY = 400;
         this.outerRadius = 320;
         this.innerRadius = 180;
         this.segmentAngle = 30; // 360 / 12 keys
-        
+
         // Color scheme
         this.colors = {
             major: '#3498db',
@@ -30,13 +49,17 @@ class CircleRenderer {
             background: '#ecf0f1',
             text: '#ffffff'
         };
-        
+
         this.keySegments = new Map();
         this.init();
     }
 
     /**
-     * Initialize the circle visualization
+     * Initialize the circle visualization.
+     * Clears existing elements and renders the complete circle with all key segments.
+     *
+     * @example
+     * renderer.init(); // Re-render the entire circle
      */
     init() {
         this.clearCircle();
@@ -59,10 +82,12 @@ class CircleRenderer {
      */
     renderKeySegments() {
         const keySegmentsGroup = this.svg.querySelector('#key-segments');
-        if (!keySegmentsGroup) return;
+        if (!keySegmentsGroup) {
+            return;
+        }
 
         const keys = this.musicTheory.getCircleOfFifthsKeys();
-        
+
         keys.forEach((key, index) => {
             const segment = this.createKeySegment(key, index);
             keySegmentsGroup.appendChild(segment);
@@ -82,8 +107,8 @@ class CircleRenderer {
         group.setAttribute('aria-label', `${key} ${this.currentMode}`);
 
         // Calculate angles (start from top, go clockwise)
-        const startAngle = (index * this.segmentAngle - 90) * Math.PI / 180;
-        const endAngle = ((index + 1) * this.segmentAngle - 90) * Math.PI / 180;
+        const startAngle = ((index * this.segmentAngle - 90) * Math.PI) / 180;
+        const endAngle = (((index + 1) * this.segmentAngle - 90) * Math.PI) / 180;
 
         // Create path for segment
         const path = this.createSegmentPath(startAngle, endAngle);
@@ -94,7 +119,7 @@ class CircleRenderer {
 
         // Create text label
         const text = this.createSegmentText(key, index);
-        
+
         group.appendChild(path);
         group.appendChild(text);
 
@@ -106,7 +131,7 @@ class CircleRenderer {
      */
     createSegmentPath(startAngle, endAngle) {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        
+
         // Calculate points
         const x1 = this.centerX + this.innerRadius * Math.cos(startAngle);
         const y1 = this.centerY + this.innerRadius * Math.sin(startAngle);
@@ -137,13 +162,13 @@ class CircleRenderer {
     createSegmentText(key, index) {
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         text.classList.add('key-text');
-        
+
         // Calculate text position (middle of segment)
-        const angle = (index * this.segmentAngle - 90 + this.segmentAngle / 2) * Math.PI / 180;
+        const angle = ((index * this.segmentAngle - 90 + this.segmentAngle / 2) * Math.PI) / 180;
         const textRadius = (this.innerRadius + this.outerRadius) / 2;
         const x = this.centerX + textRadius * Math.cos(angle);
         const y = this.centerY + textRadius * Math.sin(angle);
-        
+
         text.setAttribute('x', x);
         text.setAttribute('y', y);
         text.setAttribute('text-anchor', 'middle');
@@ -164,12 +189,12 @@ class CircleRenderer {
         if (key === this.selectedKey) {
             return this.colors.selected;
         }
-        
+
         if (this.highlightedKeys.has(key)) {
             const relationship = this.getKeyRelationship(key);
             return this.colors[relationship] || this.colors[this.currentMode];
         }
-        
+
         return this.colors[this.currentMode];
     }
 
@@ -178,12 +203,20 @@ class CircleRenderer {
      */
     getKeyRelationship(key) {
         const relatedKeys = this.musicTheory.getRelatedKeys(this.selectedKey, this.currentMode);
-        if (!relatedKeys) return null;
+        if (!relatedKeys) {
+            return null;
+        }
 
-        if (relatedKeys.dominant.key === key) return 'dominant';
-        if (relatedKeys.subdominant.key === key) return 'subdominant';
-        if (relatedKeys.relative.key === key) return 'relative';
-        
+        if (relatedKeys.dominant.key === key) {
+            return 'dominant';
+        }
+        if (relatedKeys.subdominant.key === key) {
+            return 'subdominant';
+        }
+        if (relatedKeys.relative.key === key) {
+            return 'relative';
+        }
+
         return null;
     }
 
@@ -200,17 +233,27 @@ class CircleRenderer {
         }
 
         if (centerMode) {
-            centerMode.textContent = this.currentMode.charAt(0).toUpperCase() + this.currentMode.slice(1);
+            centerMode.textContent =
+                this.currentMode.charAt(0).toUpperCase() + this.currentMode.slice(1);
         }
 
         if (centerSignature) {
-            const keySignature = this.musicTheory.getKeySignature(this.selectedKey, this.currentMode);
+            const keySignature = this.musicTheory.getKeySignature(
+                this.selectedKey,
+                this.currentMode
+            );
             centerSignature.textContent = keySignature.signature;
         }
     }
 
     /**
-     * Select a key and update visualization
+     * Select a key and update the visualization to show related keys.
+     * Validates the key, clears previous highlights, and updates the display.
+     *
+     * @param {string} key - The key to select (e.g., 'C', 'F#', 'Bb')
+     * @throws {Error} If the key is invalid for the current mode
+     * @example
+     * renderer.selectKey('G'); // Select G major/minor
      */
     selectKey(key) {
         if (!this.musicTheory.isValidKey(key, this.currentMode)) {
@@ -220,16 +263,18 @@ class CircleRenderer {
 
         // Clear previous selection
         this.clearHighlights();
-        
+
         this.selectedKey = key;
         this.highlightRelatedKeys();
         this.updateAllSegments();
         this.updateCenterInfo();
-        
+
         // Dispatch custom event
-        this.svg.dispatchEvent(new CustomEvent('keySelected', {
-            detail: { key, mode: this.currentMode }
-        }));
+        this.svg.dispatchEvent(
+            new CustomEvent('keySelected', {
+                detail: { key, mode: this.currentMode }
+            })
+        );
     }
 
     /**
@@ -237,7 +282,7 @@ class CircleRenderer {
      */
     highlightRelatedKeys() {
         this.highlightedKeys.clear();
-        
+
         const relatedKeys = this.musicTheory.getRelatedKeys(this.selectedKey, this.currentMode);
         if (relatedKeys) {
             this.highlightedKeys.add(relatedKeys.dominant.key);
@@ -269,14 +314,20 @@ class CircleRenderer {
             // Update classes
             segment.classList.toggle('active', key === this.selectedKey);
             segment.classList.toggle('highlighted', this.highlightedKeys.has(key));
-            
+
             // Update aria-label
             segment.setAttribute('aria-label', `${key} ${this.currentMode}`);
         });
     }
 
     /**
-     * Switch between major and minor modes
+     * Switch between major and minor modes.
+     * Updates the visualization to show the appropriate key relationships.
+     *
+     * @param {string} mode - The mode to switch to ('major' or 'minor')
+     * @throws {Error} If mode is not 'major' or 'minor'
+     * @example
+     * renderer.switchMode('minor'); // Switch to minor mode
      */
     switchMode(mode) {
         if (mode !== 'major' && mode !== 'minor') {
@@ -285,16 +336,18 @@ class CircleRenderer {
         }
 
         this.currentMode = mode;
-        
+
         // Update colors and related keys
         this.highlightRelatedKeys();
         this.updateAllSegments();
         this.updateCenterInfo();
-        
+
         // Dispatch custom event
-        this.svg.dispatchEvent(new CustomEvent('modeChanged', {
-            detail: { mode, key: this.selectedKey }
-        }));
+        this.svg.dispatchEvent(
+            new CustomEvent('modeChanged', {
+                detail: { mode, key: this.selectedKey }
+            })
+        );
     }
 
     /**
@@ -328,7 +381,7 @@ class CircleRenderer {
      */
     getKeyFromAngle(angle) {
         // Normalize angle to 0-360
-        let normalizedAngle = ((angle + 90) % 360 + 360) % 360;
+        let normalizedAngle = (((angle + 90) % 360) + 360) % 360;
         const keyIndex = Math.floor(normalizedAngle / this.segmentAngle);
         const keys = this.musicTheory.getCircleOfFifthsKeys();
         return keys[keyIndex] || null;
@@ -341,13 +394,13 @@ class CircleRenderer {
         const dx = x - this.centerX;
         const dy = y - this.centerY;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
+
         // Check if click is within the ring
         if (distance < this.innerRadius || distance > this.outerRadius) {
             return null;
         }
-        
-        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
         return this.getKeyFromAngle(angle);
     }
 
@@ -357,9 +410,11 @@ class CircleRenderer {
     animateTransition(callback) {
         this.svg.style.transition = 'opacity 0.3s ease';
         this.svg.style.opacity = '0.7';
-        
+
         setTimeout(() => {
-            if (callback) callback();
+            if (callback) {
+                callback();
+            }
             this.svg.style.opacity = '1';
         }, 150);
     }
@@ -384,7 +439,7 @@ class CircleRenderer {
         this.innerRadius = 180 * scale;
         this.centerX = 400 * scale;
         this.centerY = 400 * scale;
-        
+
         // Re-render with new dimensions
         this.init();
     }

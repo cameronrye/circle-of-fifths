@@ -1,0 +1,271 @@
+name: Circle of Fifths Test Suite
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run linting
+      run: npm run lint
+      
+    - name: Run unit tests
+      run: npm run test:unit
+      
+    - name: Run integration tests
+      run: npm run test:integration
+      
+    - name: Run accessibility tests
+      run: node tests/run-tests.js tests/accessibility/**/*.test.js --verbose
+      
+    - name: Run performance tests
+      run: node tests/run-tests.js tests/performance/**/*.test.js --verbose
+      
+    - name: Run visual regression tests
+      run: node tests/run-tests.js tests/visual/**/*.test.js --verbose
+      
+    - name: Generate coverage report
+      run: npm run test:coverage
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  browser-tests:
+    name: Browser Compatibility Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Start test server
+      run: |
+        npm run serve &
+        sleep 5
+        
+    - name: Test in Chrome
+      run: |
+        # Install Chrome
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+        # Run browser tests
+        node tests/browser-test-runner.js --browser=chrome
+        
+    - name: Test theme system
+      run: npm run test:theme-system
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run security audit
+      run: npm audit --audit-level=moderate
+      
+    - name: Check for vulnerabilities
+      run: |
+        if npm audit --audit-level=high --json | jq '.vulnerabilities | length' | grep -v '^0$'; then
+          echo "High severity vulnerabilities found!"
+          exit 1
+        fi
+
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Deploy to preview environment
+      run: |
+        echo "Would deploy to preview environment"
+        echo "Preview URL: https://circle-of-fifths-pr-${{ github.event.number }}.netlify.app"
+
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run performance benchmarks
+      run: |
+        npm run test:performance > performance-results.txt
+        
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-results
+        path: performance-results.txt
+        
+    - name: Comment performance results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const results = fs.readFileSync('performance-results.txt', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## Performance Test Results\n\n\`\`\`\n${results}\n\`\`\``
+          });
+
+  accessibility-audit:
+    name: Accessibility Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Start test server
+      run: |
+        npm run serve &
+        sleep 5
+        
+    - name: Install axe-core CLI
+      run: npm install -g @axe-core/cli
+      
+    - name: Run accessibility audit
+      run: |
+        axe http://localhost:8000 --exit
+        
+    - name: Run custom accessibility tests
+      run: npm run test:accessibility
+
+  cross-platform-test:
+    name: Cross-Platform Tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run core tests
+      run: npm test
+      
+    - name: Test theme system (Unix only)
+      if: runner.os != 'Windows'
+      run: npm run test:theme-system
+
+  notification:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [test, browser-tests, security-scan]
+    if: always()
+    
+    steps:
+    - name: Notify success
+      if: needs.test.result == 'success' && needs.browser-tests.result == 'success' && needs.security-scan.result == 'success'
+      run: |
+        echo "✅ All tests passed successfully!"
+        
+    - name: Notify failure
+      if: needs.test.result == 'failure' || needs.browser-tests.result == 'failure' || needs.security-scan.result == 'failure'
+      run: |
+        echo "❌ Some tests failed!"
+        exit 1

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/cameronrye/circle-of-fifths/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📚 Documentation
+    url: https://github.com/cameronrye/circle-of-fifths#readme
+    about: Check the documentation for usage instructions and examples
+  - name: 🎵 Music Theory Resources
+    url: https://github.com/cameronrye/circle-of-fifths/wiki
+    about: Learn more about music theory concepts used in this application
