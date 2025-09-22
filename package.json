@@ -65,10 +65,10 @@
         "glob": "^8.1.0",
         "http-server": "^14.1.1",
         "prettier": "^3.6.2",
-        "puppeteer": "^21.0.0"
+        "puppeteer": "^24.10.2"
     },
     "engines": {
-        "node": ">=14.0.0"
+        "node": ">=18.18.0"
     },
     "repository": {
         "type": "git",
