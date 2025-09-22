@@ -7,6 +7,12 @@
 
 /* ===== THEME SYSTEM ===== */
 :root {
+    /* Alpha values for consistent transparency */
+    --alpha-light: 0.1;
+    --alpha-border: 0.3;
+    --alpha-hover: 0.15;
+    --alpha-active: 0.2;
+
     /* Light Theme (Default) */
     --primary-color: #2c3e50;
     --secondary-color: #3498db;
@@ -17,6 +23,7 @@
     --surface-color: #ffffff;
     --text-primary: #2c3e50;
     --text-secondary: #7f8c8d;
+    --text-muted: rgba(44, 62, 80, 0.6);
     --border-color: #bdc3c7;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --overlay-color: rgba(255, 255, 255, 0.9);
@@ -27,6 +34,14 @@
     --dominant-color: #e74c3c;
     --subdominant-color: #f39c12;
     --relative-color: #27ae60;
+
+    /* Color-specific alpha backgrounds */
+    --dominant-bg: rgba(231, 76, 60, var(--alpha-light));
+    --dominant-border: rgba(231, 76, 60, var(--alpha-border));
+    --subdominant-bg: rgba(243, 156, 18, var(--alpha-light));
+    --subdominant-border: rgba(243, 156, 18, var(--alpha-border));
+    --relative-bg: rgba(39, 174, 96, var(--alpha-light));
+    --relative-border: rgba(39, 174, 96, var(--alpha-border));
 }
 
 /* Dark Theme */
@@ -40,6 +55,7 @@
     --surface-color: #2c2c2c;
     --text-primary: #ecf0f1;
     --text-secondary: #bdc3c7;
+    --text-muted: rgba(236, 240, 241, 0.6);
     --border-color: #4a4a4a;
     --shadow-color: rgba(0, 0, 0, 0.3);
     --overlay-color: rgba(44, 44, 44, 0.95);
@@ -50,6 +66,14 @@
     --dominant-color: #ec7063;
     --subdominant-color: #f7dc6f;
     --relative-color: #58d68d;
+
+    /* Color-specific alpha backgrounds for dark theme */
+    --dominant-bg: rgba(236, 112, 99, var(--alpha-light));
+    --dominant-border: rgba(236, 112, 99, var(--alpha-border));
+    --subdominant-bg: rgba(247, 220, 111, var(--alpha-light));
+    --subdominant-border: rgba(247, 220, 111, var(--alpha-border));
+    --relative-bg: rgba(88, 214, 141, var(--alpha-light));
+    --relative-border: rgba(88, 214, 141, var(--alpha-border));
 }
 
 /* System Theme - Uses CSS media query for automatic detection */
@@ -64,6 +88,7 @@
     --surface-color: #ffffff;
     --text-primary: #2c3e50;
     --text-secondary: #7f8c8d;
+    --text-muted: rgba(44, 62, 80, 0.6);
     --border-color: #bdc3c7;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --overlay-color: rgba(255, 255, 255, 0.9);
@@ -74,6 +99,14 @@
     --dominant-color: #e74c3c;
     --subdominant-color: #f39c12;
     --relative-color: #27ae60;
+
+    /* Color-specific alpha backgrounds for system light */
+    --dominant-bg: rgba(231, 76, 60, var(--alpha-light));
+    --dominant-border: rgba(231, 76, 60, var(--alpha-border));
+    --subdominant-bg: rgba(243, 156, 18, var(--alpha-light));
+    --subdominant-border: rgba(243, 156, 18, var(--alpha-border));
+    --relative-bg: rgba(39, 174, 96, var(--alpha-light));
+    --relative-border: rgba(39, 174, 96, var(--alpha-border));
 }
 
 /* System Theme - Dark preference */
@@ -88,6 +121,7 @@
         --surface-color: #2c2c2c;
         --text-primary: #ecf0f1;
         --text-secondary: #bdc3c7;
+        --text-muted: rgba(236, 240, 241, 0.6);
         --border-color: #4a4a4a;
         --shadow-color: rgba(0, 0, 0, 0.3);
         --overlay-color: rgba(44, 44, 44, 0.95);
@@ -98,6 +132,14 @@
         --dominant-color: #ec7063;
         --subdominant-color: #f7dc6f;
         --relative-color: #58d68d;
+
+        /* Color-specific alpha backgrounds for system dark */
+        --dominant-bg: rgba(236, 112, 99, var(--alpha-light));
+        --dominant-border: rgba(236, 112, 99, var(--alpha-border));
+        --subdominant-bg: rgba(247, 220, 111, var(--alpha-light));
+        --subdominant-border: rgba(247, 220, 111, var(--alpha-border));
+        --relative-bg: rgba(88, 214, 141, var(--alpha-light));
+        --relative-border: rgba(88, 214, 141, var(--alpha-border));
     }
 }
 
@@ -134,6 +176,10 @@
     --radius-md: 8px;
     --radius-lg: 12px;
     --radius-full: 50%;
+
+    /* Alpha values for backgrounds */
+    --alpha-light: 0.1;
+    --alpha-border: 0.3;
 }
 
 /* ===== BASE STYLES ===== */
@@ -404,6 +450,11 @@ body {
     max-width: 600px;
     height: auto;
     cursor: pointer;
+    transition: opacity var(--transition-normal);
+}
+
+.circle-svg.transitioning {
+    opacity: 0.7;
 }
 
 /* ===== SVG STYLES ===== */
@@ -417,7 +468,7 @@ body {
     fill: var(--surface-color);
     stroke: var(--primary-color);
     stroke-width: 3;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    filter: drop-shadow(0 2px 4px var(--shadow-color));
 }
 
 .center-key {
@@ -440,27 +491,64 @@ body {
     dominant-baseline: middle;
 }
 
-/* Key segment styles will be added dynamically */
+/* Key segment styles */
 .key-segment {
     cursor: pointer;
     transition: all var(--transition-normal);
 }
 
-.key-segment:hover {
+.key-segment:hover .segment-path,
+.key-segment.hover .segment-path {
     filter: brightness(1.1);
 }
 
-.key-segment.active {
-    filter: brightness(1.2) drop-shadow(0 0 10px rgba(52, 152, 219, 0.5));
+.key-segment.active .segment-path {
+    filter: brightness(1.2) drop-shadow(0 0 10px var(--secondary-color));
+}
+
+.key-segment.highlighted .segment-path {
+    filter: brightness(1.05);
+}
+
+/* Segment path styles for different modes and relationships */
+.segment-path {
+    stroke: var(--surface-color);
+    stroke-width: 2;
+    transition: all var(--transition-normal);
+}
+
+.segment-path.major {
+    fill: var(--major-color);
+}
+
+.segment-path.minor {
+    fill: var(--minor-color);
+}
+
+.segment-path.selected {
+    fill: var(--primary-color);
+}
+
+.segment-path.dominant {
+    fill: var(--dominant-color);
+}
+
+.segment-path.subdominant {
+    fill: var(--subdominant-color);
+}
+
+.segment-path.relative {
+    fill: var(--relative-color);
 }
 
 .key-text {
     font-size: 18px;
     font-weight: 600;
-    fill: white;
+    fill: var(--surface-color);
     text-anchor: middle;
     dominant-baseline: middle;
     pointer-events: none;
+    transition: fill var(--transition-fast);
 }
 
 /* ===== AUDIO CONTROLS ===== */
@@ -497,12 +585,23 @@ body {
     transform: translateY(0);
 }
 
+.audio-btn.active {
+    background: var(--secondary-color);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
 .audio-btn.stop-btn {
     border-color: var(--accent-color);
     color: var(--accent-color);
 }
 
 .audio-btn.stop-btn:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+.audio-btn.stop-btn.active {
     background: var(--accent-color);
     color: white;
 }
@@ -570,21 +669,21 @@ body {
 }
 
 .related-key[data-relationship='dominant'] {
-    background: rgba(231, 76, 60, 0.1);
+    background: var(--dominant-bg);
     color: var(--dominant-color);
-    border: 1px solid rgba(231, 76, 60, 0.3);
+    border: 1px solid var(--dominant-border);
 }
 
 .related-key[data-relationship='subdominant'] {
-    background: rgba(243, 156, 18, 0.1);
+    background: var(--subdominant-bg);
     color: var(--subdominant-color);
-    border: 1px solid rgba(243, 156, 18, 0.3);
+    border: 1px solid var(--subdominant-border);
 }
 
 .related-key[data-relationship='relative'] {
-    background: rgba(39, 174, 96, 0.1);
+    background: var(--relative-bg);
     color: var(--relative-color);
-    border: 1px solid rgba(39, 174, 96, 0.3);
+    border: 1px solid var(--relative-border);
 }
 
 .related-key:hover {
@@ -618,6 +717,13 @@ body {
     border-color: var(--secondary-color);
 }
 
+.progression-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
 /* ===== ADVANCED MODE ===== */
 .advanced-only {
     display: none;
@@ -642,7 +748,8 @@ body.advanced .advanced-only {
 
 .footer-credits {
     font-size: var(--font-size-sm);
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-muted);
+    opacity: 0.8;
 }
 
 /* ===== LOADING ===== */
@@ -930,6 +1037,6 @@ body.advanced .advanced-only {
 
     .circle-container {
         box-shadow: none;
-        border: 1px solid #000;
+        border: 1px solid var(--text-primary);
     }
 }

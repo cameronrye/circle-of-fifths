@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Theme Issues</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 15px;
+            z-index: 1001;
+            box-shadow: var(--shadow-lg);
+            min-width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .debug-section {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--background-color);
+        }
+        .debug-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        .debug-info {
+            font-family: monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+        }
+        .debug-button {
+            margin: 5px;
+            padding: 5px 10px;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-panel">
+        <h3>🔍 Theme Debug Panel</h3>
+        
+        <div class="debug-section">
+            <div class="debug-title">Theme Controls</div>
+            <button class="debug-button" onclick="setTheme('light')">Light</button>
+            <button class="debug-button" onclick="setTheme('dark')">Dark</button>
+            <button class="debug-button" onclick="setTheme('system')">System</button>
+            <button class="debug-button" onclick="debugElements()">Debug Elements</button>
+        </div>
+        
+        <div class="debug-section">
+            <div class="debug-title">Current Theme Info</div>
+            <div class="debug-info" id="theme-info">Loading...</div>
+        </div>
+        
+        <div class="debug-section">
+            <div class="debug-title">CSS Variables</div>
+            <div class="debug-info" id="css-vars">Loading...</div>
+        </div>
+        
+        <div class="debug-section">
+            <div class="debug-title">Element Status</div>
+            <div class="debug-info" id="element-status">Loading...</div>
+        </div>
+        
+        <div class="debug-section">
+            <div class="debug-title">SVG Status</div>
+            <div class="debug-info" id="svg-status">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Simplified version of the main content -->
+    <header class="header">
+        <div class="container">
+            <h1 class="title">
+                <span class="title-main">Debug Theme Issues</span>
+            </h1>
+            <div class="theme-toggle">
+                <button class="theme-btn">
+                    <span class="theme-icon">💻</span>
+                    <span class="theme-text">System</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="circle-container">
+                <svg id="circle-svg" class="circle-svg" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="400" cy="400" r="350" class="background-circle" />
+                    <g id="key-segments" class="key-segments">
+                        <!-- Add some test segments manually -->
+                        <g class="key-segment" data-key="C">
+                            <path class="segment-path major" d="M 400 80 L 450 100 A 320 320 0 0 1 480 150 L 430 130 A 180 180 0 0 0 400 80 Z" />
+                            <text class="key-text" x="440" y="115" text-anchor="middle">C</text>
+                        </g>
+                        <g class="key-segment" data-key="G">
+                            <path class="segment-path minor" d="M 480 150 L 530 170 A 320 320 0 0 1 560 220 L 510 200 A 180 180 0 0 0 480 150 Z" />
+                            <text class="key-text" x="520" y="185" text-anchor="middle">G</text>
+                        </g>
+                    </g>
+                    <circle cx="400" cy="400" r="120" class="center-circle" />
+                    <g class="center-content">
+                        <text x="400" y="380" class="center-key" text-anchor="middle">C</text>
+                        <text x="400" y="410" class="center-mode" text-anchor="middle">Major</text>
+                        <text x="400" y="430" class="center-signature" text-anchor="middle">No sharps</text>
+                    </g>
+                </svg>
+
+                <div class="audio-controls">
+                    <button class="audio-btn">
+                        <span class="btn-icon">♪</span>
+                        Scale
+                    </button>
+                    <button class="audio-btn stop-btn">
+                        <span class="btn-icon">⏹</span>
+                        Stop
+                    </button>
+                </div>
+            </div>
+
+            <aside class="info-panel">
+                <h2 class="info-title">C Major</h2>
+                <div class="info-section">
+                    <h3 class="info-subtitle">Related Keys</h3>
+                    <div class="related-keys">
+                        <span class="related-key" data-relationship="dominant">Dominant: G</span>
+                        <span class="related-key" data-relationship="subdominant">Subdominant: F</span>
+                        <span class="related-key" data-relationship="relative">Relative: A minor</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <div class="loading">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Loading...</p>
+    </div>
+
+    <script src="js/themeManager.js"></script>
+    <script>
+        let themeManager;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            themeManager = new ThemeManager();
+            updateDebugInfo();
+            
+            // Listen for theme changes
+            document.addEventListener('themeChanged', updateDebugInfo);
+        });
+
+        function setTheme(theme) {
+            if (themeManager) {
+                themeManager.setTheme(theme);
+            }
+        }
+
+        function updateDebugInfo() {
+            updateThemeInfo();
+            updateCSSVars();
+            updateElementStatus();
+            updateSVGStatus();
+        }
+
+        function updateThemeInfo() {
+            const info = document.getElementById('theme-info');
+            if (themeManager && info) {
+                const current = themeManager.getCurrentTheme();
+                const effective = themeManager.getEffectiveTheme();
+                const dataTheme = document.documentElement.getAttribute('data-theme');
+                
+                info.textContent = `Current: ${current}
+Effective: ${effective}
+HTML data-theme: ${dataTheme}
+System: ${themeManager.getSystemTheme()}`;
+            }
+        }
+
+        function updateCSSVars() {
+            const varsDiv = document.getElementById('css-vars');
+            if (varsDiv) {
+                const root = document.documentElement;
+                const computedStyle = getComputedStyle(root);
+                
+                const vars = [
+                    '--primary-color',
+                    '--secondary-color',
+                    '--background-color',
+                    '--surface-color',
+                    '--text-primary',
+                    '--major-color',
+                    '--minor-color',
+                    '--dominant-color',
+                    '--dominant-bg',
+                    '--dominant-border'
+                ];
+                
+                let output = '';
+                vars.forEach(varName => {
+                    const value = computedStyle.getPropertyValue(varName).trim();
+                    output += `${varName}: ${value || 'NOT DEFINED'}\n`;
+                });
+                
+                varsDiv.textContent = output;
+            }
+        }
+
+        function updateElementStatus() {
+            const statusDiv = document.getElementById('element-status');
+            if (statusDiv) {
+                let output = '';
+                
+                // Check key elements
+                const elements = [
+                    { selector: '.header', name: 'Header' },
+                    { selector: '.circle-container', name: 'Circle Container' },
+                    { selector: '.info-panel', name: 'Info Panel' },
+                    { selector: '.related-key', name: 'Related Keys' },
+                    { selector: '.audio-btn', name: 'Audio Buttons' },
+                    { selector: '.loading', name: 'Loading' }
+                ];
+                
+                elements.forEach(({ selector, name }) => {
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        const style = getComputedStyle(element);
+                        const bg = style.backgroundColor;
+                        const color = style.color;
+                        output += `${name}: ✓ (bg: ${bg}, color: ${color})\n`;
+                    } else {
+                        output += `${name}: ❌ NOT FOUND\n`;
+                    }
+                });
+                
+                statusDiv.textContent = output;
+            }
+        }
+
+        function updateSVGStatus() {
+            const statusDiv = document.getElementById('svg-status');
+            if (statusDiv) {
+                let output = '';
+                
+                const svg = document.getElementById('circle-svg');
+                if (svg) {
+                    output += 'SVG Element: ✓\n';
+                    
+                    // Check SVG child elements
+                    const svgElements = [
+                        { selector: '.background-circle', name: 'Background Circle' },
+                        { selector: '.center-circle', name: 'Center Circle' },
+                        { selector: '.center-key', name: 'Center Key Text' },
+                        { selector: '.center-mode', name: 'Center Mode Text' },
+                        { selector: '.segment-path', name: 'Segment Paths' },
+                        { selector: '.key-text', name: 'Key Text' }
+                    ];
+                    
+                    svgElements.forEach(({ selector, name }) => {
+                        const elements = svg.querySelectorAll(selector);
+                        if (elements.length > 0) {
+                            const element = elements[0];
+                            const style = getComputedStyle(element);
+                            const fill = style.fill;
+                            const stroke = style.stroke;
+                            output += `${name}: ✓ (${elements.length}) fill: ${fill}, stroke: ${stroke}\n`;
+                        } else {
+                            output += `${name}: ❌ NOT FOUND\n`;
+                        }
+                    });
+                } else {
+                    output += 'SVG Element: ❌ NOT FOUND\n';
+                }
+                
+                statusDiv.textContent = output;
+            }
+        }
+
+        function debugElements() {
+            console.log('🔍 Debug Elements Called');
+            updateDebugInfo();
+            
+            // Log detailed information
+            console.log('Theme Manager:', themeManager);
+            console.log('Current Theme:', themeManager?.getCurrentTheme());
+            console.log('Effective Theme:', themeManager?.getEffectiveTheme());
+            
+            // Check if CSS variables are working
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            console.log('Primary Color:', computedStyle.getPropertyValue('--primary-color'));
+            console.log('Background Color:', computedStyle.getPropertyValue('--background-color'));
+            
+            // Check SVG elements
+            const svg = document.getElementById('circle-svg');
+            console.log('SVG Element:', svg);
+            if (svg) {
+                console.log('Segment Paths:', svg.querySelectorAll('.segment-path'));
+                console.log('Key Texts:', svg.querySelectorAll('.key-text'));
+            }
+        }
+
+        // Make functions global
+        window.setTheme = setTheme;
+        window.debugElements = debugElements;
+    </script>
+</body>
+</html>

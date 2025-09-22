@@ -37,18 +37,7 @@ class CircleRenderer {
         this.innerRadius = 180;
         this.segmentAngle = 30; // 360 / 12 keys
 
-        // Color scheme
-        this.colors = {
-            major: '#3498db',
-            minor: '#9b59b6',
-            dominant: '#e74c3c',
-            subdominant: '#f39c12',
-            relative: '#27ae60',
-            selected: '#2c3e50',
-            hover: '#34495e',
-            background: '#ecf0f1',
-            text: '#ffffff'
-        };
+        // Remove hardcoded colors - now using CSS custom properties via classes
 
         this.keySegments = new Map();
         this.init();
@@ -113,9 +102,7 @@ class CircleRenderer {
         // Create path for segment
         const path = this.createSegmentPath(startAngle, endAngle);
         path.classList.add('segment-path');
-        path.setAttribute('fill', this.getKeyColor(key));
-        path.setAttribute('stroke', '#ffffff');
-        path.setAttribute('stroke-width', '2');
+        this.updateSegmentClasses(path, key);
 
         // Create text label
         const text = this.createSegmentText(key, index);
@@ -173,7 +160,6 @@ class CircleRenderer {
         text.setAttribute('y', y);
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
-        text.setAttribute('fill', this.colors.text);
         text.setAttribute('font-size', '18');
         text.setAttribute('font-weight', '600');
         text.setAttribute('pointer-events', 'none');
@@ -183,19 +169,24 @@ class CircleRenderer {
     }
 
     /**
-     * Get color for a key based on current mode and relationships
+     * Update CSS classes for a segment based on current mode and relationships
      */
-    getKeyColor(key) {
+    updateSegmentClasses(pathElement, key) {
+        // Remove all existing color classes
+        pathElement.classList.remove('major', 'minor', 'selected', 'dominant', 'subdominant', 'relative');
+
         if (key === this.selectedKey) {
-            return this.colors.selected;
-        }
-
-        if (this.highlightedKeys.has(key)) {
+            pathElement.classList.add('selected');
+        } else if (this.highlightedKeys.has(key)) {
             const relationship = this.getKeyRelationship(key);
-            return this.colors[relationship] || this.colors[this.currentMode];
+            if (relationship) {
+                pathElement.classList.add(relationship);
+            } else {
+                pathElement.classList.add(this.currentMode);
+            }
+        } else {
+            pathElement.classList.add(this.currentMode);
         }
-
-        return this.colors[this.currentMode];
     }
 
     /**
@@ -308,7 +299,7 @@ class CircleRenderer {
         this.keySegments.forEach((segment, key) => {
             const path = segment.querySelector('.segment-path');
             if (path) {
-                path.setAttribute('fill', this.getKeyColor(key));
+                this.updateSegmentClasses(path, key);
             }
 
             // Update classes
@@ -355,11 +346,8 @@ class CircleRenderer {
      */
     addHoverEffect(key) {
         const segment = this.keySegments.get(key);
-        if (segment) {
-            const path = segment.querySelector('.segment-path');
-            if (path && key !== this.selectedKey) {
-                path.style.filter = 'brightness(1.1)';
-            }
+        if (segment && key !== this.selectedKey) {
+            segment.classList.add('hover');
         }
     }
 
@@ -369,10 +357,7 @@ class CircleRenderer {
     removeHoverEffect(key) {
         const segment = this.keySegments.get(key);
         if (segment) {
-            const path = segment.querySelector('.segment-path');
-            if (path) {
-                path.style.filter = '';
-            }
+            segment.classList.remove('hover');
         }
     }
 
@@ -408,14 +393,14 @@ class CircleRenderer {
      * Animate transition between modes
      */
     animateTransition(callback) {
-        this.svg.style.transition = 'opacity 0.3s ease';
-        this.svg.style.opacity = '0.7';
+        // Use CSS classes instead of inline styles for better theme compatibility
+        this.svg.classList.add('transitioning');
 
         setTimeout(() => {
             if (callback) {
                 callback();
             }
-            this.svg.style.opacity = '1';
+            this.svg.classList.remove('transitioning');
         }, 150);
     }
 
