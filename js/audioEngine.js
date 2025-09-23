@@ -317,13 +317,17 @@ class AudioEngine {
             return 'augmented';
         }
         if (roman.includes('7')) {
-            return roman === roman.toUpperCase() ? 'dominant7' : 'minor7';
+            // Check original case to determine if it's dominant7 or minor7
+            const baseRoman = romanNumeral.replace('7', '');
+            return baseRoman === baseRoman.toUpperCase() ? 'dominant7' : 'minor7';
         }
 
         // Major or minor based on case and mode
         if (mode === 'major') {
-            return ['i', 'ii', 'iii', 'vi', 'vii'].includes(roman) ? 'minor' : 'major';
+            // In major mode: uppercase = major, lowercase = minor
+            return romanNumeral === romanNumeral.toUpperCase() ? 'major' : 'minor';
         } else {
+            // In minor mode: specific uppercase chords are major, others are minor
             return ['III', 'VI', 'VII'].includes(romanNumeral) ? 'major' : 'minor';
         }
     }

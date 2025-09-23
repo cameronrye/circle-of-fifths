@@ -536,12 +536,13 @@ class MockWindow {
     }
 
     matchMedia(query) {
-        return {
+        const mediaQuery = {
             matches: false,
             media: query,
-            addEventListener: () => {},
-            removeEventListener: () => {}
+            addEventListener: global.jest.fn(),
+            removeEventListener: global.jest.fn()
         };
+        return mediaQuery;
     }
 
     requestAnimationFrame(callback) {
@@ -560,25 +561,26 @@ function setupDOMEnvironment() {
     const mockWindow = new MockWindow();
 
     if (typeof global !== 'undefined') {
-        // Node.js environment
+        // Node.js environment - Set up global constructors FIRST
+        // This ensures instances created later will be instances of these globals
+        global.Set = Set;
+        global.Map = Map;
+        global.CustomEvent = MockCustomEvent;
+        global.Event = MockEvent;
+
+        // Set up DOM and Web API mocks
         global.window = mockWindow;
         global.document = mockWindow.document;
         global.localStorage = mockWindow.localStorage;
         global.sessionStorage = mockWindow.sessionStorage;
         global.AudioContext = MockAudioContext;
         global.webkitAudioContext = MockAudioContext;
-        global.Event = MockEvent;
-        global.CustomEvent = MockCustomEvent;
+
+        // Also set AudioContext on the mock window object so modules can find it
+        mockWindow.AudioContext = MockAudioContext;
+        mockWindow.webkitAudioContext = MockAudioContext;
         global.requestAnimationFrame = mockWindow.requestAnimationFrame.bind(mockWindow);
         global.cancelAnimationFrame = mockWindow.cancelAnimationFrame.bind(mockWindow);
-
-        // Ensure Set and Map are available
-        if (!global.Set) {
-            global.Set = Set;
-        }
-        if (!global.Map) {
-            global.Map = Map;
-        }
 
         // Load application modules into the test environment
         loadApplicationModules();
@@ -626,7 +628,15 @@ function loadApplicationModules() {
                     __filename: fullPath,
                     __dirname: path.dirname(fullPath),
                     console: console,
-                    window: global.window || {}
+                    // Create a proper window object with constructor functions
+                    window: global.window,
+                    // Ensure the same constructors are available in the VM context
+                    Set: global.Set,
+                    Map: global.Map,
+                    CustomEvent: global.CustomEvent,
+                    Event: global.Event,
+                    AudioContext: global.AudioContext,
+                    webkitAudioContext: global.webkitAudioContext
                 };
 
                 vm.createContext(context);
