@@ -6,7 +6,6 @@
  */
 
 const fs = require('fs');
-const path = require('path');
 
 console.log('🔍 Validating test framework...');
 
@@ -53,11 +52,10 @@ for (const module of appModules) {
 try {
     const { setupTestEnvironment } = require('./tests/test-config.js');
     console.log('✅ Test configuration loads successfully');
-    
+
     // Try to setup test environment
     setupTestEnvironment();
     console.log('✅ Test environment setup successful');
-    
 } catch (error) {
     console.error('❌ Test framework setup failed:', error.message);
     allFilesExist = false;

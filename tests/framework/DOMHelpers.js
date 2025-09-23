@@ -646,7 +646,9 @@ function loadApplicationModules() {
                     ) {
                         // Multiple exports (like MusicTheory module)
                         Object.assign(global, context.module.exports);
-                        console.log(`  ✅ Exported objects: ${Object.keys(context.module.exports).join(', ')}`);
+                        console.log(
+                            `  ✅ Exported objects: ${Object.keys(context.module.exports).join(', ')}`
+                        );
                     }
                 }
 
