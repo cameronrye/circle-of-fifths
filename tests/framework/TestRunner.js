@@ -230,7 +230,9 @@ class TestRunner {
      * Run a single test
      */
     async runTest(test) {
-        console.log(`🔍 TestRunner: Starting test: ${test.name}`);
+        if (this.options.verbose) {
+            console.log(`🔍 TestRunner: Starting test: ${test.name}`);
+        }
         const result = {
             name: test.name,
             suite: test.suite?.name,
@@ -241,7 +243,9 @@ class TestRunner {
         };
 
         if (test.skip) {
-            console.log(`🔍 TestRunner: Skipping test: ${test.name}`);
+            if (this.options.verbose) {
+                console.log(`🔍 TestRunner: Skipping test: ${test.name}`);
+            }
             this.results.skipped++;
             return result;
         }
@@ -250,18 +254,25 @@ class TestRunner {
 
         try {
             // Run beforeEach hooks
-            console.log(`🔍 TestRunner: Running beforeEach hooks for: ${test.name}`);
+            if (this.options.verbose) {
+                console.log(`🔍 TestRunner: Running beforeEach hooks for: ${test.name}`);
+            }
             await this.runHooks('beforeEach', test.suite);
 
             // Run the test with timeout
-            console.log(`🔍 TestRunner: Executing test function: ${test.name}`);
+            if (this.options.verbose) {
+                console.log(`🔍 TestRunner: Executing test function: ${test.name}`);
+            }
             await this.withTimeout(Promise.resolve(test.fn()), test.timeout);
 
             result.passed = true;
             this.results.passed++;
-            console.log(`🔍 TestRunner: Test passed: ${test.name}`);
+            if (this.options.verbose) {
+                console.log(`🔍 TestRunner: Test passed: ${test.name}`);
+            }
         } catch (error) {
-            console.log(`🔍 TestRunner: Test failed: ${test.name}`, error.message);
+            // Always log test failures for CI visibility
+            console.log(`❌ Test failed: ${test.name} - ${error.message}`);
             result.error = error;
             result.passed = false;
             this.results.failed++;
@@ -271,10 +282,14 @@ class TestRunner {
             }
         } finally {
             // Run afterEach hooks
-            console.log(`🔍 TestRunner: Running afterEach hooks for: ${test.name}`);
+            if (this.options.verbose) {
+                console.log(`🔍 TestRunner: Running afterEach hooks for: ${test.name}`);
+            }
             await this.runHooks('afterEach', test.suite);
             result.duration = Date.now() - startTime;
-            console.log(`🔍 TestRunner: Test completed: ${test.name} (${result.duration}ms)`);
+            if (this.options.verbose) {
+                console.log(`🔍 TestRunner: Test completed: ${test.name} (${result.duration}ms)`);
+            }
         }
 
         return result;
@@ -319,29 +334,41 @@ class TestRunner {
      */
     async run() {
         this.results.startTime = Date.now();
-        console.log('🔍 TestRunner: Starting test run...');
+        if (this.options.verbose) {
+            console.log('🔍 TestRunner: Starting test run...');
+        }
 
         try {
             // Run global beforeAll hooks
-            console.log('🔍 TestRunner: Running beforeAll hooks...');
+            if (this.options.verbose) {
+                console.log('🔍 TestRunner: Running beforeAll hooks...');
+            }
             await this.runHooks('beforeAll');
 
             // Collect all tests
-            console.log('🔍 TestRunner: Collecting tests...');
+            if (this.options.verbose) {
+                console.log('🔍 TestRunner: Collecting tests...');
+            }
             const allTests = this.collectTests();
             this.results.total = allTests.length;
-            console.log(`🔍 TestRunner: Found ${allTests.length} tests`);
+
+            // Always show test count for CI visibility
+            console.log(`Running ${allTests.length} tests...`);
 
             // Filter tests (only, skip)
             const testsToRun = this.filterTests(allTests);
-            console.log(`🔍 TestRunner: Running ${testsToRun.length} tests`);
+            if (this.options.verbose && testsToRun.length !== allTests.length) {
+                console.log(`🔍 TestRunner: Running ${testsToRun.length} tests (${allTests.length - testsToRun.length} skipped)`);
+            }
 
             // Run tests
             for (let i = 0; i < testsToRun.length; i++) {
                 const test = testsToRun[i];
-                console.log(
-                    `🔍 TestRunner: Running test ${i + 1}/${testsToRun.length}: ${test.name}`
-                );
+                if (this.options.verbose) {
+                    console.log(
+                        `🔍 TestRunner: Running test ${i + 1}/${testsToRun.length}: ${test.name}`
+                    );
+                }
 
                 try {
                     const result = await this.runTest(test);
@@ -355,21 +382,31 @@ class TestRunner {
                         this.logTestResult(result);
                     }
                 } catch (error) {
-                    console.error('🔍 TestRunner: Test failed with error:', error);
+                    console.error('❌ Test execution failed:', error.message);
+                    if (this.options.verbose && error.stack) {
+                        console.error(error.stack);
+                    }
                     throw error;
                 }
             }
 
             // Run global afterAll hooks
-            console.log('🔍 TestRunner: Running afterAll hooks...');
+            if (this.options.verbose) {
+                console.log('🔍 TestRunner: Running afterAll hooks...');
+            }
             await this.runHooks('afterAll');
         } catch (error) {
-            console.error('🔍 TestRunner: Test run failed:', error);
+            console.error('❌ Test run failed:', error.message);
+            if (this.options.verbose && error.stack) {
+                console.error(error.stack);
+            }
             throw error;
         } finally {
             this.results.endTime = Date.now();
             this.results.duration = this.results.endTime - this.results.startTime;
-            console.log('🔍 TestRunner: Test run completed');
+            if (this.options.verbose) {
+                console.log('🔍 TestRunner: Test run completed');
+            }
         }
 
         this.generateReport();
@@ -437,17 +474,21 @@ class TestRunner {
     generateReport() {
         const { passed, failed, skipped, total, duration } = this.results;
 
-        console.log('\n' + '='.repeat(50));
-        console.log('TEST RESULTS');
-        console.log('='.repeat(50));
+        if (this.options.verbose) {
+            console.log('\n' + '='.repeat(50));
+            console.log('TEST RESULTS');
+            console.log('='.repeat(50));
+        } else {
+            console.log('\n📊 Test Results:');
+        }
 
         console.log(
-            `Tests:       ${passed} passed, ${failed} failed, ${skipped} skipped, ${total} total`
+            `Tests: ${passed} passed, ${failed} failed, ${skipped} skipped, ${total} total`
         );
-        console.log(`Time:        ${duration}ms`);
+        console.log(`Time: ${duration}ms`);
 
         if (failed > 0) {
-            console.log('\nFAILED TESTS:');
+            console.log('\n❌ Failed Tests:');
             Object.entries(this.results.suites).forEach(([suiteName, tests]) => {
                 const failedTests = tests.filter(test => !test.passed && !test.skipped);
                 if (failedTests.length > 0) {
@@ -456,6 +497,10 @@ class TestRunner {
                         console.log(`  ✗ ${test.name}`);
                         if (test.error) {
                             console.log(`    ${test.error.message}`);
+                            // Only show stack trace in verbose mode
+                            if (this.options.verbose && test.error.stack) {
+                                console.log(`    ${test.error.stack}`);
+                            }
                         }
                     });
                 }
@@ -463,7 +508,9 @@ class TestRunner {
         }
 
         const success = failed === 0;
-        console.log(`\n${success ? '✓' : '✗'} Test suite ${success ? 'PASSED' : 'FAILED'}`);
+        const resultIcon = success ? '✅' : '❌';
+        const resultText = success ? 'PASSED' : 'FAILED';
+        console.log(`\n${resultIcon} Test suite ${resultText}`);
 
         return this.results;
     }

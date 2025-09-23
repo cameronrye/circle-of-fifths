@@ -47,24 +47,20 @@ jobs:
     - name: Run linting
       run: npm run lint
       
-    - name: Run unit tests
-      run: npm run test:unit
-      continue-on-error: false
-
-    - name: Run integration tests
-      run: npm run test:integration
+    - name: Run core tests (unit & integration)
+      run: npm run test:ci
       continue-on-error: false
 
     - name: Run accessibility tests
-      run: node tests/run-tests.js tests/accessibility/**/*.test.js --verbose
+      run: node tests/run-tests.js tests/accessibility/**/*.test.js
       continue-on-error: true
 
     - name: Run performance tests
-      run: node tests/run-tests.js tests/performance/**/*.test.js --verbose
+      run: node tests/run-tests.js tests/performance/**/*.test.js
       continue-on-error: true
 
     - name: Run visual regression tests
-      run: node tests/run-tests.js tests/visual/**/*.test.js --verbose
+      run: node tests/run-tests.js tests/visual/**/*.test.js
       continue-on-error: true
       
     - name: Generate coverage report
@@ -295,7 +291,7 @@ jobs:
       run: npm ci
 
     - name: Run core tests
-      run: npm test
+      run: npm run test:ci
 
     - name: Test theme system (Unix only)
       if: runner.os != 'Windows'

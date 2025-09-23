@@ -137,7 +137,9 @@ function setupTestEnvironment() {
         setupTimerMocks();
     }
 
-    console.log('Test environment setup complete');
+    if (testConfig.runner.verbose) {
+        console.log('Test environment setup complete');
+    }
 }
 
 /**
@@ -167,7 +169,9 @@ function cleanupTestEnvironment() {
     delete global.jest;
     delete global.captureConsole;
 
-    console.log('Test environment cleanup complete');
+    if (testConfig.runner.verbose) {
+        console.log('Test environment cleanup complete');
+    }
 }
 
 /**
@@ -254,7 +258,9 @@ function setupTimerMocks() {
  */
 async function loadTestFile(filePath) {
     try {
-        console.log(`🔍 Loading test file: ${filePath}`);
+        if (testConfig.runner.verbose) {
+            console.log(`🔍 Loading test file: ${filePath}`);
+        }
 
         // Clear module cache to ensure fresh load
         delete require.cache[require.resolve(filePath)];
@@ -262,15 +268,17 @@ async function loadTestFile(filePath) {
         // Load the test file
         require(filePath);
 
-        console.log(`✅ Loaded test file: ${filePath}`);
-
-        // Check test runner state after loading
-        console.log(`🔍 After loading ${filePath}:`);
-        console.log(`  Suites: ${global.testRunner.suites.length}`);
-        console.log(`  Tests: ${global.testRunner.tests.length}`);
+        if (testConfig.runner.verbose) {
+            console.log(`✅ Loaded test file: ${filePath}`);
+            console.log(`🔍 After loading ${filePath}:`);
+            console.log(`  Suites: ${global.testRunner.suites.length}`);
+            console.log(`  Tests: ${global.testRunner.tests.length}`);
+        }
     } catch (error) {
         console.error(`❌ Failed to load test file ${filePath}:`, error.message);
-        console.error('Stack trace:', error.stack);
+        if (testConfig.runner.verbose) {
+            console.error('Stack trace:', error.stack);
+        }
         throw error;
     }
 }
@@ -300,20 +308,26 @@ async function runTestFiles(patterns) {
         return { passed: 0, failed: 0, total: 0 };
     }
 
-    console.log(`Found ${testFiles.length} test files`);
+    if (testConfig.runner.verbose) {
+        console.log(`Found ${testFiles.length} test files`);
+    }
 
     // Load all test files
     for (const file of testFiles) {
         await loadTestFile(file);
     }
 
-    console.log('🔍 All test files loaded. Checking test runner state...');
-    console.log('Suites:', global.testRunner.suites.length);
-    console.log('Tests:', global.testRunner.tests.length);
+    if (testConfig.runner.verbose) {
+        console.log('🔍 All test files loaded. Checking test runner state...');
+        console.log('Suites:', global.testRunner.suites.length);
+        console.log('Tests:', global.testRunner.tests.length);
+    }
 
     // Collect tests to verify they exist
     const allTests = global.testRunner.collectTests();
-    console.log('🔍 Collected tests:', allTests.length);
+    if (testConfig.runner.verbose) {
+        console.log('🔍 Collected tests:', allTests.length);
+    }
 
     if (allTests.length === 0) {
         console.warn('⚠️ No tests found to run');
@@ -321,9 +335,13 @@ async function runTestFiles(patterns) {
     }
 
     // Run all tests
-    console.log('🔍 Starting test runner...');
+    if (testConfig.runner.verbose) {
+        console.log('🔍 Starting test runner...');
+    }
     const results = await global.testRunner.run();
-    console.log('🔍 Test runner completed');
+    if (testConfig.runner.verbose) {
+        console.log('🔍 Test runner completed');
+    }
 
     return results;
 }
@@ -332,17 +350,23 @@ async function runTestFiles(patterns) {
  * Main test runner function
  */
 async function runTests(options = {}) {
-    // Add a global timeout to prevent hanging
+    // Add a global timeout to prevent hanging (longer for CI environments)
+    const timeoutDuration = process.env.CI ? 120000 : 60000; // 2 minutes for CI, 1 minute for local
     const timeoutId = setTimeout(() => {
-        console.error('❌ Test runner timed out after 30 seconds');
+        console.error(`❌ Test runner timed out after ${timeoutDuration / 1000} seconds`);
+        console.error('This may indicate an infinite loop or hanging test');
         process.exit(1);
-    }, 30000);
+    }, timeoutDuration);
 
     try {
-        console.log('🔍 Starting runTests...');
+        if (testConfig.runner.verbose) {
+            console.log('🔍 Starting runTests...');
+        }
 
         // Setup test environment
-        console.log('🔍 Setting up test environment...');
+        if (testConfig.runner.verbose) {
+            console.log('🔍 Setting up test environment...');
+        }
         setupTestEnvironment();
 
         // Determine which tests to run
@@ -362,12 +386,18 @@ async function runTests(options = {}) {
             patterns.push(testConfig.patterns.unit);
         }
 
-        console.log('🔍 Test patterns:', patterns);
+        if (testConfig.runner.verbose) {
+            console.log('🔍 Test patterns:', patterns);
+        }
 
         // Run tests
-        console.log('🔍 Running test files...');
+        if (testConfig.runner.verbose) {
+            console.log('🔍 Running test files...');
+        }
         const results = await runTestFiles(patterns);
-        console.log('🔍 Test files completed');
+        if (testConfig.runner.verbose) {
+            console.log('🔍 Test files completed');
+        }
 
         clearTimeout(timeoutId);
         return results;
@@ -381,7 +411,9 @@ async function runTests(options = {}) {
         throw error;
     } finally {
         // Cleanup test environment
-        console.log('🔍 Cleaning up test environment...');
+        if (testConfig.runner.verbose) {
+            console.log('🔍 Cleaning up test environment...');
+        }
         cleanupTestEnvironment();
     }
 }

@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  NODE_ENV: production
+  CI: true
+
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
@@ -39,7 +43,7 @@ jobs:
         run: npm run lint
 
       - name: Run tests
-        run: npm run test:all
+        run: npm run test:ci
 
       - name: Check formatting
         run: npm run format:check
