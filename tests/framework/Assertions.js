@@ -504,9 +504,9 @@ class Assertions {
 /**
  * expect.any() matcher for type checking
  */
-expect.any = function (constructor) {
+expect.any = function(constructor) {
     return {
-        asymmetricMatch: function (actual) {
+        asymmetricMatch: function(actual) {
             if (constructor === String) {
                 return typeof actual === 'string';
             }
@@ -527,7 +527,7 @@ expect.any = function (constructor) {
             }
             return actual instanceof constructor;
         },
-        toString: function () {
+        toString: function() {
             return `Any<${constructor.name}>`;
         }
     };
@@ -536,9 +536,9 @@ expect.any = function (constructor) {
 /**
  * expect.objectContaining() matcher
  */
-expect.objectContaining = function (expected) {
+expect.objectContaining = function(expected) {
     return {
-        asymmetricMatch: function (actual) {
+        asymmetricMatch: function(actual) {
             if (typeof actual !== 'object' || actual === null) {
                 return false;
             }
@@ -552,7 +552,7 @@ expect.objectContaining = function (expected) {
             }
             return true;
         },
-        toString: function () {
+        toString: function() {
             return `ObjectContaining<${JSON.stringify(expected)}>`;
         }
     };
@@ -561,9 +561,9 @@ expect.objectContaining = function (expected) {
 /**
  * expect.arrayContaining() matcher
  */
-expect.arrayContaining = function (expected) {
+expect.arrayContaining = function(expected) {
     return {
-        asymmetricMatch: function (actual) {
+        asymmetricMatch: function(actual) {
             if (!Array.isArray(actual)) {
                 return false;
             }
@@ -571,7 +571,7 @@ expect.arrayContaining = function (expected) {
                 actual.some(actualItem => new Assertions(actualItem).deepEqual(actualItem, item))
             );
         },
-        toString: function () {
+        toString: function() {
             return `ArrayContaining<${JSON.stringify(expected)}>`;
         }
     };
@@ -580,12 +580,12 @@ expect.arrayContaining = function (expected) {
 /**
  * expect.stringContaining() matcher
  */
-expect.stringContaining = function (expected) {
+expect.stringContaining = function(expected) {
     return {
-        asymmetricMatch: function (actual) {
+        asymmetricMatch: function(actual) {
             return typeof actual === 'string' && actual.includes(expected);
         },
-        toString: function () {
+        toString: function() {
             return `StringContaining<${expected}>`;
         }
     };
@@ -594,16 +594,16 @@ expect.stringContaining = function (expected) {
 /**
  * expect.stringMatching() matcher
  */
-expect.stringMatching = function (expected) {
+expect.stringMatching = function(expected) {
     return {
-        asymmetricMatch: function (actual) {
+        asymmetricMatch: function(actual) {
             if (typeof actual !== 'string') {
                 return false;
             }
             const regex = expected instanceof RegExp ? expected : new RegExp(expected);
             return regex.test(actual);
         },
-        toString: function () {
+        toString: function() {
             return `StringMatching<${expected}>`;
         }
     };

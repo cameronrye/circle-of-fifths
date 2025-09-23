@@ -203,7 +203,7 @@ async function watchMode(options) {
 
     let isRunning = false;
 
-    const runTestsDebounced = debounce(async () => {
+    const runTestsDebounced = debounce(async() => {
         if (isRunning) {
             return;
         }

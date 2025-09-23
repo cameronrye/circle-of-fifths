@@ -493,7 +493,7 @@ describe('MusicTheory Module', () => {
             expect(Object.keys(global.MINOR_KEYS)).toHaveLength(15); // Including enharmonic equivalents
             expect(global.MINOR_KEYS['A']).toBeDefined();
             expect(global.MINOR_KEYS['F#']).toBeDefined();
-            expect(global.MINOR_KEYS['Gb']).toBeDefined();
+            expect(global.MINOR_KEYS['Ab']).toBeDefined();
         });
 
         test('CHORD_PROGRESSIONS should contain major and minor progressions', () => {

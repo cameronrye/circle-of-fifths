@@ -172,16 +172,16 @@ describe('Performance Tests', () => {
     function getMemoryUsage() {
         return performance.memory
             ? {
-                  used: performance.memory.usedJSHeapSize,
-                  total: performance.memory.totalJSHeapSize,
-                  limit: performance.memory.jsHeapSizeLimit
-              }
+                used: performance.memory.usedJSHeapSize,
+                total: performance.memory.totalJSHeapSize,
+                limit: performance.memory.jsHeapSizeLimit
+            }
             : null;
     }
 
     describe('Audio Performance', () => {
-        test('should initialize audio context quickly', async () => {
-            const { duration } = await measureAsyncExecutionTime(async () => {
+        test('should initialize audio context quickly', async() => {
+            const { duration } = await measureAsyncExecutionTime(async() => {
                 return await audioEngine.initialize();
             });
 
@@ -189,7 +189,7 @@ describe('Performance Tests', () => {
             expect(duration).toBeLessThan(100);
         });
 
-        test('should have low audio latency', async () => {
+        test('should have low audio latency', async() => {
             await audioEngine.initialize();
 
             const _startTime = mockAudioContext.currentTime;
@@ -199,12 +199,12 @@ describe('Performance Tests', () => {
             expect(performanceMetrics.audioLatency).toBeLessThan(0.05);
         });
 
-        test('should handle multiple simultaneous notes efficiently', async () => {
+        test('should handle multiple simultaneous notes efficiently', async() => {
             await audioEngine.initialize();
 
             const chordNotes = ['C', 'E', 'G', 'B', 'D', 'F#'];
 
-            const { duration } = await measureAsyncExecutionTime(async () => {
+            const { duration } = await measureAsyncExecutionTime(async() => {
                 await audioEngine.playChord(chordNotes, 4, 1);
             });
 
@@ -213,10 +213,10 @@ describe('Performance Tests', () => {
             expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(6);
         });
 
-        test('should efficiently play scales', async () => {
+        test('should efficiently play scales', async() => {
             await audioEngine.initialize();
 
-            const { duration } = await measureAsyncExecutionTime(async () => {
+            const { duration } = await measureAsyncExecutionTime(async() => {
                 await audioEngine.playScale('C', 'major', 4);
             });
 
@@ -225,12 +225,12 @@ describe('Performance Tests', () => {
             expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(7);
         });
 
-        test('should handle rapid note changes', async () => {
+        test('should handle rapid note changes', async() => {
             await audioEngine.initialize();
 
             const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 
-            const { duration } = await measureAsyncExecutionTime(async () => {
+            const { duration } = await measureAsyncExecutionTime(async() => {
                 for (const note of notes) {
                     await audioEngine.playNote(note, 4, 0.1);
                 }
@@ -240,7 +240,7 @@ describe('Performance Tests', () => {
             expect(duration).toBeLessThan(100);
         });
 
-        test('should clean up audio resources efficiently', async () => {
+        test('should clean up audio resources efficiently', async() => {
             await audioEngine.initialize();
             await audioEngine.playNote('C', 4, 1);
 
@@ -347,7 +347,7 @@ describe('Performance Tests', () => {
             }
         });
 
-        test('should clean up audio resources', async () => {
+        test('should clean up audio resources', async() => {
             await audioEngine.initialize();
 
             // Create many audio nodes
@@ -465,7 +465,7 @@ describe('Performance Tests', () => {
             expect(duration).toBeLessThan(20);
         });
 
-        test('should handle concurrent operations', async () => {
+        test('should handle concurrent operations', async() => {
             const operations = [
                 () => musicTheory.getScaleNotes('C', 'major'),
                 () => circleRenderer.selectKey('G'),
@@ -474,7 +474,7 @@ describe('Performance Tests', () => {
                 () => circleRenderer.switchMode('minor')
             ];
 
-            const { duration } = await measureAsyncExecutionTime(async () => {
+            const { duration } = await measureAsyncExecutionTime(async() => {
                 await Promise.all(
                     operations.map(
                         op =>
@@ -506,10 +506,10 @@ describe('Performance Tests', () => {
             expect(duration).toBeLessThan(200);
         });
 
-        test('should maintain performance with many audio nodes', async () => {
+        test('should maintain performance with many audio nodes', async() => {
             await audioEngine.initialize();
 
-            const { duration } = await measureAsyncExecutionTime(async () => {
+            const { duration } = await measureAsyncExecutionTime(async() => {
                 // Create many simultaneous notes
                 const promises = [];
                 for (let i = 0; i < 20; i++) {

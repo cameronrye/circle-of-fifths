@@ -639,12 +639,14 @@ function loadApplicationModules() {
                         const moduleName = path.basename(modulePath, '.js');
                         const className = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
                         global[className] = context.module.exports;
+                        console.log(`  ✅ Exported function: ${className}`);
                     } else if (
                         typeof context.module.exports === 'object' &&
                         Object.keys(context.module.exports).length > 0
                     ) {
                         // Multiple exports (like MusicTheory module)
                         Object.assign(global, context.module.exports);
+                        console.log(`  ✅ Exported objects: ${Object.keys(context.module.exports).join(', ')}`);
                     }
                 }
 
