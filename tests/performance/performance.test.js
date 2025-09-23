@@ -149,10 +149,12 @@ describe('Performance Tests', () => {
             }))
         };
 
-        global.CustomEvent = jest.fn((type, options) => ({
-            type,
-            detail: options?.detail
-        }));
+        global.CustomEvent = function(type, options = {}) {
+            this.type = type;
+            this.detail = options.detail || null;
+            this.bubbles = options.bubbles || false;
+            this.cancelable = options.cancelable || false;
+        };
     }
 
     function measureExecutionTime(fn) {

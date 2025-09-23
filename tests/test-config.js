@@ -59,6 +59,12 @@ function setupTestEnvironment() {
         setupDOMEnvironment();
     }
 
+    // Ensure CustomEvent is available as a proper constructor
+    if (!global.CustomEvent || typeof global.CustomEvent !== 'function') {
+        const { MockCustomEvent } = require('./framework/DOMHelpers');
+        global.CustomEvent = MockCustomEvent;
+    }
+
     // Setup global test utilities
     global.testRunner = new TestRunner(testConfig.runner);
     global.expect = expect;

@@ -9,6 +9,17 @@ describe('ThemeManager Module', () => {
     let themeManager;
 
     beforeEach(() => {
+        // Clear localStorage before each test
+        global.localStorage.clear();
+
+        // Reset window.matchMedia to default mock
+        global.window.matchMedia = (query) => ({
+            matches: false,
+            media: query,
+            addEventListener: jest.fn(),
+            removeEventListener: jest.fn()
+        });
+
         // Use the existing global ThemeManager loaded by DOMHelpers
         themeManager = new global.ThemeManager();
     });
@@ -17,6 +28,8 @@ describe('ThemeManager Module', () => {
         if (themeManager && typeof themeManager.destroy === 'function') {
             themeManager.destroy();
         }
+        // Clear localStorage after each test as well
+        global.localStorage.clear();
     });
 
     describe('Constructor and Initialization', () => {
@@ -135,7 +148,11 @@ describe('ThemeManager Module', () => {
     describe('System Theme Detection', () => {
         test('should detect system theme preference', () => {
             // Mock the media query to return dark mode
-            global.window.matchMedia = () => ({ matches: true });
+            global.window.matchMedia = () => ({
+                matches: true,
+                addEventListener: jest.fn(),
+                removeEventListener: jest.fn()
+            });
 
             const systemTheme = themeManager.getSystemTheme();
 
@@ -144,7 +161,11 @@ describe('ThemeManager Module', () => {
 
         test('should default to light for system theme', () => {
             // Mock the media query to return light mode
-            global.window.matchMedia = () => ({ matches: false });
+            global.window.matchMedia = () => ({
+                matches: false,
+                addEventListener: jest.fn(),
+                removeEventListener: jest.fn()
+            });
 
             const systemTheme = themeManager.getSystemTheme();
 
@@ -153,7 +174,11 @@ describe('ThemeManager Module', () => {
 
         test('should get effective theme for system preference', () => {
             themeManager.currentTheme = 'system';
-            global.window.matchMedia = () => ({ matches: true });
+            global.window.matchMedia = () => ({
+                matches: true,
+                addEventListener: jest.fn(),
+                removeEventListener: jest.fn()
+            });
 
             const effectiveTheme = themeManager.getEffectiveTheme();
 

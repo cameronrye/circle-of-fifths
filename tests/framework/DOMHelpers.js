@@ -536,11 +536,24 @@ class MockWindow {
     }
 
     matchMedia(query) {
+        // Create simple mock functions that don't rely on jest being available yet
+        const createMockFn = () => {
+            const fn = (...args) => {
+                fn.calls.push(args);
+                fn.callCount++;
+            };
+            fn.calls = [];
+            fn.callCount = 0;
+            return fn;
+        };
+
         const mediaQuery = {
-            matches: false,
+            matches: query.includes('dark') ? false : false, // Default to light mode
             media: query,
-            addEventListener: global.jest.fn(),
-            removeEventListener: global.jest.fn()
+            addEventListener: createMockFn(),
+            removeEventListener: createMockFn(),
+            addListener: createMockFn(), // Legacy support
+            removeListener: createMockFn() // Legacy support
         };
         return mediaQuery;
     }
@@ -714,6 +727,7 @@ if (typeof module !== 'undefined' && module.exports) {
         MockDocument,
         MockWindow,
         MockEvent,
+        MockCustomEvent,
         MockStorage,
         MockAudioContext,
         MockAudioNode,
@@ -729,6 +743,7 @@ if (typeof module !== 'undefined' && module.exports) {
         MockDocument,
         MockWindow,
         MockEvent,
+        MockCustomEvent,
         MockStorage,
         MockAudioContext,
         setupDOMEnvironment,

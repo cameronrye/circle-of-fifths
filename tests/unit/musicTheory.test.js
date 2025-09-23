@@ -483,10 +483,11 @@ describe('MusicTheory Module', () => {
         });
 
         test('MAJOR_KEYS should contain all major key signatures', () => {
-            expect(Object.keys(global.MAJOR_KEYS)).toHaveLength(15); // Including enharmonic equivalents
+            expect(Object.keys(global.MAJOR_KEYS)).toHaveLength(16); // Including enharmonic equivalents and A#
             expect(global.MAJOR_KEYS['C']).toBeDefined();
             expect(global.MAJOR_KEYS['F#']).toBeDefined();
             expect(global.MAJOR_KEYS['Gb']).toBeDefined();
+            expect(global.MAJOR_KEYS['A#']).toBeDefined(); // Added A# major
         });
 
         test('MINOR_KEYS should contain all minor key signatures', () => {

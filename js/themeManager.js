@@ -139,6 +139,11 @@ class ThemeManager {
             return false;
         }
 
+        // Don't do anything if theme is unchanged
+        if (this.currentTheme === theme) {
+            return false;
+        }
+
         console.log(`Setting theme to: ${theme}`);
 
         this.currentTheme = theme;
@@ -160,13 +165,19 @@ class ThemeManager {
             html.removeAttribute(`data-theme-${t}`);
         });
 
-        // Set new theme attribute
-        html.setAttribute('data-theme', theme);
+        // Only set theme attribute for valid themes
+        if (this.themes.includes(theme)) {
+            html.setAttribute('data-theme', theme);
 
-        // Update meta theme-color for mobile browsers
-        this.updateMetaThemeColor(theme);
+            // Update meta theme-color for mobile browsers
+            this.updateMetaThemeColor(theme);
 
-        console.log(`Applied theme: ${theme}`);
+            console.log(`Applied theme: ${theme}`);
+        } else {
+            // Remove theme attribute for invalid themes
+            html.removeAttribute('data-theme');
+            console.log(`Invalid theme: ${theme}, removed theme attribute`);
+        }
     }
 
     /**
@@ -255,7 +266,7 @@ class ThemeManager {
             system: 'System'
         };
 
-        return displayNames[theme] || theme;
+        return displayNames[theme] || 'Unknown';
     }
 
     /**
@@ -268,7 +279,20 @@ class ThemeManager {
             system: '💻'
         };
 
-        return icons[theme] || '🎨';
+        return icons[theme] || '❓';
+    }
+
+    /**
+     * Get theme color
+     */
+    getThemeColor(theme) {
+        const colors = {
+            light: '#ffffff',
+            dark: '#2c2c2c',
+            system: this.getSystemTheme() === 'dark' ? '#2c2c2c' : '#ffffff'
+        };
+
+        return colors[theme] || '#3498db';
     }
 
     /**

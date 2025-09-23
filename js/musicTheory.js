@@ -48,6 +48,12 @@ const MAJOR_KEYS = {
         signature: '7 sharps (F#, C#, G#, D#, A#, E#, B#)',
         accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#']
     },
+    'A#': {
+        sharps: 10,
+        flats: 0,
+        signature: '10 sharps (F#, C#, G#, D#, A#, E#, B#, F##, C##, G##)',
+        accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#', 'B#', 'F##', 'C##', 'G##']
+    },
     F: { sharps: 0, flats: 1, signature: '1 flat (Bb)', accidentals: ['Bb'] },
     Bb: { sharps: 0, flats: 2, signature: '2 flats (Bb, Eb)', accidentals: ['Bb', 'Eb'] },
     Eb: { sharps: 0, flats: 3, signature: '3 flats (Bb, Eb, Ab)', accidentals: ['Bb', 'Eb', 'Ab'] },
