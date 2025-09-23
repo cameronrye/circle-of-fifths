@@ -639,7 +639,10 @@ function loadApplicationModules() {
                         const moduleName = path.basename(modulePath, '.js');
                         const className = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
                         global[className] = context.module.exports;
-                    } else if (typeof context.module.exports === 'object' && Object.keys(context.module.exports).length > 0) {
+                    } else if (
+                        typeof context.module.exports === 'object' &&
+                        Object.keys(context.module.exports).length > 0
+                    ) {
                         // Multiple exports (like MusicTheory module)
                         Object.assign(global, context.module.exports);
                     }
@@ -649,9 +652,15 @@ function loadApplicationModules() {
                 if (context.window && typeof context.window === 'object') {
                     // Copy window properties to global
                     for (const prop in context.window) {
-                        if (Object.prototype.hasOwnProperty.call(context.window, prop) &&
-                            prop !== 'window' && prop !== 'document' && prop !== 'localStorage' &&
-                            prop !== 'sessionStorage' && prop !== 'AudioContext' && prop !== 'webkitAudioContext') {
+                        if (
+                            Object.prototype.hasOwnProperty.call(context.window, prop) &&
+                            prop !== 'window' &&
+                            prop !== 'document' &&
+                            prop !== 'localStorage' &&
+                            prop !== 'sessionStorage' &&
+                            prop !== 'AudioContext' &&
+                            prop !== 'webkitAudioContext'
+                        ) {
                             global[prop] = context.window[prop];
                         }
                     }

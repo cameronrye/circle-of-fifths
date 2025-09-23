@@ -2,6 +2,8 @@
 
 A comprehensive web application for learning music theory through an interactive Circle of Fifths visualization. This educational tool combines visual design with audio feedback to help users understand key relationships, scales, and chord progressions.
 
+🌐 **Live Demo**: [https://cameronrye.github.io/circle-of-fifths/](https://cameronrye.github.io/circle-of-fifths/)
+
 ## Features
 
 ### Core Functionality
@@ -202,6 +204,69 @@ A comprehensive web application for learning music theory through an interactive
 - Memory leak prevention
 
 ## Development
+
+### Local Development
+
+1. **Clone the repository**:
+
+    ```bash
+    git clone https://github.com/cameronrye/circle-of-fifths.git
+    cd circle-of-fifths
+    ```
+
+2. **Install dependencies**:
+
+    ```bash
+    npm install
+    ```
+
+3. **Start development server**:
+
+    ```bash
+    npm run serve
+    ```
+
+    The application will be available at `http://localhost:8000`
+
+4. **Run tests**:
+    ```bash
+    npm test
+    ```
+
+### Build and Deployment
+
+#### Building for Production
+
+```bash
+npm run build
+```
+
+This command runs linting, formatting checks, and all tests to ensure the project is ready for deployment.
+
+#### GitHub Pages Deployment
+
+The project is automatically deployed to GitHub Pages when changes are pushed to the main branch. The deployment process:
+
+1. **Automatic Deployment**: GitHub Actions workflow (`.github/workflows/deploy.yml`) handles deployment
+2. **Build Process**: Runs tests, linting, and formatting checks
+3. **Static Hosting**: Deploys to GitHub Pages at `https://cameronrye.github.io/circle-of-fifths/`
+
+#### Manual Deployment
+
+To deploy manually to GitHub Pages:
+
+1. **Ensure all tests pass**:
+
+    ```bash
+    npm run build
+    ```
+
+2. **Push to main branch**:
+    ```bash
+    git push origin main
+    ```
+
+The GitHub Actions workflow will automatically build and deploy the site.
 
 ### Code Organization
 

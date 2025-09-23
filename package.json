@@ -25,7 +25,8 @@
         "lint:fix": "eslint js/ tests/ *.js --fix",
         "format": "prettier --write js/ tests/ *.js *.json *.md css/ *.html",
         "format:check": "prettier --check js/ tests/ *.js *.json *.md css/ *.html",
-        "build": "npm run format:check",
+        "build": "npm run lint && npm run format:check && npm run test:all",
+        "build:production": "npm run build",
         "validate": "npm run build",
         "precommit": "npm run lint:fix && npm run format",
         "test:unit:basic": "node tests/run-tests.js tests/unit/basic.test.js tests/unit/simple.test.js"
@@ -72,12 +73,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/your-username/circle-of-fifths.git"
+        "url": "https://github.com/cameronrye/circle-of-fifths.git"
     },
     "bugs": {
-        "url": "https://github.com/your-username/circle-of-fifths/issues"
+        "url": "https://github.com/cameronrye/circle-of-fifths/issues"
     },
-    "homepage": "https://your-username.github.io/circle-of-fifths/",
+    "homepage": "https://cameronrye.github.io/circle-of-fifths/",
     "browserslist": [
         "> 1%",
         "last 2 versions",

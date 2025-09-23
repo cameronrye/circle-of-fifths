@@ -5,6 +5,7 @@
 The Web Audio API 1.1 is a high-level JavaScript API for processing and synthesizing audio in web applications. It provides a powerful, versatile system for controlling audio on the Web, allowing developers to choose audio sources, add effects to audio, create audio visualizations, apply spatial effects (such as panning), and much more.
 
 ### Core Purpose and Capabilities
+
 - **Real-time audio processing**: Low-latency audio manipulation and synthesis
 - **Modular audio graph architecture**: Node-based system for audio routing and processing
 - **3D spatial audio**: Positioning and movement of audio sources in 3D space
@@ -25,11 +26,13 @@ const offlineContext = new OfflineAudioContext(channels, length, sampleRate);
 ```
 
 #### AudioContext States
+
 - **`suspended`**: Context is not processing audio (initial state)
 - **`running`**: Context is actively processing audio
 - **`closed`**: Context has been permanently shut down
 
 #### Key Properties and Methods
+
 - `currentTime`: Current time in seconds (read-only, monotonically increasing)
 - `sampleRate`: Sample rate of the audio context (typically 44100 Hz)
 - `state`: Current state of the context
@@ -48,6 +51,7 @@ The Web Audio API uses a directed graph of audio nodes connected together. Audio
 ```
 
 #### Connection Principles
+
 - Nodes are connected using `connect()` and disconnected using `disconnect()`
 - Multiple connections are allowed (fan-out and fan-in)
 - Connections are directional (output → input)
@@ -67,7 +71,7 @@ interface AudioNode {
     attribute unsigned long channelCount;
     attribute ChannelCountMode channelCountMode;
     attribute ChannelInterpretation channelInterpretation;
-    
+
     AudioNode connect(AudioNode destination, optional unsigned long output = 0, optional unsigned long input = 0);
     void disconnect();
     void disconnect(unsigned long output);
@@ -80,6 +84,7 @@ interface AudioNode {
 ### 2.2 Source Nodes (Audio Generators)
 
 #### OscillatorNode
+
 Generates periodic waveforms (sine, square, sawtooth, triangle, custom).
 
 ```javascript
@@ -91,12 +96,14 @@ oscillator.stop(audioContext.currentTime + 1); // Play for 1 second
 ```
 
 **Key Properties:**
+
 - `frequency`: AudioParam for frequency control
 - `detune`: AudioParam for fine-tuning in cents
 - `type`: Waveform type
 - `setPeriodicWave()`: Set custom waveform
 
 #### AudioBufferSourceNode
+
 Plays back audio data stored in an AudioBuffer.
 
 ```javascript
@@ -109,12 +116,14 @@ bufferSource.start();
 ```
 
 **Key Properties:**
+
 - `buffer`: AudioBuffer containing audio data
 - `loop`: Boolean for looping playback
 - `loopStart`/`loopEnd`: Loop points in seconds
 - `playbackRate`: AudioParam for playback speed
 
 #### MediaElementAudioSourceNode
+
 Wraps HTML `<audio>` or `<video>` elements for use in audio graph.
 
 ```javascript
@@ -123,18 +132,19 @@ const source = audioContext.createMediaElementSource(audioElement);
 ```
 
 #### MediaStreamAudioSourceNode
+
 Processes audio from MediaStream (microphone, screen capture, etc.).
 
 ```javascript
-navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(stream => {
-        const source = audioContext.createMediaStreamSource(stream);
-    });
+navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    const source = audioContext.createMediaStreamSource(stream);
+});
 ```
 
 ### 2.3 Processing Nodes (Audio Effects)
 
 #### GainNode
+
 Controls volume/amplitude of audio signals.
 
 ```javascript
@@ -144,6 +154,7 @@ gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 2); // Fade 
 ```
 
 #### BiquadFilterNode
+
 Implements various types of filters (lowpass, highpass, bandpass, etc.).
 
 ```javascript
@@ -155,6 +166,7 @@ filter.gain.setValueAtTime(0, audioContext.currentTime); // For peaking/shelving
 ```
 
 **Filter Types:**
+
 - `lowpass`: Allows frequencies below cutoff
 - `highpass`: Allows frequencies above cutoff
 - `bandpass`: Allows frequencies within a range
@@ -165,6 +177,7 @@ filter.gain.setValueAtTime(0, audioContext.currentTime); // For peaking/shelving
 - `allpass`: Changes phase without affecting amplitude
 
 #### DelayNode
+
 Introduces time delay to audio signals.
 
 ```javascript
@@ -173,6 +186,7 @@ delay.delayTime.setValueAtTime(0.3, audioContext.currentTime); // 300ms delay
 ```
 
 #### ConvolverNode
+
 Applies convolution-based effects (reverb, impulse responses).
 
 ```javascript
@@ -182,6 +196,7 @@ convolver.normalize = true; // Automatically normalize impulse response
 ```
 
 #### DynamicsCompressorNode
+
 Applies dynamic range compression.
 
 ```javascript
@@ -194,6 +209,7 @@ compressor.release.setValueAtTime(0.25, audioContext.currentTime); // 250ms
 ```
 
 #### WaveShaperNode
+
 Applies non-linear distortion using a curve.
 
 ```javascript
@@ -205,6 +221,7 @@ shaper.oversample = '4x'; // 'none', '2x', '4x'
 ### 2.4 Spatial Audio Nodes
 
 #### PannerNode
+
 Positions audio sources in 3D space with distance and directional effects.
 
 ```javascript
@@ -230,6 +247,7 @@ panner.orientationZ.setValueAtTime(-1, audioContext.currentTime);
 ```
 
 #### StereoPannerNode
+
 Simple left-right stereo panning.
 
 ```javascript
@@ -240,6 +258,7 @@ stereoPanner.pan.setValueAtTime(-1, audioContext.currentTime); // Full left
 ### 2.5 Analysis Nodes
 
 #### AnalyserNode
+
 Provides real-time frequency and time-domain analysis.
 
 ```javascript
@@ -261,6 +280,7 @@ analyser.getByteTimeDomainData(timeData);
 ### 2.6 Utility Nodes
 
 #### ChannelSplitterNode / ChannelMergerNode
+
 Split multi-channel audio into separate outputs or merge separate inputs.
 
 ```javascript
@@ -287,7 +307,7 @@ interface AudioParam {
     readonly attribute float defaultValue;
     readonly attribute float minValue;
     readonly attribute float maxValue;
-    
+
     AudioParam setValueAtTime(float value, double startTime);
     AudioParam linearRampToValueAtTime(float value, double endTime);
     AudioParam exponentialRampToValueAtTime(float value, double endTime);
@@ -301,11 +321,13 @@ interface AudioParam {
 ### 3.2 Automation Methods
 
 #### Immediate Value Changes
+
 ```javascript
 gainNode.gain.value = 0.5; // Immediate change (can cause clicks)
 ```
 
 #### Scheduled Value Changes
+
 ```javascript
 const now = audioContext.currentTime;
 gainNode.gain.setValueAtTime(0, now); // Start at 0
@@ -314,12 +336,14 @@ gainNode.gain.exponentialRampToValueAtTime(0.001, now + 4); // Exponential fade 
 ```
 
 #### Target Value with Time Constant
+
 ```javascript
 // Approach target value exponentially
 filter.frequency.setTargetAtTime(1000, now, 0.1); // 63% of way to 1000Hz in 0.1s
 ```
 
 #### Value Curves
+
 ```javascript
 // Custom automation curve
 const curve = new Float32Array([0, 0.2, 0.8, 1, 0.9, 0.3, 0]);
@@ -381,7 +405,7 @@ const buffer = audioContext.createBuffer(channels, length, sampleRate);
 // Fill with data
 const channelData = buffer.getChannelData(0); // Get first channel
 for (let i = 0; i < channelData.length; i++) {
-    channelData[i] = Math.sin(2 * Math.PI * 440 * i / sampleRate); // 440Hz sine wave
+    channelData[i] = Math.sin((2 * Math.PI * 440 * i) / sampleRate); // 440Hz sine wave
 }
 ```
 
@@ -409,21 +433,22 @@ const workletNode = new AudioWorkletNode(audioContext, 'my-processor');
 ```
 
 **my-processor.js:**
+
 ```javascript
 class MyProcessor extends AudioWorkletProcessor {
     process(inputs, outputs, parameters) {
         const input = inputs[0];
         const output = outputs[0];
-        
+
         for (let channel = 0; channel < output.length; ++channel) {
             const inputChannel = input[channel];
             const outputChannel = output[channel];
-            
+
             for (let i = 0; i < outputChannel.length; ++i) {
                 outputChannel[i] = inputChannel[i] * 0.5; // Simple gain
             }
         }
-        
+
         return true; // Keep processor alive
     }
 }
@@ -441,11 +466,15 @@ Modern browsers require user activation before allowing audio playback to preven
 // Check if context is suspended due to autoplay policy
 if (audioContext.state === 'suspended') {
     // Must be called from user gesture (click, touch, etc.)
-    document.addEventListener('click', () => {
-        audioContext.resume().then(() => {
-            console.log('Audio context resumed');
-        });
-    }, { once: true });
+    document.addEventListener(
+        'click',
+        () => {
+            audioContext.resume().then(() => {
+                console.log('Audio context resumed');
+            });
+        },
+        { once: true }
+    );
 }
 ```
 
@@ -457,8 +486,9 @@ Audio resources loaded from different origins are subject to CORS policies:
 // For cross-origin audio files, server must include CORS headers
 fetch('https://example.com/audio.mp3', {
     mode: 'cors'
-}).then(response => response.arrayBuffer())
-  .then(data => audioContext.decodeAudioData(data));
+})
+    .then(response => response.arrayBuffer())
+    .then(data => audioContext.decodeAudioData(data));
 ```
 
 ### 6.3 Fingerprinting Protection
@@ -553,13 +583,12 @@ if ('AudioWorklet' in window) {
 ```javascript
 // Handle vendor prefixes
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
-navigator.getUserMedia = navigator.getUserMedia ||
-                        navigator.webkitGetUserMedia ||
-                        navigator.mozGetUserMedia;
+navigator.getUserMedia =
+    navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 // Polyfill for older browsers
 if (!AudioContext.prototype.createStereoPanner) {
-    AudioContext.prototype.createStereoPanner = function() {
+    AudioContext.prototype.createStereoPanner = function () {
         // Fallback implementation using GainNodes
         return createStereoPannerPolyfill(this);
     };
@@ -580,28 +609,26 @@ if (!AudioContext.prototype.createStereoPanner) {
 
 ```javascript
 // Microphone input
-navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(stream => {
-        const source = audioContext.createMediaStreamSource(stream);
-        const analyser = audioContext.createAnalyser();
-        source.connect(analyser);
+navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+    source.connect(analyser);
 
-        // Real-time audio analysis
-        function analyze() {
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(dataArray);
-            // Process frequency data
-            requestAnimationFrame(analyze);
-        }
-        analyze();
-    });
+    // Real-time audio analysis
+    function analyze() {
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+        // Process frequency data
+        requestAnimationFrame(analyze);
+    }
+    analyze();
+});
 
 // Screen capture audio
-navigator.mediaDevices.getDisplayMedia({ audio: true })
-    .then(stream => {
-        const source = audioContext.createMediaStreamSource(stream);
-        // Process screen audio
-    });
+navigator.mediaDevices.getDisplayMedia({ audio: true }).then(stream => {
+    const source = audioContext.createMediaStreamSource(stream);
+    // Process screen audio
+});
 ```
 
 ### 9.2 MediaRecorder Integration
@@ -614,7 +641,7 @@ processedAudioNode.connect(destination);
 const mediaRecorder = new MediaRecorder(destination.stream);
 const chunks = [];
 
-mediaRecorder.ondataavailable = (event) => {
+mediaRecorder.ondataavailable = event => {
     chunks.push(event.data);
 };
 
@@ -641,7 +668,7 @@ worker.postMessage({
     sampleRate: audioContext.sampleRate
 });
 
-worker.onmessage = (event) => {
+worker.onmessage = event => {
     const processedData = event.data.result;
     // Use processed data in audio graph
 };
@@ -716,10 +743,10 @@ function createEffectsChain(source) {
     return {
         input,
         output,
-        setFilterFrequency: (freq) => filter.frequency.value = freq,
-        setDelayTime: (time) => delay.delayTime.value = time,
-        setFeedback: (amount) => feedback.gain.value = amount,
-        setWetDryMix: (wet) => {
+        setFilterFrequency: freq => (filter.frequency.value = freq),
+        setDelayTime: time => (delay.delayTime.value = time),
+        setFeedback: amount => (feedback.gain.value = amount),
+        setWetDryMix: wet => {
             wetGain.gain.value = wet;
             dryGain.gain.value = 1 - wet;
         }
@@ -810,7 +837,8 @@ try {
 }
 
 // Handle decoding errors
-audioContext.decodeAudioData(arrayBuffer)
+audioContext
+    .decodeAudioData(arrayBuffer)
     .then(audioBuffer => {
         // Success
     })
@@ -857,7 +885,8 @@ function monitorAudioPerformance() {
         const endTime = performance.now();
         const processingTime = endTime - startTime;
 
-        if (processingTime > 16.67) { // More than one frame at 60fps
+        if (processingTime > 16.67) {
+            // More than one frame at 60fps
             console.warn(`Audio processing took ${processingTime}ms`);
         }
     });
@@ -908,6 +937,7 @@ class EfficientProcessor extends AudioWorkletProcessor {
 ### 12.2 Web Audio API 2.0 Considerations
 
 Future versions of the Web Audio API may include:
+
 - Enhanced spatial audio capabilities
 - Better integration with WebXR
 - Improved performance and lower latency
@@ -953,6 +983,7 @@ function createPerformanceMonitor(audioContext) {
 The Web Audio API 1.1 provides a comprehensive framework for audio processing in web applications. Key points for LLM understanding:
 
 ### Essential Concepts
+
 1. **AudioContext is central** - All audio operations happen within an AudioContext
 2. **Node-based architecture** - Audio flows through connected nodes in a directed graph
 3. **Sample-accurate timing** - All scheduling is precise to the sample level
@@ -960,6 +991,7 @@ The Web Audio API 1.1 provides a comprehensive framework for audio processing in
 5. **User activation required** - Modern browsers require user gesture before audio playback
 
 ### Best Practices for Implementation
+
 1. Always check browser support and handle graceful degradation
 2. Use automation methods instead of direct value changes
 3. Properly manage memory by disconnecting nodes and closing contexts
@@ -967,6 +999,7 @@ The Web Audio API 1.1 provides a comprehensive framework for audio processing in
 5. Handle errors gracefully and provide user feedback
 
 ### Common Pitfalls to Avoid
+
 1. Creating too many nodes in real-time code
 2. Not handling autoplay policies
 3. Forgetting to connect nodes to the destination

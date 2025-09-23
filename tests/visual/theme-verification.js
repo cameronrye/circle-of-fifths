@@ -97,8 +97,11 @@ class ThemeVerificationTest {
         const backgroundCircle = svg.querySelector('.background-circle');
         if (backgroundCircle) {
             const fill = getComputedStyle(backgroundCircle).fill;
-            this.addResult(theme, fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
-                `Background circle fill: ${fill}`);
+            this.addResult(
+                theme,
+                fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
+                `Background circle fill: ${fill}`
+            );
         } else {
             this.addResult(theme, 'FAIL', 'Background circle element not found');
         }
@@ -108,8 +111,11 @@ class ThemeVerificationTest {
         if (centerCircle) {
             const fill = getComputedStyle(centerCircle).fill;
             const stroke = getComputedStyle(centerCircle).stroke;
-            this.addResult(theme, fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
-                `Center circle fill: ${fill}, stroke: ${stroke}`);
+            this.addResult(
+                theme,
+                fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
+                `Center circle fill: ${fill}, stroke: ${stroke}`
+            );
         } else {
             this.addResult(theme, 'FAIL', 'Center circle element not found');
         }
@@ -128,8 +134,11 @@ class ThemeVerificationTest {
         centerElements.forEach(({ element, name }) => {
             if (element) {
                 const fill = getComputedStyle(element).fill;
-                this.addResult(theme, fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
-                    `${name} fill: ${fill}`);
+                this.addResult(
+                    theme,
+                    fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
+                    `${name} fill: ${fill}`
+                );
             } else {
                 this.addResult(theme, 'FAIL', `${name} element not found`);
             }
@@ -141,8 +150,11 @@ class ThemeVerificationTest {
             segmentPaths.forEach((path, index) => {
                 const fill = getComputedStyle(path).fill;
                 const stroke = getComputedStyle(path).stroke;
-                this.addResult(theme, fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
-                    `Segment path ${index} fill: ${fill}, stroke: ${stroke}`);
+                this.addResult(
+                    theme,
+                    fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
+                    `Segment path ${index} fill: ${fill}, stroke: ${stroke}`
+                );
             });
         } else {
             this.addResult(theme, 'FAIL', 'No segment paths found - circle may not be rendered');
@@ -153,8 +165,11 @@ class ThemeVerificationTest {
         if (keyTexts.length > 0) {
             keyTexts.forEach((text, index) => {
                 const fill = getComputedStyle(text).fill;
-                this.addResult(theme, fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
-                    `Key text ${index} fill: ${fill}`);
+                this.addResult(
+                    theme,
+                    fill !== 'none' && fill !== '' ? 'PASS' : 'FAIL',
+                    `Key text ${index} fill: ${fill}`
+                );
             });
         } else {
             this.addResult(theme, 'FAIL', 'No key text elements found');
@@ -171,7 +186,8 @@ class ThemeVerificationTest {
             const color = computedStyle.color;
             const borderColor = computedStyle.borderColor;
 
-            this.addResult(theme,
+            this.addResult(
+                theme,
                 backgroundColor !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Related key ${relationship} - bg: ${backgroundColor}, color: ${color}, border: ${borderColor}`
             );
@@ -187,7 +203,8 @@ class ThemeVerificationTest {
             const color = computedStyle.color;
             const borderColor = computedStyle.borderColor;
 
-            this.addResult(theme,
+            this.addResult(
+                theme,
                 backgroundColor !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Audio button ${index} - bg: ${backgroundColor}, color: ${color}, border: ${borderColor}`
             );
@@ -201,7 +218,8 @@ class ThemeVerificationTest {
             const backgroundColor = computedStyle.backgroundColor;
             const boxShadow = computedStyle.boxShadow;
 
-            this.addResult(theme,
+            this.addResult(
+                theme,
                 backgroundColor !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Info panel - bg: ${backgroundColor}, shadow: ${boxShadow}`
             );
@@ -210,8 +228,11 @@ class ThemeVerificationTest {
         const infoTitle = document.querySelector('.info-title');
         if (infoTitle) {
             const color = getComputedStyle(infoTitle).color;
-            this.addResult(theme, color !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
-                `Info title color: ${color}`);
+            this.addResult(
+                theme,
+                color !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
+                `Info title color: ${color}`
+            );
         }
     }
 
@@ -221,8 +242,11 @@ class ThemeVerificationTest {
             const computedStyle = getComputedStyle(themeBtn);
             const color = computedStyle.color;
 
-            this.addResult(theme, color !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
-                `Theme button color: ${color}`);
+            this.addResult(
+                theme,
+                color !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
+                `Theme button color: ${color}`
+            );
         }
 
         const themeOptions = document.querySelectorAll('.theme-option');
@@ -230,8 +254,11 @@ class ThemeVerificationTest {
             const computedStyle = getComputedStyle(option);
             const color = computedStyle.color;
 
-            this.addResult(theme, color !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
-                `Theme option ${index} color: ${color}`);
+            this.addResult(
+                theme,
+                color !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
+                `Theme option ${index} color: ${color}`
+            );
         });
     }
 
@@ -242,7 +269,8 @@ class ThemeVerificationTest {
             const borderColor = computedStyle.borderColor;
             const borderTopColor = computedStyle.borderTopColor;
 
-            this.addResult(theme,
+            this.addResult(
+                theme,
                 borderColor !== 'rgba(0, 0, 0, 0)' ? 'PASS' : 'FAIL',
                 `Loading spinner - border: ${borderColor}, top: ${borderTopColor}`
             );
@@ -257,7 +285,7 @@ class ThemeVerificationTest {
 
     generateReport() {
         console.log('\n📊 Theme Verification Report');
-        console.log('=' .repeat(50));
+        console.log('='.repeat(50));
 
         const summary = this.results.reduce((acc, result) => {
             if (!acc[result.theme]) {
@@ -280,7 +308,9 @@ class ThemeVerificationTest {
                     console.log(`    • ${failure}`);
                 });
             }
-            if (counts.ERROR > 0) { console.log(`  ⚠️ ${counts.ERROR} errors`); }
+            if (counts.ERROR > 0) {
+                console.log(`  ⚠️ ${counts.ERROR} errors`);
+            }
         }
 
         const overallPass = this.results.filter(r => r.status === 'PASS').length;

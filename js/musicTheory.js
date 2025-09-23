@@ -329,10 +329,10 @@ class MusicTheory {
 
         // Normalize mode names to match SCALE_PATTERNS keys
         const modeMap = {
-            'major': 'major',
-            'minor': 'minor',
-            'harmonicminor': 'harmonicMinor',
-            'melodicminor': 'melodicMinor'
+            major: 'major',
+            minor: 'minor',
+            harmonicminor: 'harmonicMinor',
+            melodicminor: 'melodicMinor'
         };
 
         const normalizedMode = modeMap[mode.toLowerCase()] || mode.toLowerCase();
@@ -347,7 +347,10 @@ class MusicTheory {
 
         // Get the key signature to determine proper accidentals
         // For harmonic and melodic minor, use the natural minor key signature as base
-        const baseMode = (normalizedMode === 'harmonicMinor' || normalizedMode === 'melodicMinor') ? 'minor' : normalizedMode;
+        const baseMode =
+            normalizedMode === 'harmonicMinor' || normalizedMode === 'melodicMinor'
+                ? 'minor'
+                : normalizedMode;
         const keySignature = this.getKeySignature(key, baseMode === 'minor' ? 'minor' : 'major');
         const useFlats = keySignature.flats > 0;
 
@@ -434,8 +437,12 @@ class MusicTheory {
         const subdominantRaw = CIRCLE_OF_FIFTHS[(keyIndex - 1 + 12) % 12];
 
         // Convert to proper enharmonic equivalents if needed
-        const dominant = useFlats && NOTES.enharmonic[dominantRaw] ? NOTES.enharmonic[dominantRaw] : dominantRaw;
-        const subdominant = useFlats && NOTES.enharmonic[subdominantRaw] ? NOTES.enharmonic[subdominantRaw] : subdominantRaw;
+        const dominant =
+            useFlats && NOTES.enharmonic[dominantRaw] ? NOTES.enharmonic[dominantRaw] : dominantRaw;
+        const subdominant =
+            useFlats && NOTES.enharmonic[subdominantRaw]
+                ? NOTES.enharmonic[subdominantRaw]
+                : subdominantRaw;
 
         let relative;
         if (mode === 'major') {

@@ -74,26 +74,44 @@ class ThemeSystemTester {
         this.test('Theme manager structure', () => {
             if (this.fileExists('js/themeManager.js')) {
                 const jsContent = this.readFile('js/themeManager.js');
-                this.assert(jsContent.includes('class ThemeManager'), 'Should contain ThemeManager class');
+                this.assert(
+                    jsContent.includes('class ThemeManager'),
+                    'Should contain ThemeManager class'
+                );
                 this.assert(jsContent.includes('setTheme'), 'Should contain setTheme method');
-                this.assert(jsContent.includes('getCurrentTheme'), 'Should contain getCurrentTheme method');
+                this.assert(
+                    jsContent.includes('getCurrentTheme'),
+                    'Should contain getCurrentTheme method'
+                );
             }
         });
 
         // Test 5: Check theme test files
         this.test('Theme test files exist', () => {
-            this.assert(this.fileExists('theme-test-full.html'), 'Full theme test file should exist');
-            this.assert(this.fileExists('test-theme-switching.html'), 'Theme switching test file should exist');
+            this.assert(
+                this.fileExists('theme-test-full.html'),
+                'Full theme test file should exist'
+            );
+            this.assert(
+                this.fileExists('test-theme-switching.html'),
+                'Theme switching test file should exist'
+            );
         });
 
         // Test 6: Check theme verification
         this.test('Theme verification script exists', () => {
-            this.assert(this.fileExists('tests/visual/theme-verification.js'), 'Theme verification script should exist');
+            this.assert(
+                this.fileExists('tests/visual/theme-verification.js'),
+                'Theme verification script should exist'
+            );
         });
 
         // Test 7: Check documentation
         this.test('Theme documentation exists', () => {
-            this.assert(this.fileExists('THEME_FIXES_SUMMARY.md'), 'Theme fixes documentation should exist');
+            this.assert(
+                this.fileExists('THEME_FIXES_SUMMARY.md'),
+                'Theme fixes documentation should exist'
+            );
         });
 
         this.log(`\nTest Results: ${this.passed} passed, ${this.failed} failed`);

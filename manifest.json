@@ -2,7 +2,7 @@
     "name": "Interactive Circle of Fifths",
     "short_name": "Circle of Fifths",
     "description": "Learn music theory with an interactive Circle of Fifths. Explore key signatures, scales, and chord progressions with audio playback.",
-    "start_url": "/",
+    "start_url": "./",
     "display": "standalone",
     "background_color": "#ecf0f1",
     "theme_color": "#3498db",
@@ -11,7 +11,7 @@
     "lang": "en",
     "icons": [
         {
-            "src": "assets/favicon.svg",
+            "src": "./assets/favicon.svg",
             "sizes": "any",
             "type": "image/svg+xml",
             "purpose": "any maskable"
@@ -19,13 +19,13 @@
     ],
     "screenshots": [
         {
-            "src": "assets/screenshot-wide.png",
+            "src": "./assets/screenshot-wide.png",
             "sizes": "1280x720",
             "type": "image/png",
             "form_factor": "wide"
         },
         {
-            "src": "assets/screenshot-narrow.png",
+            "src": "./assets/screenshot-narrow.png",
             "sizes": "640x1136",
             "type": "image/png",
             "form_factor": "narrow"

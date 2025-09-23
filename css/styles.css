@@ -202,7 +202,7 @@ body {
 /* ===== ACCESSIBILITY ===== */
 .skip-link {
     position: absolute;
-    top: -40px;
+    top: -100px;
     left: 6px;
     background: #000000; /* High contrast black background */
     color: #ffffff !important; /* High contrast white text */
@@ -212,12 +212,16 @@ body {
     z-index: 1000;
     transition: top var(--transition-fast);
     font-weight: 600; /* Additional contrast improvement */
+    opacity: 0;
+    visibility: hidden;
 }
 
 .skip-link:focus {
     top: 6px;
     background: #000000; /* High contrast black background */
     color: #ffffff !important; /* High contrast white text */
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Screen reader only content */
@@ -1005,9 +1009,9 @@ body.advanced .advanced-only {
 
 /* ===== ACCESSIBILITY IMPROVEMENTS ===== */
 /* Ensure spans with relationship data have sufficient contrast */
-span[data-relationship="dominant"],
-span[data-relationship="subdominant"],
-span[data-relationship="relative"] {
+span[data-relationship='dominant'],
+span[data-relationship='subdominant'],
+span[data-relationship='relative'] {
     color: var(--primary-color);
     font-weight: 600;
 }

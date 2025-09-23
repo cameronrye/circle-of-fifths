@@ -401,9 +401,9 @@ class CircleOfFifthsApp {
             interactions: this.interactionsHandler ? this.interactionsHandler.getState() : null,
             theme: this.themeManager
                 ? {
-                    current: this.themeManager.getCurrentTheme(),
-                    effective: this.themeManager.getEffectiveTheme()
-                }
+                      current: this.themeManager.getCurrentTheme(),
+                      effective: this.themeManager.getEffectiveTheme()
+                  }
                 : null
         };
     }
@@ -468,7 +468,7 @@ class CircleOfFifthsApp {
 // Initialize application when DOM is ready
 let app;
 
-document.addEventListener('DOMContentLoaded', async() => {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
         app = new CircleOfFifthsApp();
         await app.init();

@@ -173,7 +173,14 @@ class CircleRenderer {
      */
     updateSegmentClasses(pathElement, key) {
         // Remove all existing color classes
-        pathElement.classList.remove('major', 'minor', 'selected', 'dominant', 'subdominant', 'relative');
+        pathElement.classList.remove(
+            'major',
+            'minor',
+            'selected',
+            'dominant',
+            'subdominant',
+            'relative'
+        );
 
         if (key === this.selectedKey) {
             pathElement.classList.add('selected');

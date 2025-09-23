@@ -87,7 +87,7 @@ describe('AudioEngine Module', () => {
     });
 
     describe('initialize()', () => {
-        test('should initialize audio context successfully', async() => {
+        test('should initialize audio context successfully', async () => {
             mockAudioContext.state = 'suspended';
 
             const result = await audioEngine.initialize();
@@ -101,7 +101,7 @@ describe('AudioEngine Module', () => {
             expect(mockAudioContext.resume).toHaveBeenCalled();
         });
 
-        test('should not reinitialize if already initialized', async() => {
+        test('should not reinitialize if already initialized', async () => {
             audioEngine.isInitialized = true;
 
             const result = await audioEngine.initialize();
@@ -110,7 +110,7 @@ describe('AudioEngine Module', () => {
             expect(global.AudioContext).not.toHaveBeenCalled();
         });
 
-        test('should handle initialization errors gracefully', async() => {
+        test('should handle initialization errors gracefully', async () => {
             global.AudioContext = jest.fn(() => {
                 throw new Error('AudioContext not supported');
             });
@@ -121,7 +121,7 @@ describe('AudioEngine Module', () => {
             expect(audioEngine.isInitialized).toBe(false);
         });
 
-        test('should use webkitAudioContext as fallback', async() => {
+        test('should use webkitAudioContext as fallback', async () => {
             global.AudioContext = undefined;
 
             await audioEngine.initialize();
@@ -129,7 +129,7 @@ describe('AudioEngine Module', () => {
             expect(global.webkitAudioContext).toHaveBeenCalled();
         });
 
-        test('should set master gain volume correctly', async() => {
+        test('should set master gain volume correctly', async () => {
             await audioEngine.initialize();
 
             expect(mockGainNode.gain.value).toBe(0.3);
@@ -137,7 +137,7 @@ describe('AudioEngine Module', () => {
     });
 
     describe('createOscillator()', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
             await audioEngine.initialize();
         });
 
@@ -198,11 +198,11 @@ describe('AudioEngine Module', () => {
     });
 
     describe('playNote()', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
             await audioEngine.initialize();
         });
 
-        test('should play a single note', async() => {
+        test('should play a single note', async () => {
             await audioEngine.playNote('A', 4, 1);
 
             expect(mockOscillator.start).toHaveBeenCalled();
@@ -210,7 +210,7 @@ describe('AudioEngine Module', () => {
             expect(audioEngine.currentlyPlaying.has(mockOscillator)).toBe(true);
         });
 
-        test('should use correct frequency for note', async() => {
+        test('should use correct frequency for note', async () => {
             await audioEngine.playNote('A', 4, 1);
 
             expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
@@ -219,7 +219,7 @@ describe('AudioEngine Module', () => {
             );
         });
 
-        test('should handle different octaves', async() => {
+        test('should handle different octaves', async () => {
             await audioEngine.playNote('A', 5, 1);
 
             expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
@@ -228,7 +228,7 @@ describe('AudioEngine Module', () => {
             );
         });
 
-        test('should use default duration if not specified', async() => {
+        test('should use default duration if not specified', async () => {
             await audioEngine.playNote('A', 4);
 
             const calls = mockOscillator.stop.mock.calls;
@@ -239,7 +239,7 @@ describe('AudioEngine Module', () => {
             expect(stopTime - startTime).toBeCloseTo(audioEngine.settings.noteLength, 2);
         });
 
-        test('should initialize audio context if not initialized', async() => {
+        test('should initialize audio context if not initialized', async () => {
             audioEngine.isInitialized = false;
 
             await audioEngine.playNote('A', 4, 1);
@@ -247,7 +247,7 @@ describe('AudioEngine Module', () => {
             expect(audioEngine.isInitialized).toBe(true);
         });
 
-        test('should clean up oscillator when note ends', async() => {
+        test('should clean up oscillator when note ends', async () => {
             await audioEngine.playNote('A', 4, 1);
 
             expect(mockOscillator.addEventListener).toHaveBeenCalledWith(
@@ -266,11 +266,11 @@ describe('AudioEngine Module', () => {
     });
 
     describe('playChord()', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
             await audioEngine.initialize();
         });
 
-        test('should play multiple notes simultaneously', async() => {
+        test('should play multiple notes simultaneously', async () => {
             const chordNotes = ['C', 'E', 'G'];
 
             await audioEngine.playChord(chordNotes, 4, 1.5);
@@ -280,7 +280,7 @@ describe('AudioEngine Module', () => {
             expect(mockOscillator.stop).toHaveBeenCalledTimes(3);
         });
 
-        test('should use correct chord duration', async() => {
+        test('should use correct chord duration', async () => {
             const chordNotes = ['C', 'E', 'G'];
             const duration = 2.0;
 
@@ -291,7 +291,7 @@ describe('AudioEngine Module', () => {
             expect(stopTime - startTime).toBeCloseTo(duration, 2);
         });
 
-        test('should use default chord length if duration not specified', async() => {
+        test('should use default chord length if duration not specified', async () => {
             const chordNotes = ['C', 'E', 'G'];
 
             await audioEngine.playChord(chordNotes, 4);
@@ -301,7 +301,7 @@ describe('AudioEngine Module', () => {
             expect(stopTime - startTime).toBeCloseTo(audioEngine.settings.chordLength, 2);
         });
 
-        test('should spread notes across octaves if needed', async() => {
+        test('should spread notes across octaves if needed', async () => {
             const manyNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'];
 
             await audioEngine.playChord(manyNotes, 4);
@@ -312,11 +312,11 @@ describe('AudioEngine Module', () => {
     });
 
     describe('playScale()', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
             await audioEngine.initialize();
         });
 
-        test('should play scale notes in sequence', async() => {
+        test('should play scale notes in sequence', async () => {
             await audioEngine.playScale('C', 'major', 4, true);
 
             // Should create 7 oscillators for major scale
@@ -325,7 +325,7 @@ describe('AudioEngine Module', () => {
             expect(mockOscillator.stop).toHaveBeenCalledTimes(7);
         });
 
-        test('should play ascending scale by default', async() => {
+        test('should play ascending scale by default', async () => {
             await audioEngine.playScale('C', 'major', 4);
 
             // First note should be C (frequency ~261.63)
@@ -333,7 +333,7 @@ describe('AudioEngine Module', () => {
             expect(firstCall[0]).toBeCloseTo(261.63, 1);
         });
 
-        test('should play descending scale when specified', async() => {
+        test('should play descending scale when specified', async () => {
             await audioEngine.playScale('C', 'major', 4, false);
 
             // First note should be B (frequency ~493.88)
@@ -341,7 +341,7 @@ describe('AudioEngine Module', () => {
             expect(firstCall[0]).toBeCloseTo(493.88, 1);
         });
 
-        test('should use shorter note duration for scales', async() => {
+        test('should use shorter note duration for scales', async () => {
             await audioEngine.playScale('C', 'major', 4);
 
             const startTimes = mockOscillator.start.mock.calls.map(call => call[0]);
@@ -352,7 +352,7 @@ describe('AudioEngine Module', () => {
             expect(stopTimes[0] - startTimes[0]).toBeCloseTo(expectedDuration, 2);
         });
 
-        test('should space notes with slight overlap', async() => {
+        test('should space notes with slight overlap', async () => {
             mockAudioContext.currentTime = 0;
 
             await audioEngine.playScale('C', 'major', 4);
@@ -364,7 +364,7 @@ describe('AudioEngine Module', () => {
             expect(startTimes[1] - startTimes[0]).toBeCloseTo(expectedSpacing, 2);
         });
 
-        test('should handle different modes', async() => {
+        test('should handle different modes', async () => {
             await audioEngine.playScale('A', 'minor', 4);
 
             expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(7);
@@ -372,18 +372,18 @@ describe('AudioEngine Module', () => {
     });
 
     describe('playProgression()', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
             await audioEngine.initialize();
         });
 
-        test('should play chord progression', async() => {
+        test('should play chord progression', async () => {
             await audioEngine.playProgression('C', 'major', 'I-V-vi-IV');
 
             // Should create oscillators for 4 chords, each with 3 notes
             expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(12);
         });
 
-        test('should warn for unknown progression', async() => {
+        test('should warn for unknown progression', async () => {
             const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
             await audioEngine.playProgression('C', 'major', 'unknown-progression');
@@ -395,7 +395,7 @@ describe('AudioEngine Module', () => {
             consoleSpy.mockRestore();
         });
 
-        test('should space chords in time', async() => {
+        test('should space chords in time', async () => {
             mockAudioContext.currentTime = 0;
 
             await audioEngine.playProgression('C', 'major', 'I-V-vi-IV');
@@ -444,11 +444,11 @@ describe('AudioEngine Module', () => {
     });
 
     describe('stopAll()', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
             await audioEngine.initialize();
         });
 
-        test('should stop all currently playing oscillators', async() => {
+        test('should stop all currently playing oscillators', async () => {
             // Play some notes
             await audioEngine.playNote('C', 4, 2);
             await audioEngine.playNote('E', 4, 2);
@@ -461,7 +461,7 @@ describe('AudioEngine Module', () => {
             expect(audioEngine.currentlyPlaying.size).toBe(0);
         });
 
-        test('should handle oscillators that are already stopped', async() => {
+        test('should handle oscillators that are already stopped', async () => {
             await audioEngine.playNote('C', 4, 1);
 
             // Mock oscillator.stop to throw error (already stopped)
@@ -474,7 +474,7 @@ describe('AudioEngine Module', () => {
     });
 
     describe('Volume and Settings', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
             await audioEngine.initialize();
         });
 
@@ -534,7 +534,7 @@ describe('AudioEngine Module', () => {
             });
         });
 
-        test('should return correct state when initialized', async() => {
+        test('should return correct state when initialized', async () => {
             await audioEngine.initialize();
 
             const state = audioEngine.getState();
@@ -545,7 +545,7 @@ describe('AudioEngine Module', () => {
             expect(state.settings).toEqual(audioEngine.settings);
         });
 
-        test('should return copy of settings', async() => {
+        test('should return copy of settings', async () => {
             await audioEngine.initialize();
 
             const state = audioEngine.getState();
@@ -556,7 +556,7 @@ describe('AudioEngine Module', () => {
     });
 
     describe('playClick()', () => {
-        beforeEach(async() => {
+        beforeEach(async () => {
             await audioEngine.initialize();
         });
 
@@ -591,7 +591,7 @@ describe('AudioEngine Module', () => {
     });
 
     describe('dispose()', () => {
-        test('should clean up resources', async() => {
+        test('should clean up resources', async () => {
             await audioEngine.initialize();
             await audioEngine.playNote('C', 4, 2);
 
@@ -606,7 +606,7 @@ describe('AudioEngine Module', () => {
             expect(() => audioEngine.dispose()).not.toThrow();
         });
 
-        test('should handle audio context close errors', async() => {
+        test('should handle audio context close errors', async () => {
             await audioEngine.initialize();
             mockAudioContext.close.mockRejectedValue(new Error('Close failed'));
 

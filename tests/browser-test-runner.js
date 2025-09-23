@@ -188,7 +188,9 @@ class BrowserTestRunner {
             await this.delay(100);
 
             // Check that the button is now active
-            const isActive = await this.page.$eval('#minor-mode', el => el.classList.contains('active'));
+            const isActive = await this.page.$eval('#minor-mode', el =>
+                el.classList.contains('active')
+            );
             if (!isActive) {
                 throw new Error('Minor mode button is not active after clicking');
             }
@@ -291,11 +293,14 @@ class BrowserTestRunner {
         // Check if the key element exists and is focusable
         const keyElement = await this.page.$('[data-key="C"]');
         if (!keyElement) {
-            console.warn('    ⚠️  Key element [data-key="C"] not found, trying alternative selector');
+            console.warn(
+                '    ⚠️  Key element [data-key="C"] not found, trying alternative selector'
+            );
             // Try alternative selectors
-            const altElement = await this.page.$('.key-segment[data-key="C"]') ||
-                              await this.page.$('.key-segment:first-child') ||
-                              await this.page.$('#circle-svg .key-segment');
+            const altElement =
+                (await this.page.$('.key-segment[data-key="C"]')) ||
+                (await this.page.$('.key-segment:first-child')) ||
+                (await this.page.$('#circle-svg .key-segment'));
 
             if (!altElement) {
                 throw new Error('No focusable key elements found');
@@ -321,7 +326,9 @@ class BrowserTestRunner {
         // Check that key was selected or that focus moved
         const activeElement = await this.page.evaluate(() => {
             const active = document.activeElement;
-            return active ? (active.getAttribute('data-key') || active.className || active.tagName) : null;
+            return active
+                ? active.getAttribute('data-key') || active.className || active.tagName
+                : null;
         });
 
         if (!activeElement) {

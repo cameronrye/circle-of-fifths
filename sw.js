@@ -5,15 +5,19 @@
 
 const CACHE_NAME = 'circle-of-fifths-v1';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/css/styles.css',
-    '/js/musicTheory.js',
-    '/js/audioEngine.js',
-    '/js/circleRenderer.js',
-    '/js/interactions.js',
-    '/js/app.js',
-    '/assets/favicon.svg'
+    './',
+    './index.html',
+    './css/styles.css',
+    './css/themes.css',
+    './js/musicTheory.js',
+    './js/audioEngine.js',
+    './js/circleRenderer.js',
+    './js/interactions.js',
+    './js/themeManager.js',
+    './js/themeToggle.js',
+    './js/app.js',
+    './assets/favicon.svg',
+    './manifest.json'
 ];
 
 // Install event - cache resources
