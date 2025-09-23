@@ -8,9 +8,9 @@
 
 describe('AudioEngine Module', () => {
     let audioEngine;
-    let mockAudioContext;
-    let mockGainNode;
-    let mockOscillator;
+    let _mockAudioContext;
+    let _mockGainNode;
+    let _mockOscillator;
 
     beforeEach(() => {
         // Create spies for the mock constructors to track calls
@@ -274,7 +274,7 @@ describe('AudioEngine Module', () => {
         });
 
         test('should play scale notes in sequence', async() => {
-            const initialCount = audioEngine.currentlyPlaying.size;
+            const _initialCount = audioEngine.currentlyPlaying.size;
 
             await audioEngine.playScale('C', 'major', 4, true);
 
