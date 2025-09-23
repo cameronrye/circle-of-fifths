@@ -17,8 +17,8 @@
     
     /* Text Colors */
     --text-primary: #2c3e50;
-    --text-secondary: #6c757d;
-    --text-muted: #adb5bd;
+    --text-secondary: #495057; /* Improved contrast: was #6c757d */
+    --text-muted: #6c757d; /* Improved contrast: was #adb5bd */
     
     /* Border Colors */
     --border-color: #dee2e6;
@@ -59,8 +59,8 @@
     
     /* Text Colors */
     --text-primary: #ecf0f1;
-    --text-secondary: #bdc3c7;
-    --text-muted: #95a5a6;
+    --text-secondary: #d5dbdb; /* Improved contrast: was #bdc3c7 */
+    --text-muted: #bdc3c7; /* Improved contrast: was #95a5a6 */
     
     /* Border Colors */
     --border-color: #4a5f7a;

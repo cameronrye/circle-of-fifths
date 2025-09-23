@@ -22,8 +22,8 @@
     --background-color: #ecf0f1;
     --surface-color: #ffffff;
     --text-primary: #2c3e50;
-    --text-secondary: #7f8c8d;
-    --text-muted: rgba(44, 62, 80, 0.6);
+    --text-secondary: #5a6c7d; /* Improved contrast: was #7f8c8d */
+    --text-muted: rgba(44, 62, 80, 0.8); /* Improved contrast: was 0.6 */
     --border-color: #bdc3c7;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --overlay-color: rgba(255, 255, 255, 0.9);
@@ -54,8 +54,8 @@
     --background-color: #1a1a1a;
     --surface-color: #2c2c2c;
     --text-primary: #ecf0f1;
-    --text-secondary: #bdc3c7;
-    --text-muted: rgba(236, 240, 241, 0.6);
+    --text-secondary: #d5dbdb; /* Improved contrast: was #bdc3c7 */
+    --text-muted: rgba(236, 240, 241, 0.8); /* Improved contrast: was 0.6 */
     --border-color: #4a4a4a;
     --shadow-color: rgba(0, 0, 0, 0.3);
     --overlay-color: rgba(44, 44, 44, 0.95);
@@ -87,8 +87,8 @@
     --background-color: #ecf0f1;
     --surface-color: #ffffff;
     --text-primary: #2c3e50;
-    --text-secondary: #7f8c8d;
-    --text-muted: rgba(44, 62, 80, 0.6);
+    --text-secondary: #5a6c7d; /* Improved contrast: was #7f8c8d */
+    --text-muted: rgba(44, 62, 80, 0.8); /* Improved contrast: was 0.6 */
     --border-color: #bdc3c7;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --overlay-color: rgba(255, 255, 255, 0.9);
@@ -120,8 +120,8 @@
         --background-color: #1a1a1a;
         --surface-color: #2c2c2c;
         --text-primary: #ecf0f1;
-        --text-secondary: #bdc3c7;
-        --text-muted: rgba(236, 240, 241, 0.6);
+        --text-secondary: #d5dbdb; /* Improved contrast: was #bdc3c7 */
+        --text-muted: rgba(236, 240, 241, 0.8); /* Improved contrast: was 0.6 */
         --border-color: #4a4a4a;
         --shadow-color: rgba(0, 0, 0, 0.3);
         --overlay-color: rgba(44, 44, 44, 0.95);
@@ -204,17 +204,20 @@ body {
     position: absolute;
     top: -40px;
     left: 6px;
-    background: var(--primary-color);
-    color: white;
+    background: #000000; /* High contrast black background */
+    color: #ffffff !important; /* High contrast white text */
     padding: 8px;
     text-decoration: none;
     border-radius: var(--radius-sm);
     z-index: 1000;
     transition: top var(--transition-fast);
+    font-weight: 600; /* Additional contrast improvement */
 }
 
 .skip-link:focus {
     top: 6px;
+    background: #000000; /* High contrast black background */
+    color: #ffffff !important; /* High contrast white text */
 }
 
 /* Screen reader only content */
@@ -288,11 +291,11 @@ body {
 .mode-btn,
 .difficulty-btn {
     padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
+    border: 1px solid #666666 !important; /* High contrast border */
+    background: #ffffff !important; /* High contrast white background */
+    color: #000000 !important; /* High contrast black text */
     font-size: var(--font-size-sm);
-    font-weight: 500;
+    font-weight: 600 !important; /* Improved contrast: was 500 */
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -325,11 +328,11 @@ body {
     align-items: center;
     gap: var(--spacing-xs);
     padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
+    border: 1px solid var(--border-color); /* Add border for better contrast */
+    background: var(--surface-color); /* Add background for better contrast */
+    color: var(--primary-color); /* Improved contrast: was var(--text-secondary) */
     font-size: var(--font-size-sm);
-    font-weight: 500;
+    font-weight: 600; /* Improved contrast: was 500 */
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -566,9 +569,9 @@ body {
     padding: var(--spacing-sm) var(--spacing-md);
     border: 2px solid var(--secondary-color);
     background: var(--surface-color);
-    color: var(--secondary-color);
+    color: var(--primary-color); /* Improved contrast: was var(--secondary-color) */
     font-size: var(--font-size-sm);
-    font-weight: 500;
+    font-weight: 600; /* Improved contrast: was 500 */
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -593,7 +596,8 @@ body {
 
 .audio-btn.stop-btn {
     border-color: var(--accent-color);
-    color: var(--accent-color);
+    color: var(--primary-color); /* Improved contrast: was var(--accent-color) */
+    font-weight: 600; /* Additional contrast improvement */
 }
 
 .audio-btn.stop-btn:hover {
@@ -670,20 +674,23 @@ body {
 
 .related-key[data-relationship='dominant'] {
     background: var(--dominant-bg);
-    color: var(--dominant-color);
+    color: var(--primary-color); /* Improved contrast */
     border: 1px solid var(--dominant-border);
+    font-weight: 600; /* Improved contrast */
 }
 
 .related-key[data-relationship='subdominant'] {
     background: var(--subdominant-bg);
-    color: var(--subdominant-color);
+    color: var(--primary-color); /* Improved contrast */
     border: 1px solid var(--subdominant-border);
+    font-weight: 600; /* Improved contrast */
 }
 
 .related-key[data-relationship='relative'] {
     background: var(--relative-bg);
-    color: var(--relative-color);
+    color: var(--primary-color); /* Improved contrast */
     border: 1px solid var(--relative-border);
+    font-weight: 600; /* Improved contrast */
 }
 
 .related-key:hover {
@@ -735,8 +742,8 @@ body.advanced .advanced-only {
 
 /* ===== FOOTER ===== */
 .footer {
-    background: var(--primary-color);
-    color: white;
+    background: #2c3e50 !important; /* High contrast dark background */
+    color: #ffffff !important; /* High contrast white text */
     padding: var(--spacing-lg) 0;
     text-align: center;
 }
@@ -744,12 +751,13 @@ body.advanced .advanced-only {
 .footer-text {
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-sm);
+    color: #ffffff !important; /* High contrast white text */
 }
 
 .footer-credits {
     font-size: var(--font-size-sm);
-    color: var(--text-muted);
-    opacity: 0.8;
+    color: #ffffff !important; /* High contrast white text */
+    opacity: 1; /* No opacity reduction */
 }
 
 /* ===== LOADING ===== */
@@ -993,6 +1001,82 @@ body.advanced .advanced-only {
         background: var(--background-color);
         transform: scale(0.98);
     }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+/* Ensure spans with relationship data have sufficient contrast */
+span[data-relationship="dominant"],
+span[data-relationship="subdominant"],
+span[data-relationship="relative"] {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Link styles for better contrast */
+a {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+a:hover {
+    color: var(--primary-color);
+}
+
+.footer a {
+    color: white;
+    text-decoration: underline;
+}
+
+.footer a:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Improved focus indicators */
+.key-segment:focus {
+    outline: 3px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+.audio-btn:focus {
+    outline: 3px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+.related-key:focus {
+    outline: 3px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+a:focus {
+    outline: 3px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+/* Dark theme overrides for high contrast */
+[data-theme='dark'] .mode-btn,
+[data-theme='dark'] .difficulty-btn {
+    background: #2c2c2c !important; /* Dark background */
+    color: #ffffff !important; /* White text */
+    border-color: #666666 !important; /* Gray border */
+}
+
+[data-theme='dark'] .footer-text,
+[data-theme='dark'] .footer-credits {
+    color: #ffffff !important; /* Ensure white text in dark theme */
+}
+
+/* Additional high contrast overrides */
+#major-mode,
+#beginner-level {
+    background: #ffffff !important; /* Force white background */
+    color: #000000 !important; /* Force black text */
+    border: 1px solid #666666 !important; /* Force gray border */
+}
+
+[data-theme='dark'] #major-mode,
+[data-theme='dark'] #beginner-level {
+    background: #2c2c2c !important; /* Force dark background in dark theme */
+    color: #ffffff !important; /* Force white text in dark theme */
 }
 
 /* ===== HIGH CONTRAST MODE ===== */

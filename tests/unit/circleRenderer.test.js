@@ -3,9 +3,8 @@
  * Comprehensive tests covering SVG rendering, visual updates, and user interactions
  */
 
-// Load the modules under test
-const CircleRenderer = require('../../js/circleRenderer.js');
-const { MusicTheory } = require('../../js/musicTheory.js');
+// Modules are loaded as globals in the test environment
+// CircleRenderer and MusicTheory are available as global variables
 
 describe('CircleRenderer Module', () => {
     let circleRenderer;
@@ -53,7 +52,7 @@ describe('CircleRenderer Module', () => {
         };
 
         // Create mock MusicTheory instance
-        mockMusicTheory = new MusicTheory();
+        mockMusicTheory = new global.MusicTheory();
 
         // Mock DOM methods
         global.document = {
@@ -76,12 +75,14 @@ describe('CircleRenderer Module', () => {
             })
         };
 
-        global.CustomEvent = jest.fn((type, options) => ({
+        global.CustomEvent = jest.fn().mockImplementation((type, options) => ({
             type,
-            detail: options?.detail
+            detail: options?.detail || null,
+            bubbles: options?.bubbles || false,
+            cancelable: options?.cancelable || false
         }));
 
-        circleRenderer = new CircleRenderer(mockSvgElement, mockMusicTheory);
+        circleRenderer = new global.CircleRenderer(mockSvgElement, mockMusicTheory);
     });
 
     afterEach(() => {
@@ -94,7 +95,7 @@ describe('CircleRenderer Module', () => {
             expect(circleRenderer.musicTheory).toBe(mockMusicTheory);
             expect(circleRenderer.currentMode).toBe('major');
             expect(circleRenderer.selectedKey).toBe('C');
-            expect(circleRenderer.highlightedKeys).toBeInstanceOf(Set);
+            expect(circleRenderer.highlightedKeys).toBeInstanceOf(global.Set);
             expect(circleRenderer.highlightedKeys.size).toBe(0);
         });
 
@@ -116,7 +117,7 @@ describe('CircleRenderer Module', () => {
         });
 
         test('should initialize keySegments Map', () => {
-            expect(circleRenderer.keySegments).toBeInstanceOf(Map);
+            expect(circleRenderer.keySegments).toBeInstanceOf(global.Map);
         });
 
         test('should call init during construction', () => {

@@ -272,7 +272,7 @@ class Assertions {
         let passed = true;
 
         for (const key of keys) {
-            if (current == null || !(key in current)) {
+            if (current === null || current === undefined || !(key in current)) {
                 passed = false;
                 break;
             }
@@ -334,7 +334,11 @@ class Assertions {
     }
 
     toHaveBeenCalled() {
-        if (!this.actual || typeof this.actual.callCount !== 'number') {
+        // Support both callCount/calls and Jest-style mock functions
+        const callCount = this.actual?.callCount ?? this.actual?.mock?.calls?.length;
+        const calls = this.actual?.calls || this.actual?.mock?.calls;
+
+        if (!this.actual || (typeof callCount !== 'number' && !Array.isArray(calls))) {
             throw new AssertionError(
                 'Expected value must be a mock function',
                 this.actual,
@@ -342,11 +346,12 @@ class Assertions {
             );
         }
 
-        const passed = this.actual.callCount > 0;
+        const actualCallCount = callCount ?? (calls ? calls.length : 0);
+        const passed = actualCallCount > 0;
         if (passed === this.isNot) {
             throw new AssertionError(
                 `Expected mock function ${this.isNot ? 'not ' : ''}to have been called`,
-                this.actual.callCount,
+                actualCallCount,
                 'called'
             );
         }
@@ -354,7 +359,11 @@ class Assertions {
     }
 
     toHaveBeenCalledTimes(expected) {
-        if (!this.actual || typeof this.actual.callCount !== 'number') {
+        // Support both callCount/calls and Jest-style mock functions
+        const callCount = this.actual?.callCount ?? this.actual?.mock?.calls?.length;
+        const calls = this.actual?.calls || this.actual?.mock?.calls;
+
+        if (!this.actual || (typeof callCount !== 'number' && !Array.isArray(calls))) {
             throw new AssertionError(
                 'Expected value must be a mock function',
                 this.actual,
@@ -362,11 +371,12 @@ class Assertions {
             );
         }
 
-        const passed = this.actual.callCount === expected;
+        const actualCallCount = callCount ?? (calls ? calls.length : 0);
+        const passed = actualCallCount === expected;
         if (passed === this.isNot) {
             throw new AssertionError(
                 `Expected mock function ${this.isNot ? 'not ' : ''}to have been called ${expected} times`,
-                this.actual.callCount,
+                actualCallCount,
                 expected
             );
         }
@@ -374,7 +384,9 @@ class Assertions {
     }
 
     toHaveBeenCalledWith(...expected) {
-        if (!this.actual || !Array.isArray(this.actual.calls)) {
+        // Support both callCount/calls and Jest-style mock functions
+        const calls = this.actual?.calls || this.actual?.mock?.calls;
+        if (!this.actual || (!Array.isArray(calls) && typeof this.actual.callCount !== 'number')) {
             throw new AssertionError(
                 'Expected value must be a mock function',
                 this.actual,
@@ -382,16 +394,26 @@ class Assertions {
             );
         }
 
-        const passed = this.actual.calls.some(
-            call =>
-                call.length === expected.length &&
-                call.every((arg, i) => this.deepEqual(arg, expected[i]))
-        );
+        // Handle asymmetric matchers in expected arguments
+        const matchesCall = (call, expectedArgs) => {
+            if (call.length !== expectedArgs.length) {
+                return false;
+            }
+            return call.every((arg, i) => {
+                const expectedArg = expectedArgs[i];
+                if (expectedArg && typeof expectedArg === 'object' && expectedArg.asymmetricMatch) {
+                    return expectedArg.asymmetricMatch(arg);
+                }
+                return this.deepEqual(arg, expectedArg);
+            });
+        };
+
+        const passed = calls ? calls.some(call => matchesCall(call, expected)) : false;
 
         if (passed === this.isNot) {
             throw new AssertionError(
                 `Expected mock function ${this.isNot ? 'not ' : ''}to have been called with ${JSON.stringify(expected)}`,
-                this.actual.calls,
+                calls || [],
                 expected
             );
         }
@@ -431,11 +453,19 @@ class Assertions {
      * Deep equality helper
      */
     deepEqual(a, b) {
+        // Handle asymmetric matchers
+        if (b && typeof b === 'object' && b.asymmetricMatch) {
+            return b.asymmetricMatch(a);
+        }
+        if (a && typeof a === 'object' && a.asymmetricMatch) {
+            return a.asymmetricMatch(b);
+        }
+
         if (Object.is(a, b)) {
             return true;
         }
 
-        if (a == null || b == null) {
+        if (a === null || a === undefined || b === null || b === undefined) {
             return false;
         }
 
@@ -470,6 +500,113 @@ class Assertions {
         return true;
     }
 }
+
+/**
+ * expect.any() matcher for type checking
+ */
+expect.any = function(constructor) {
+    return {
+        asymmetricMatch: function(actual) {
+            if (constructor === String) {
+                return typeof actual === 'string';
+            }
+            if (constructor === Number) {
+                return typeof actual === 'number';
+            }
+            if (constructor === Boolean) {
+                return typeof actual === 'boolean';
+            }
+            if (constructor === Function) {
+                return typeof actual === 'function';
+            }
+            if (constructor === Object) {
+                return typeof actual === 'object' && actual !== null;
+            }
+            if (constructor === Array) {
+                return Array.isArray(actual);
+            }
+            return actual instanceof constructor;
+        },
+        toString: function() {
+            return `Any<${constructor.name}>`;
+        }
+    };
+};
+
+/**
+ * expect.objectContaining() matcher
+ */
+expect.objectContaining = function(expected) {
+    return {
+        asymmetricMatch: function(actual) {
+            if (typeof actual !== 'object' || actual === null) {
+                return false;
+            }
+            for (const key in expected) {
+                if (!(key in actual) || !new Assertions(actual[key]).deepEqual(actual[key], expected[key])) {
+                    return false;
+                }
+            }
+            return true;
+        },
+        toString: function() {
+            return `ObjectContaining<${JSON.stringify(expected)}>`;
+        }
+    };
+};
+
+/**
+ * expect.arrayContaining() matcher
+ */
+expect.arrayContaining = function(expected) {
+    return {
+        asymmetricMatch: function(actual) {
+            if (!Array.isArray(actual)) {
+                return false;
+            }
+            return expected.every(item =>
+                actual.some(actualItem =>
+                    new Assertions(actualItem).deepEqual(actualItem, item)
+                )
+            );
+        },
+        toString: function() {
+            return `ArrayContaining<${JSON.stringify(expected)}>`;
+        }
+    };
+};
+
+/**
+ * expect.stringContaining() matcher
+ */
+expect.stringContaining = function(expected) {
+    return {
+        asymmetricMatch: function(actual) {
+            return typeof actual === 'string' && actual.includes(expected);
+        },
+        toString: function() {
+            return `StringContaining<${expected}>`;
+        }
+    };
+};
+
+/**
+ * expect.stringMatching() matcher
+ */
+expect.stringMatching = function(expected) {
+    return {
+        asymmetricMatch: function(actual) {
+            if (typeof actual !== 'string') {
+                return false;
+            }
+            const regex = expected instanceof RegExp ? expected : new RegExp(expected);
+            return regex.test(actual);
+        },
+        toString: function() {
+            return `StringMatching<${expected}>`;
+        }
+    };
+};
 
 /**
  * Main expect function

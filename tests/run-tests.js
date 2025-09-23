@@ -178,7 +178,7 @@ function printFailedTests(results) {
     });
 }
 
-function generateCoverageReport(results) {
+function generateCoverageReport(_results) {
     if (!process.env.TEST_COVERAGE) {
         return;
     }
@@ -306,7 +306,7 @@ process.on('uncaughtException', error => {
     process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason, _promise) => {
     console.error(colorize('\n💥 Unhandled Rejection:', 'red'));
     console.error(reason);
     process.exit(1);

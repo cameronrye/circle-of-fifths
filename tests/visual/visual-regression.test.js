@@ -231,7 +231,7 @@ describe('Visual Regression Tests', () => {
         test('should maintain visual consistency during animations', () => {
             jest.useFakeTimers();
 
-            const initialOpacity = mockSvgElement.style.opacity;
+            const _initialOpacity = mockSvgElement.style.opacity;
 
             circleRenderer.animateTransition(() => {
                 // Animation callback
@@ -403,7 +403,7 @@ describe('Visual Regression Tests', () => {
 
             keys.forEach(key => {
                 const segment = circleRenderer.createKeySegment(key, 0);
-                const textElement = segment.querySelector('.key-text');
+                const _textElement = segment.querySelector('.key-text');
 
                 // Text content should match key name
                 expect(segment.appendChild).toHaveBeenCalled();
@@ -418,7 +418,7 @@ describe('Visual Regression Tests', () => {
 
                 // Font size should scale appropriately
                 const scale = size / 800;
-                const expectedFontSize = 18 * scale;
+                const _expectedFontSize = 18 * scale;
 
                 // In a real implementation, we'd check actual font sizes
                 expect(scale).toBeGreaterThan(0);

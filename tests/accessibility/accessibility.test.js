@@ -285,7 +285,7 @@ describe('Accessibility Tests', () => {
         });
 
         test('should announce state changes', () => {
-            const originalKey = circleRenderer.selectedKey;
+            const _originalKey = circleRenderer.selectedKey;
 
             circleRenderer.selectKey('D');
 

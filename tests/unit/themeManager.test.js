@@ -8,7 +8,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Load ThemeManager code
-const themeManagerCode = fs.readFileSync(path.join(__dirname, '../../js/themeManager.js'), 'utf8');
+const themeManagerPath = path.join(__dirname, '../../js/themeManager.js');
+const themeManagerCode = fs.readFileSync(themeManagerPath, 'utf8');
 
 describe('ThemeManager Module', () => {
     let ThemeManager;
@@ -67,9 +68,22 @@ describe('ThemeManager Module', () => {
         global.localStorage = mockLocalStorage;
         global.console = { ...console, log: jest.fn(), warn: jest.fn(), error: jest.fn() };
 
-        // Evaluate ThemeManager code in test environment
-        eval(themeManagerCode);
-        ThemeManager = global.ThemeManager;
+        // Load ThemeManager code in test environment by creating a module context
+        const vm = require('vm');
+        const context = {
+            global,
+            window: mockWindow,
+            document: mockDocument,
+            localStorage: mockLocalStorage,
+            console: global.console,
+            setTimeout: global.setTimeout,
+            clearTimeout: global.clearTimeout,
+            setInterval: global.setInterval,
+            clearInterval: global.clearInterval
+        };
+        vm.createContext(context);
+        vm.runInContext(themeManagerCode, context);
+        ThemeManager = context.ThemeManager || global.ThemeManager;
 
         // Create fresh instance for each test
         themeManager = new ThemeManager();

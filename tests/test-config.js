@@ -16,7 +16,7 @@ const testConfig = {
     runner: {
         verbose: process.env.TEST_VERBOSE === 'true',
         bail: process.env.TEST_BAIL === 'true',
-        timeout: parseInt(process.env.TEST_TIMEOUT) || 5000,
+        timeout: parseInt(process.env.TEST_TIMEOUT, 10) || 5000,
         coverage: process.env.TEST_COVERAGE === 'true',
         reporter: process.env.TEST_REPORTER || 'default'
     },
@@ -220,7 +220,7 @@ function setupTimerMocks() {
         }
 
         // Execute intervals
-        for (const [id, timer] of timers.intervals) {
+        for (const [_id, timer] of timers.intervals) {
             while (timer.nextTime <= timers.currentTime) {
                 timer.callback();
                 timer.nextTime += timer.delay;
@@ -279,7 +279,7 @@ async function loadTestFile(filePath) {
  * Run tests from multiple files
  */
 async function runTestFiles(patterns) {
-    const fs = require('fs');
+    const _fs = require('fs');
     const path = require('path');
     const glob = require('glob');
 

@@ -164,7 +164,7 @@ class ThemeVerificationTest {
     testRelatedKeys(theme) {
         const relatedKeys = document.querySelectorAll('.related-key');
 
-        relatedKeys.forEach((key, index) => {
+        relatedKeys.forEach((key, _index) => {
             const relationship = key.getAttribute('data-relationship');
             const computedStyle = getComputedStyle(key);
             const backgroundColor = computedStyle.backgroundColor;

@@ -195,7 +195,7 @@ class CoverageReporter {
         return Math.random() > 0.3; // 70% default coverage
     }
 
-    simulateFunctionCoverage(line, filePath) {
+    simulateFunctionCoverage(line, _filePath) {
         // Public methods are more likely to be tested
         if (line.includes('public') || !line.includes('_')) {
             return Math.random() > 0.2; // 80% coverage
@@ -205,7 +205,7 @@ class CoverageReporter {
         return Math.random() > 0.4; // 60% coverage
     }
 
-    simulateBranchCoverage(line, filePath) {
+    simulateBranchCoverage(_line, _filePath) {
         // Branch coverage is typically lower
         return Math.random() > 0.35; // 65% coverage
     }
@@ -524,7 +524,7 @@ if (require.main === module) {
 
     for (const arg of args) {
         if (arg.startsWith('--threshold=')) {
-            const threshold = parseInt(arg.split('=')[1]);
+            const threshold = parseInt(arg.split('=')[1], 10);
             options.threshold = {
                 statements: threshold,
                 branches: threshold,

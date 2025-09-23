@@ -3,6 +3,264 @@
  * Provides mocks and utilities for testing browser-specific functionality
  */
 
+class MockClassList {
+    constructor() {
+        this.classes = new Set();
+    }
+
+    add(...classes) {
+        classes.forEach(cls => this.classes.add(cls));
+    }
+
+    remove(...classes) {
+        classes.forEach(cls => this.classes.delete(cls));
+    }
+
+    toggle(className, force) {
+        if (force !== undefined) {
+            if (force) {
+                this.classes.add(className);
+            } else {
+                this.classes.delete(className);
+            }
+            return force;
+        }
+
+        if (this.classes.has(className)) {
+            this.classes.delete(className);
+            return false;
+        } else {
+            this.classes.add(className);
+            return true;
+        }
+    }
+
+    contains(className) {
+        return this.classes.has(className);
+    }
+
+    toString() {
+        return Array.from(this.classes).join(' ');
+    }
+}
+
+class MockEvent {
+    constructor(type, options = {}) {
+        this.type = type;
+        this.bubbles = options.bubbles || false;
+        this.cancelable = options.cancelable || false;
+        this.target = null;
+        this.currentTarget = null;
+        this.defaultPrevented = false;
+        this.timeStamp = Date.now();
+    }
+
+    preventDefault() {
+        this.defaultPrevented = true;
+    }
+
+    stopPropagation() {
+        // Mock implementation
+    }
+
+    stopImmediatePropagation() {
+        // Mock implementation
+    }
+}
+
+class MockCustomEvent extends MockEvent {
+    constructor(type, options = {}) {
+        super(type, options);
+        this.detail = options.detail || null;
+    }
+}
+
+class MockStorage {
+    constructor() {
+        this.data = {};
+    }
+
+    getItem(key) {
+        return this.data[key] || null;
+    }
+
+    setItem(key, value) {
+        this.data[key] = String(value);
+    }
+
+    removeItem(key) {
+        delete this.data[key];
+    }
+
+    clear() {
+        this.data = {};
+    }
+
+    get length() {
+        return Object.keys(this.data).length;
+    }
+
+    key(index) {
+        const keys = Object.keys(this.data);
+        return keys[index] || null;
+    }
+}
+
+class MockAudioParam {
+    constructor(defaultValue = 0) {
+        this.value = defaultValue;
+        this.defaultValue = defaultValue;
+    }
+
+    setValueAtTime(value, _when) {
+        this.value = value;
+        return this;
+    }
+
+    linearRampToValueAtTime(value, _when) {
+        this.value = value;
+        return this;
+    }
+
+    exponentialRampToValueAtTime(value, _when) {
+        this.value = value;
+        return this;
+    }
+
+    setTargetAtTime(target, _startTime, _timeConstant) {
+        this.value = target;
+        return this;
+    }
+
+    setValueCurveAtTime(values, _startTime, _duration) {
+        if (values.length > 0) {
+            this.value = values[values.length - 1];
+        }
+        return this;
+    }
+
+    cancelScheduledValues(_startTime) {
+        return this;
+    }
+
+    cancelAndHoldAtTime(_cancelTime) {
+        return this;
+    }
+}
+
+class MockAudioNode {
+    constructor() {
+        this.context = null;
+        this.numberOfInputs = 1;
+        this.numberOfOutputs = 1;
+        this.connections = [];
+        this.eventListeners = {};
+    }
+
+    connect(destination) {
+        this.connections.push(destination);
+        return destination;
+    }
+
+    disconnect(destination) {
+        if (destination) {
+            const index = this.connections.indexOf(destination);
+            if (index > -1) {
+                this.connections.splice(index, 1);
+            }
+        } else {
+            this.connections = [];
+        }
+    }
+
+    addEventListener(type, listener) {
+        if (!this.eventListeners[type]) {
+            this.eventListeners[type] = [];
+        }
+        this.eventListeners[type].push(listener);
+    }
+
+    removeEventListener(type, listener) {
+        if (this.eventListeners[type]) {
+            const index = this.eventListeners[type].indexOf(listener);
+            if (index > -1) {
+                this.eventListeners[type].splice(index, 1);
+            }
+        }
+    }
+
+    dispatchEvent(event) {
+        if (this.eventListeners[event.type]) {
+            this.eventListeners[event.type].forEach(listener => {
+                listener(event);
+            });
+        }
+    }
+}
+
+class MockGainNode extends MockAudioNode {
+    constructor() {
+        super();
+        this.gain = new MockAudioParam(1);
+    }
+}
+
+class MockOscillatorNode extends MockAudioNode {
+    constructor() {
+        super();
+        this.frequency = new MockAudioParam(440);
+        this.detune = new MockAudioParam(0);
+        this.type = 'sine';
+        this.started = false;
+        this.stopped = false;
+    }
+
+    start(_when) {
+        this.started = true;
+    }
+
+    stop(_when) {
+        this.stopped = true;
+        // Simulate the 'ended' event
+        setTimeout(() => {
+            this.dispatchEvent(new MockEvent('ended'));
+        }, 0);
+    }
+
+    setPeriodicWave(_wave) {
+        // Mock implementation
+    }
+}
+
+class MockAudioContext {
+    constructor() {
+        this.state = 'suspended';
+        this.sampleRate = 44100;
+        this.currentTime = 0;
+        this.destination = new MockAudioNode();
+    }
+
+    createGain() {
+        return new MockGainNode();
+    }
+
+    createOscillator() {
+        return new MockOscillatorNode();
+    }
+
+    async resume() {
+        this.state = 'running';
+    }
+
+    async suspend() {
+        this.state = 'suspended';
+    }
+
+    async close() {
+        this.state = 'closed';
+    }
+}
+
 class MockElement {
     constructor(tagName = 'div') {
         this.tagName = tagName.toUpperCase();
@@ -200,67 +458,6 @@ class MockElement {
     }
 }
 
-class MockClassList {
-    constructor() {
-        this.classes = new Set();
-    }
-
-    add(...classes) {
-        classes.forEach(cls => this.classes.add(cls));
-    }
-
-    remove(...classes) {
-        classes.forEach(cls => this.classes.delete(cls));
-    }
-
-    toggle(className, force) {
-        if (force !== undefined) {
-            if (force) {
-                this.classes.add(className);
-            } else {
-                this.classes.delete(className);
-            }
-            return force;
-        }
-
-        if (this.classes.has(className)) {
-            this.classes.delete(className);
-            return false;
-        } else {
-            this.classes.add(className);
-            return true;
-        }
-    }
-
-    contains(className) {
-        return this.classes.has(className);
-    }
-
-    toString() {
-        return Array.from(this.classes).join(' ');
-    }
-}
-
-class MockEvent {
-    constructor(type, options = {}) {
-        this.type = type;
-        this.bubbles = options.bubbles || false;
-        this.cancelable = options.cancelable || false;
-        this.target = null;
-        this.currentTarget = null;
-        this.defaultPrevented = false;
-        this.timeStamp = Date.now();
-    }
-
-    preventDefault() {
-        this.defaultPrevented = true;
-    }
-
-    stopPropagation() {
-        // Mock implementation
-    }
-}
-
 class MockDocument extends MockElement {
     constructor() {
         super('document');
@@ -356,156 +553,6 @@ class MockWindow {
     }
 }
 
-class MockStorage {
-    constructor() {
-        this.data = {};
-    }
-
-    getItem(key) {
-        return this.data[key] || null;
-    }
-
-    setItem(key, value) {
-        this.data[key] = String(value);
-    }
-
-    removeItem(key) {
-        delete this.data[key];
-    }
-
-    clear() {
-        this.data = {};
-    }
-
-    get length() {
-        return Object.keys(this.data).length;
-    }
-
-    key(index) {
-        const keys = Object.keys(this.data);
-        return keys[index] || null;
-    }
-}
-
-class MockAudioContext {
-    constructor() {
-        this.state = 'suspended';
-        this.sampleRate = 44100;
-        this.currentTime = 0;
-        this.destination = new MockAudioNode();
-    }
-
-    createGain() {
-        return new MockGainNode();
-    }
-
-    createOscillator() {
-        return new MockOscillatorNode();
-    }
-
-    async resume() {
-        this.state = 'running';
-    }
-
-    async suspend() {
-        this.state = 'suspended';
-    }
-
-    async close() {
-        this.state = 'closed';
-    }
-}
-
-class MockAudioNode {
-    constructor() {
-        this.context = null;
-        this.numberOfInputs = 1;
-        this.numberOfOutputs = 1;
-        this.connections = [];
-    }
-
-    connect(destination) {
-        this.connections.push(destination);
-        return destination;
-    }
-
-    disconnect() {
-        this.connections = [];
-    }
-}
-
-class MockGainNode extends MockAudioNode {
-    constructor() {
-        super();
-        this.gain = new MockAudioParam(1);
-    }
-}
-
-class MockOscillatorNode extends MockAudioNode {
-    constructor() {
-        super();
-        this.frequency = new MockAudioParam(440);
-        this.type = 'sine';
-        this.started = false;
-        this.stopped = false;
-        this.eventListeners = {};
-    }
-
-    start(when = 0) {
-        this.started = true;
-    }
-
-    stop(when = 0) {
-        this.stopped = true;
-        // Simulate the 'ended' event
-        setTimeout(() => {
-            if (this.eventListeners['ended']) {
-                this.eventListeners['ended'].forEach(listener => {
-                    if (typeof listener === 'function') {
-                        listener();
-                    } else if (listener.listener) {
-                        listener.listener();
-                    }
-                });
-            }
-        }, 0);
-    }
-
-    addEventListener(type, listener, options) {
-        if (!this.eventListeners[type]) {
-            this.eventListeners[type] = [];
-        }
-        this.eventListeners[type].push({ listener, options });
-    }
-
-    removeEventListener(type, listener) {
-        if (this.eventListeners[type]) {
-            this.eventListeners[type] = this.eventListeners[type].filter(
-                item => item.listener !== listener
-            );
-        }
-    }
-}
-
-class MockAudioParam {
-    constructor(defaultValue = 0) {
-        this.value = defaultValue;
-        this.defaultValue = defaultValue;
-    }
-
-    setValueAtTime(value, startTime) {
-        this.value = value;
-    }
-
-    linearRampToValueAtTime(value, endTime) {
-        this.value = value;
-    }
-
-    exponentialRampToValueAtTime(value, endTime) {
-        this.value = value;
-    }
-}
-
 /**
  * Setup DOM environment for testing
  */
@@ -521,8 +568,17 @@ function setupDOMEnvironment() {
         global.AudioContext = MockAudioContext;
         global.webkitAudioContext = MockAudioContext;
         global.Event = MockEvent;
+        global.CustomEvent = MockCustomEvent;
         global.requestAnimationFrame = mockWindow.requestAnimationFrame.bind(mockWindow);
         global.cancelAnimationFrame = mockWindow.cancelAnimationFrame.bind(mockWindow);
+
+        // Ensure Set and Map are available
+        if (!global.Set) {
+            global.Set = Set;
+        }
+        if (!global.Map) {
+            global.Map = Map;
+        }
 
         // Load application modules into the test environment
         loadApplicationModules();
@@ -569,22 +625,33 @@ function loadApplicationModules() {
                     require: require,
                     __filename: fullPath,
                     __dirname: path.dirname(fullPath),
-                    console: console
+                    console: console,
+                    window: global.window || {}
                 };
 
                 vm.createContext(context);
                 vm.runInContext(moduleCode, context);
 
                 // If the module exported anything, make it available globally
-                if (Object.keys(context.module.exports).length > 0) {
-                    Object.assign(global, context.module.exports);
+                if (context.module.exports) {
+                    if (typeof context.module.exports === 'function') {
+                        // Single function export (like AudioEngine)
+                        const moduleName = path.basename(modulePath, '.js');
+                        const className = moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+                        global[className] = context.module.exports;
+                    } else if (typeof context.module.exports === 'object' && Object.keys(context.module.exports).length > 0) {
+                        // Multiple exports (like MusicTheory module)
+                        Object.assign(global, context.module.exports);
+                    }
                 }
 
                 // Also check if the module attached anything to the window object
                 if (context.window && typeof context.window === 'object') {
                     // Copy window properties to global
                     for (const prop in context.window) {
-                        if (context.window.hasOwnProperty(prop) && prop !== 'window' && prop !== 'document') {
+                        if (Object.prototype.hasOwnProperty.call(context.window, prop) &&
+                            prop !== 'window' && prop !== 'document' && prop !== 'localStorage' &&
+                            prop !== 'sessionStorage' && prop !== 'AudioContext' && prop !== 'webkitAudioContext') {
                             global[prop] = context.window[prop];
                         }
                     }

@@ -335,7 +335,7 @@ class AudioEngine {
         this.currentlyPlaying.forEach(oscillator => {
             try {
                 oscillator.stop();
-            } catch (_error) {
+            } catch {
                 // Oscillator might already be stopped
             }
         });

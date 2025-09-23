@@ -339,7 +339,7 @@ describe('Circle of Fifths Application Integration', () => {
 
             // 2. Get music theory data
             const keySignature = musicTheory.getKeySignature(testKey, testMode);
-            const scaleNotes = musicTheory.getScaleNotes(testKey, testMode);
+            const _scaleNotes = musicTheory.getScaleNotes(testKey, testMode);
             const relatedKeys = musicTheory.getRelatedKeys(testKey, testMode);
 
             // 3. Select key in renderer

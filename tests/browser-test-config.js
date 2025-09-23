@@ -183,7 +183,7 @@ function setupTestEnvironment() {
 
                     try {
                         actual();
-                    } catch (e) {
+                    } catch {
                         throw new Error('Expected function not to throw');
                     }
                 }

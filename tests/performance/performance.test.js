@@ -192,7 +192,7 @@ describe('Performance Tests', () => {
         test('should have low audio latency', async() => {
             await audioEngine.initialize();
 
-            const startTime = mockAudioContext.currentTime;
+            const _startTime = mockAudioContext.currentTime;
             await audioEngine.playNote('A', 4, 1);
 
             // Audio latency should be minimal (< 50ms)
@@ -244,7 +244,7 @@ describe('Performance Tests', () => {
             await audioEngine.initialize();
             await audioEngine.playNote('C', 4, 1);
 
-            const initialPlayingCount = audioEngine.currentlyPlaying.size;
+            const _initialPlayingCount = audioEngine.currentlyPlaying.size;
 
             const { duration } = measureExecutionTime(() => {
                 audioEngine.stopAll();

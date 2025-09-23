@@ -3,9 +3,8 @@
  * Comprehensive tests covering audio initialization, synthesis, and playback
  */
 
-// Load the modules under test
-const AudioEngine = require('../../js/audioEngine.js');
-const { MusicTheory } = require('../../js/musicTheory.js');
+// Modules are loaded as globals in the test environment
+// AudioEngine and MusicTheory are available as global variables
 
 describe('AudioEngine Module', () => {
     let audioEngine;
@@ -53,7 +52,8 @@ describe('AudioEngine Module', () => {
         global.AudioContext = jest.fn(() => mockAudioContext);
         global.webkitAudioContext = jest.fn(() => mockAudioContext);
 
-        audioEngine = new AudioEngine();
+        // Use the global AudioEngine class
+        audioEngine = new global.AudioEngine();
     });
 
     afterEach(() => {
@@ -68,9 +68,9 @@ describe('AudioEngine Module', () => {
             expect(audioEngine.audioContext).toBeNull();
             expect(audioEngine.masterGain).toBeNull();
             expect(audioEngine.isInitialized).toBe(false);
-            expect(audioEngine.currentlyPlaying).toBeInstanceOf(Set);
+            expect(audioEngine.currentlyPlaying).toBeInstanceOf(global.Set);
             expect(audioEngine.currentlyPlaying.size).toBe(0);
-            expect(audioEngine.musicTheory).toBeInstanceOf(MusicTheory);
+            expect(audioEngine.musicTheory).toBeInstanceOf(global.MusicTheory);
         });
 
         test('should have correct default settings', () => {

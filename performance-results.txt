@@ -1,0 +1,276 @@
+[36m
+🚀 Circle of Fifths Performance Tests[0m
+[34m==================================================[0m
+[33mSetting up test environment...[0m
+✅ Loaded application module: js/musicTheory.js
+✅ Loaded application module: js/audioEngine.js
+✅ Loaded application module: js/circleRenderer.js
+✅ Loaded application module: js/themeManager.js
+✅ Loaded application module: js/themeToggle.js
+✅ Loaded application module: js/interactions.js
+Test environment setup complete
+[33mRunning performance tests...[0m
+🔍 TestRunner: Starting test run...
+🔍 TestRunner: Running beforeAll hooks...
+🔍 TestRunner: Collecting tests...
+🔍 TestRunner: Found 28 tests
+🔍 TestRunner: Running 28 tests
+🔍 TestRunner: Running test 1/28: should initialize audio context quickly
+🔍 TestRunner: Starting test: should initialize audio context quickly
+🔍 TestRunner: Running beforeEach hooks for: should initialize audio context quickly
+🔍 TestRunner: Executing test function: should initialize audio context quickly
+Audio engine initialized successfully
+🔍 TestRunner: Test passed: should initialize audio context quickly
+🔍 TestRunner: Running afterEach hooks for: should initialize audio context quickly
+🔍 TestRunner: Test completed: should initialize audio context quickly (0ms)
+🔍 TestRunner: Running test 2/28: should have low audio latency
+🔍 TestRunner: Starting test: should have low audio latency
+🔍 TestRunner: Running beforeEach hooks for: should have low audio latency
+🔍 TestRunner: Executing test function: should have low audio latency
+Audio engine initialized successfully
+🔍 TestRunner: Test passed: should have low audio latency
+🔍 TestRunner: Running afterEach hooks for: should have low audio latency
+🔍 TestRunner: Test completed: should have low audio latency (1ms)
+🔍 TestRunner: Running test 3/28: should handle multiple simultaneous notes efficiently
+🔍 TestRunner: Starting test: should handle multiple simultaneous notes efficiently
+🔍 TestRunner: Running beforeEach hooks for: should handle multiple simultaneous notes efficiently
+🔍 TestRunner: Executing test function: should handle multiple simultaneous notes efficiently
+Audio engine initialized successfully
+🔍 TestRunner: Test failed: should handle multiple simultaneous notes efficiently Expected mock function to have been called 6 times
+🔍 TestRunner: Running afterEach hooks for: should handle multiple simultaneous notes efficiently
+🔍 TestRunner: Test completed: should handle multiple simultaneous notes efficiently (0ms)
+🔍 TestRunner: Running test 4/28: should efficiently play scales
+🔍 TestRunner: Starting test: should efficiently play scales
+🔍 TestRunner: Running beforeEach hooks for: should efficiently play scales
+🔍 TestRunner: Executing test function: should efficiently play scales
+Audio engine initialized successfully
+🔍 TestRunner: Test failed: should efficiently play scales Expected mock function to have been called 7 times
+🔍 TestRunner: Running afterEach hooks for: should efficiently play scales
+🔍 TestRunner: Test completed: should efficiently play scales (1ms)
+🔍 TestRunner: Running test 5/28: should handle rapid note changes
+🔍 TestRunner: Starting test: should handle rapid note changes
+🔍 TestRunner: Running beforeEach hooks for: should handle rapid note changes
+🔍 TestRunner: Executing test function: should handle rapid note changes
+Audio engine initialized successfully
+🔍 TestRunner: Test passed: should handle rapid note changes
+🔍 TestRunner: Running afterEach hooks for: should handle rapid note changes
+🔍 TestRunner: Test completed: should handle rapid note changes (0ms)
+🔍 TestRunner: Running test 6/28: should clean up audio resources efficiently
+🔍 TestRunner: Starting test: should clean up audio resources efficiently
+🔍 TestRunner: Running beforeEach hooks for: should clean up audio resources efficiently
+🔍 TestRunner: Executing test function: should clean up audio resources efficiently
+Audio engine initialized successfully
+🔍 TestRunner: Test passed: should clean up audio resources efficiently
+🔍 TestRunner: Running afterEach hooks for: should clean up audio resources efficiently
+🔍 TestRunner: Test completed: should clean up audio resources efficiently (0ms)
+🔍 TestRunner: Running test 7/28: should render initial circle quickly
+🔍 TestRunner: Starting test: should render initial circle quickly
+🔍 TestRunner: Running beforeEach hooks for: should render initial circle quickly
+🔍 TestRunner: Executing test function: should render initial circle quickly
+🔍 TestRunner: Test failed: should render initial circle quickly Expected 24 to be 12
+🔍 TestRunner: Running afterEach hooks for: should render initial circle quickly
+🔍 TestRunner: Test completed: should render initial circle quickly (1ms)
+🔍 TestRunner: Running test 8/28: should update visual state efficiently
+🔍 TestRunner: Starting test: should update visual state efficiently
+🔍 TestRunner: Running beforeEach hooks for: should update visual state efficiently
+🔍 TestRunner: Executing test function: should update visual state efficiently
+🔍 TestRunner: Test failed: should update visual state efficiently CustomEvent is not a constructor
+🔍 TestRunner: Running afterEach hooks for: should update visual state efficiently
+🔍 TestRunner: Test completed: should update visual state efficiently (0ms)
+🔍 TestRunner: Running test 9/28: should handle mode switching quickly
+🔍 TestRunner: Starting test: should handle mode switching quickly
+🔍 TestRunner: Running beforeEach hooks for: should handle mode switching quickly
+🔍 TestRunner: Executing test function: should handle mode switching quickly
+🔍 TestRunner: Test failed: should handle mode switching quickly CustomEvent is not a constructor
+🔍 TestRunner: Running afterEach hooks for: should handle mode switching quickly
+🔍 TestRunner: Test completed: should handle mode switching quickly (0ms)
+🔍 TestRunner: Running test 10/28: should resize efficiently
+🔍 TestRunner: Starting test: should resize efficiently
+🔍 TestRunner: Running beforeEach hooks for: should resize efficiently
+🔍 TestRunner: Executing test function: should resize efficiently
+🔍 TestRunner: Test passed: should resize efficiently
+🔍 TestRunner: Running afterEach hooks for: should resize efficiently
+🔍 TestRunner: Test completed: should resize efficiently (1ms)
+🔍 TestRunner: Running test 11/28: should handle rapid key changes
+🔍 TestRunner: Starting test: should handle rapid key changes
+🔍 TestRunner: Running beforeEach hooks for: should handle rapid key changes
+🔍 TestRunner: Executing test function: should handle rapid key changes
+🔍 TestRunner: Test failed: should handle rapid key changes CustomEvent is not a constructor
+🔍 TestRunner: Running afterEach hooks for: should handle rapid key changes
+🔍 TestRunner: Test completed: should handle rapid key changes (1ms)
+🔍 TestRunner: Running test 12/28: should animate transitions smoothly
+🔍 TestRunner: Starting test: should animate transitions smoothly
+🔍 TestRunner: Running beforeEach hooks for: should animate transitions smoothly
+🔍 TestRunner: Executing test function: should animate transitions smoothly
+🔍 TestRunner: Test failed: should animate transitions smoothly Cannot read properties of undefined (reading 'add')
+🔍 TestRunner: Running afterEach hooks for: should animate transitions smoothly
+🔍 TestRunner: Test completed: should animate transitions smoothly (0ms)
+🔍 TestRunner: Running test 13/28: should not leak memory during normal operation
+🔍 TestRunner: Starting test: should not leak memory during normal operation
+🔍 TestRunner: Running beforeEach hooks for: should not leak memory during normal operation
+🔍 TestRunner: Executing test function: should not leak memory during normal operation
+🔍 TestRunner: Test failed: should not leak memory during normal operation CustomEvent is not a constructor
+🔍 TestRunner: Running afterEach hooks for: should not leak memory during normal operation
+🔍 TestRunner: Test completed: should not leak memory during normal operation (0ms)
+🔍 TestRunner: Running test 14/28: should clean up audio resources
+🔍 TestRunner: Starting test: should clean up audio resources
+🔍 TestRunner: Running beforeEach hooks for: should clean up audio resources
+🔍 TestRunner: Executing test function: should clean up audio resources
+Audio engine initialized successfully
+🔍 TestRunner: Test passed: should clean up audio resources
+🔍 TestRunner: Running afterEach hooks for: should clean up audio resources
+🔍 TestRunner: Test completed: should clean up audio resources (0ms)
+🔍 TestRunner: Running test 15/28: should handle large numbers of DOM elements
+🔍 TestRunner: Starting test: should handle large numbers of DOM elements
+🔍 TestRunner: Running beforeEach hooks for: should handle large numbers of DOM elements
+🔍 TestRunner: Executing test function: should handle large numbers of DOM elements
+🔍 TestRunner: Test passed: should handle large numbers of DOM elements
+🔍 TestRunner: Running afterEach hooks for: should handle large numbers of DOM elements
+🔍 TestRunner: Test completed: should handle large numbers of DOM elements (2ms)
+🔍 TestRunner: Running test 16/28: should calculate scales quickly
+🔍 TestRunner: Starting test: should calculate scales quickly
+🔍 TestRunner: Running beforeEach hooks for: should calculate scales quickly
+🔍 TestRunner: Executing test function: should calculate scales quickly
+🔍 TestRunner: Test passed: should calculate scales quickly
+🔍 TestRunner: Running afterEach hooks for: should calculate scales quickly
+🔍 TestRunner: Test completed: should calculate scales quickly (0ms)
+🔍 TestRunner: Running test 17/28: should calculate frequencies efficiently
+🔍 TestRunner: Starting test: should calculate frequencies efficiently
+🔍 TestRunner: Running beforeEach hooks for: should calculate frequencies efficiently
+🔍 TestRunner: Executing test function: should calculate frequencies efficiently
+🔍 TestRunner: Test passed: should calculate frequencies efficiently
+🔍 TestRunner: Running afterEach hooks for: should calculate frequencies efficiently
+🔍 TestRunner: Test completed: should calculate frequencies efficiently (1ms)
+🔍 TestRunner: Running test 18/28: should handle chord generation efficiently
+🔍 TestRunner: Starting test: should handle chord generation efficiently
+🔍 TestRunner: Running beforeEach hooks for: should handle chord generation efficiently
+🔍 TestRunner: Executing test function: should handle chord generation efficiently
+🔍 TestRunner: Test passed: should handle chord generation efficiently
+🔍 TestRunner: Running afterEach hooks for: should handle chord generation efficiently
+🔍 TestRunner: Test completed: should handle chord generation efficiently (0ms)
+🔍 TestRunner: Running test 19/28: should cache expensive calculations
+🔍 TestRunner: Starting test: should cache expensive calculations
+🔍 TestRunner: Running beforeEach hooks for: should cache expensive calculations
+🔍 TestRunner: Executing test function: should cache expensive calculations
+🔍 TestRunner: Test passed: should cache expensive calculations
+🔍 TestRunner: Running afterEach hooks for: should cache expensive calculations
+🔍 TestRunner: Test completed: should cache expensive calculations (0ms)
+🔍 TestRunner: Running test 20/28: should load modules quickly
+🔍 TestRunner: Starting test: should load modules quickly
+🔍 TestRunner: Running beforeEach hooks for: should load modules quickly
+🔍 TestRunner: Executing test function: should load modules quickly
+🔍 TestRunner: Test passed: should load modules quickly
+🔍 TestRunner: Running afterEach hooks for: should load modules quickly
+🔍 TestRunner: Test completed: should load modules quickly (0ms)
+🔍 TestRunner: Running test 21/28: should initialize components efficiently
+🔍 TestRunner: Starting test: should initialize components efficiently
+🔍 TestRunner: Running beforeEach hooks for: should initialize components efficiently
+🔍 TestRunner: Executing test function: should initialize components efficiently
+🔍 TestRunner: Test passed: should initialize components efficiently
+🔍 TestRunner: Running afterEach hooks for: should initialize components efficiently
+🔍 TestRunner: Test completed: should initialize components efficiently (1ms)
+🔍 TestRunner: Running test 22/28: should handle concurrent operations
+🔍 TestRunner: Starting test: should handle concurrent operations
+🔍 TestRunner: Running beforeEach hooks for: should handle concurrent operations
+🔍 TestRunner: Executing test function: should handle concurrent operations
+Audio engine initialized successfully
+🔍 TestRunner: Test failed: should handle concurrent operations CustomEvent is not a constructor
+🔍 TestRunner: Running afterEach hooks for: should handle concurrent operations
+🔍 TestRunner: Test completed: should handle concurrent operations (0ms)
+🔍 TestRunner: Running test 23/28: should handle rapid user interactions
+🔍 TestRunner: Starting test: should handle rapid user interactions
+🔍 TestRunner: Running beforeEach hooks for: should handle rapid user interactions
+🔍 TestRunner: Executing test function: should handle rapid user interactions
+🔍 TestRunner: Test failed: should handle rapid user interactions CustomEvent is not a constructor
+🔍 TestRunner: Running afterEach hooks for: should handle rapid user interactions
+🔍 TestRunner: Test completed: should handle rapid user interactions (0ms)
+🔍 TestRunner: Running test 24/28: should maintain performance with many audio nodes
+🔍 TestRunner: Starting test: should maintain performance with many audio nodes
+🔍 TestRunner: Running beforeEach hooks for: should maintain performance with many audio nodes
+🔍 TestRunner: Executing test function: should maintain performance with many audio nodes
+Audio engine initialized successfully
+🔍 TestRunner: Test passed: should maintain performance with many audio nodes
+🔍 TestRunner: Running afterEach hooks for: should maintain performance with many audio nodes
+🔍 TestRunner: Test completed: should maintain performance with many audio nodes (0ms)
+🔍 TestRunner: Running test 25/28: should handle large data sets
+🔍 TestRunner: Starting test: should handle large data sets
+🔍 TestRunner: Running beforeEach hooks for: should handle large data sets
+🔍 TestRunner: Executing test function: should handle large data sets
+🔍 TestRunner: Test passed: should handle large data sets
+🔍 TestRunner: Running afterEach hooks for: should handle large data sets
+🔍 TestRunner: Test completed: should handle large data sets (0ms)
+🔍 TestRunner: Running test 26/28: should provide performance metrics
+🔍 TestRunner: Starting test: should provide performance metrics
+🔍 TestRunner: Running beforeEach hooks for: should provide performance metrics
+🔍 TestRunner: Executing test function: should provide performance metrics
+🔍 TestRunner: Test passed: should provide performance metrics
+🔍 TestRunner: Running afterEach hooks for: should provide performance metrics
+🔍 TestRunner: Test completed: should provide performance metrics (0ms)
+🔍 TestRunner: Running test 27/28: should detect performance regressions
+🔍 TestRunner: Starting test: should detect performance regressions
+🔍 TestRunner: Running beforeEach hooks for: should detect performance regressions
+🔍 TestRunner: Executing test function: should detect performance regressions
+🔍 TestRunner: Test passed: should detect performance regressions
+🔍 TestRunner: Running afterEach hooks for: should detect performance regressions
+🔍 TestRunner: Test completed: should detect performance regressions (1ms)
+🔍 TestRunner: Running test 28/28: should maintain consistent performance
+🔍 TestRunner: Starting test: should maintain consistent performance
+🔍 TestRunner: Running beforeEach hooks for: should maintain consistent performance
+🔍 TestRunner: Executing test function: should maintain consistent performance
+🔍 TestRunner: Test failed: should maintain consistent performance CustomEvent is not a constructor
+🔍 TestRunner: Running afterEach hooks for: should maintain consistent performance
+🔍 TestRunner: Test completed: should maintain consistent performance (0ms)
+🔍 TestRunner: Running afterAll hooks...
+🔍 TestRunner: Test run completed
+
+==================================================
+TEST RESULTS
+==================================================
+Tests:       17 passed, 11 failed, 0 skipped, 28 total
+Time:        11ms
+
+FAILED TESTS:
+
+Audio Performance:
+  ✗ should handle multiple simultaneous notes efficiently
+    Expected mock function to have been called 6 times
+  ✗ should efficiently play scales
+    Expected mock function to have been called 7 times
+
+Rendering Performance:
+  ✗ should render initial circle quickly
+    Expected 24 to be 12
+  ✗ should update visual state efficiently
+    CustomEvent is not a constructor
+  ✗ should handle mode switching quickly
+    CustomEvent is not a constructor
+  ✗ should handle rapid key changes
+    CustomEvent is not a constructor
+  ✗ should animate transitions smoothly
+    Cannot read properties of undefined (reading 'add')
+
+Memory Usage:
+  ✗ should not leak memory during normal operation
+    CustomEvent is not a constructor
+
+Resource Loading Performance:
+  ✗ should handle concurrent operations
+    CustomEvent is not a constructor
+
+Stress Testing:
+  ✗ should handle rapid user interactions
+    CustomEvent is not a constructor
+
+Performance Monitoring:
+  ✗ should maintain consistent performance
+    CustomEvent is not a constructor
+
+✗ Test suite FAILED
+[36m
+📊 Performance Test Results[0m
+[34m----------------------------------------[0m
+[32m✅ Passed: 17[0m
+[31m❌ Failed: 11[0m
+[34m📈 Total: 28[0m
+[34m⏱️  Duration: 11ms[0m
+[34m📊 Success Rate: 60.7%[0m

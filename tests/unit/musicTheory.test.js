@@ -3,20 +3,14 @@
  * Comprehensive tests covering all music theory calculations and functionality
  */
 
-// Load the module under test
-const {
-    MusicTheory,
-    CIRCLE_OF_FIFTHS,
-    MAJOR_KEYS,
-    MINOR_KEYS,
-    CHORD_PROGRESSIONS
-} = require('../../js/musicTheory.js');
+// Modules are loaded as globals in the test environment
+// MusicTheory, CIRCLE_OF_FIFTHS, MAJOR_KEYS, MINOR_KEYS, CHORD_PROGRESSIONS are available as global variables
 
 describe('MusicTheory Module', () => {
     let musicTheory;
 
     beforeEach(() => {
-        musicTheory = new MusicTheory();
+        musicTheory = new global.MusicTheory();
     });
 
     describe('Constructor and Initial State', () => {
@@ -26,7 +20,7 @@ describe('MusicTheory Module', () => {
         });
 
         test('should be an instance of MusicTheory', () => {
-            expect(musicTheory).toBeInstanceOf(MusicTheory);
+            expect(musicTheory).toBeInstanceOf(global.MusicTheory);
         });
     });
 
@@ -483,30 +477,30 @@ describe('MusicTheory Module', () => {
 
     describe('Constants and Data Structures', () => {
         test('CIRCLE_OF_FIFTHS should contain all 12 keys', () => {
-            expect(CIRCLE_OF_FIFTHS).toHaveLength(12);
-            expect(CIRCLE_OF_FIFTHS[0]).toBe('C');
-            expect(CIRCLE_OF_FIFTHS[11]).toBe('F');
+            expect(global.CIRCLE_OF_FIFTHS).toHaveLength(12);
+            expect(global.CIRCLE_OF_FIFTHS[0]).toBe('C');
+            expect(global.CIRCLE_OF_FIFTHS[11]).toBe('F');
         });
 
         test('MAJOR_KEYS should contain all major key signatures', () => {
-            expect(Object.keys(MAJOR_KEYS)).toHaveLength(15); // Including enharmonic equivalents
-            expect(MAJOR_KEYS['C']).toBeDefined();
-            expect(MAJOR_KEYS['F#']).toBeDefined();
-            expect(MAJOR_KEYS['Gb']).toBeDefined();
+            expect(Object.keys(global.MAJOR_KEYS)).toHaveLength(15); // Including enharmonic equivalents
+            expect(global.MAJOR_KEYS['C']).toBeDefined();
+            expect(global.MAJOR_KEYS['F#']).toBeDefined();
+            expect(global.MAJOR_KEYS['Gb']).toBeDefined();
         });
 
         test('MINOR_KEYS should contain all minor key signatures', () => {
-            expect(Object.keys(MINOR_KEYS)).toHaveLength(15); // Including enharmonic equivalents
-            expect(MINOR_KEYS['A']).toBeDefined();
-            expect(MINOR_KEYS['F#']).toBeDefined();
-            expect(MINOR_KEYS['Gb']).toBeDefined();
+            expect(Object.keys(global.MINOR_KEYS)).toHaveLength(15); // Including enharmonic equivalents
+            expect(global.MINOR_KEYS['A']).toBeDefined();
+            expect(global.MINOR_KEYS['F#']).toBeDefined();
+            expect(global.MINOR_KEYS['Gb']).toBeDefined();
         });
 
         test('CHORD_PROGRESSIONS should contain major and minor progressions', () => {
-            expect(CHORD_PROGRESSIONS.major).toBeDefined();
-            expect(CHORD_PROGRESSIONS.minor).toBeDefined();
-            expect(Object.keys(CHORD_PROGRESSIONS.major).length).toBeGreaterThan(0);
-            expect(Object.keys(CHORD_PROGRESSIONS.minor).length).toBeGreaterThan(0);
+            expect(global.CHORD_PROGRESSIONS.major).toBeDefined();
+            expect(global.CHORD_PROGRESSIONS.minor).toBeDefined();
+            expect(Object.keys(global.CHORD_PROGRESSIONS.major).length).toBeGreaterThan(0);
+            expect(Object.keys(global.CHORD_PROGRESSIONS.minor).length).toBeGreaterThan(0);
         });
     });
 

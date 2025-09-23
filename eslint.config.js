@@ -151,6 +151,16 @@ module.exports = [
         }
     },
     {
+        // Specific rules for visual test files
+        files: ['tests/visual/**/*.js'],
+        languageOptions: {
+            globals: {
+                // Browser globals for visual tests
+                getComputedStyle: 'readonly'
+            }
+        }
+    },
+    {
         // Ignore patterns
         ignores: ['node_modules/**', 'dist/**', 'build/**', '*.min.js']
     }
