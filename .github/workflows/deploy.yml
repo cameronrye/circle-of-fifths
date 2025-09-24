@@ -39,6 +39,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify ESLint installation
+        run: |
+          echo "Checking ESLint installation..."
+          ls -la node_modules/.bin/eslint || echo "ESLint binary not found"
+          npm list eslint @eslint/js eslint-config-prettier || echo "Some ESLint packages not found"
+
       - name: Run linting
         run: npm run lint
 
