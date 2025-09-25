@@ -83,7 +83,7 @@ describe('Circle of Fifths Application Integration', () => {
             }))
         };
 
-        global.CustomEvent = function(type, options = {}) {
+        global.CustomEvent = function (type, options = {}) {
             this.type = type;
             this.detail = options.detail || null;
             this.bubbles = options.bubbles || false;
@@ -190,7 +190,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('MusicTheory and AudioEngine Integration', () => {
-        test('should play correct frequencies for notes', async() => {
+        test('should play correct frequencies for notes', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
             const playNoteSpy = jest.spyOn(audioEngine, 'playNote').mockResolvedValue(true);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);
@@ -207,7 +207,7 @@ describe('Circle of Fifths Application Integration', () => {
             initializeSpy.mockRestore();
         });
 
-        test('should play correct scale notes', async() => {
+        test('should play correct scale notes', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
             const playScaleSpy = jest.spyOn(audioEngine, 'playScale').mockResolvedValue(true);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);
@@ -224,7 +224,7 @@ describe('Circle of Fifths Application Integration', () => {
             initializeSpy.mockRestore();
         });
 
-        test('should play chord with correct notes', async() => {
+        test('should play chord with correct notes', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
             const playChordSpy = jest.spyOn(audioEngine, 'playChord').mockResolvedValue(true);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);
@@ -242,9 +242,11 @@ describe('Circle of Fifths Application Integration', () => {
             initializeSpy.mockRestore();
         });
 
-        test('should play chord progression using music theory', async() => {
+        test('should play chord progression using music theory', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
-            const playProgressionSpy = jest.spyOn(audioEngine, 'playProgression').mockResolvedValue(true);
+            const playProgressionSpy = jest
+                .spyOn(audioEngine, 'playProgression')
+                .mockResolvedValue(true);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);
 
             await audioEngine.initialize();
@@ -268,7 +270,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('CircleRenderer and AudioEngine Integration', () => {
-        test('should trigger audio playback when key is selected', async() => {
+        test('should trigger audio playback when key is selected', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
             const playNoteSpy = jest.spyOn(audioEngine, 'playNote').mockResolvedValue(true);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);
@@ -286,7 +288,7 @@ describe('Circle of Fifths Application Integration', () => {
             initializeSpy.mockRestore();
         });
 
-        test('should play scale for selected key and mode', async() => {
+        test('should play scale for selected key and mode', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
             const playScaleSpy = jest.spyOn(audioEngine, 'playScale').mockResolvedValue(true);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);
@@ -322,7 +324,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('Full Application Workflow', () => {
-        test('should handle complete key selection workflow', async() => {
+        test('should handle complete key selection workflow', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
             const playNoteSpy = jest.spyOn(audioEngine, 'playNote').mockResolvedValue(true);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);
@@ -354,7 +356,7 @@ describe('Circle of Fifths Application Integration', () => {
             initializeSpy.mockRestore();
         });
 
-        test('should handle mode switching workflow', async() => {
+        test('should handle mode switching workflow', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
             const playScaleSpy = jest.spyOn(audioEngine, 'playScale').mockResolvedValue(true);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);
@@ -391,9 +393,11 @@ describe('Circle of Fifths Application Integration', () => {
             initializeSpy.mockRestore();
         });
 
-        test('should handle chord progression playback', async() => {
+        test('should handle chord progression playback', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
-            const playProgressionSpy = jest.spyOn(audioEngine, 'playProgression').mockResolvedValue(true);
+            const playProgressionSpy = jest
+                .spyOn(audioEngine, 'playProgression')
+                .mockResolvedValue(true);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);
 
             await audioEngine.initialize();
@@ -419,7 +423,7 @@ describe('Circle of Fifths Application Integration', () => {
         });
 
         test('should maintain consistency across all components', () => {
-            const testKey = 'A#';  // Use A# instead of Bb (enharmonic equivalent in circle of fifths)
+            const testKey = 'A#'; // Use A# instead of Bb (enharmonic equivalent in circle of fifths)
             const testMode = 'major';
 
             // 1. Verify key is valid in music theory
@@ -451,7 +455,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('Error Handling and Edge Cases', () => {
-        test('should handle audio initialization failure gracefully', async() => {
+        test('should handle audio initialization failure gracefully', async () => {
             // Mock the AudioEngine to simulate initialization failure
             const newAudioEngine = new AudioEngine();
             const initializeSpy = jest.spyOn(newAudioEngine, 'initialize').mockResolvedValue(false);
@@ -488,7 +492,7 @@ describe('Circle of Fifths Application Integration', () => {
             }).not.toThrow();
         });
 
-        test('should handle audio playback errors gracefully', async() => {
+        test('should handle audio playback errors gracefully', async () => {
             mockAudioContext.createOscillator.mockImplementation(() => {
                 throw new Error('Oscillator creation failed');
             });
@@ -500,7 +504,7 @@ describe('Circle of Fifths Application Integration', () => {
     });
 
     describe('Performance and Resource Management', () => {
-        test('should clean up audio resources properly', async() => {
+        test('should clean up audio resources properly', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
             const playNoteSpy = jest.spyOn(audioEngine, 'playNote').mockResolvedValue(true);
             const stopAllSpy = jest.spyOn(audioEngine, 'stopAll').mockReturnValue(undefined);
@@ -521,7 +525,7 @@ describe('Circle of Fifths Application Integration', () => {
             initializeSpy.mockRestore();
         });
 
-        test('should dispose of resources on cleanup', async() => {
+        test('should dispose of resources on cleanup', async () => {
             // Mock the AudioEngine methods to avoid AudioContext issues
             const disposeSpy = jest.spyOn(audioEngine, 'dispose').mockReturnValue(undefined);
             const initializeSpy = jest.spyOn(audioEngine, 'initialize').mockResolvedValue(true);

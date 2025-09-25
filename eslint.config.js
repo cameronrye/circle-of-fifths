@@ -15,13 +15,31 @@ module.exports = [
                 console: 'readonly',
                 setTimeout: 'readonly',
                 clearTimeout: 'readonly',
+                setInterval: 'readonly',
+                clearInterval: 'readonly',
                 alert: 'readonly',
                 navigator: 'readonly',
                 localStorage: 'readonly',
+                sessionStorage: 'readonly',
+                location: 'readonly',
+                history: 'readonly',
                 CustomEvent: 'readonly',
                 KeyboardEvent: 'readonly',
+                MouseEvent: 'readonly',
+                Event: 'readonly',
+                EventTarget: 'readonly',
+                Element: 'readonly',
+                HTMLElement: 'readonly',
+                Node: 'readonly',
+                NodeList: 'readonly',
                 fetch: 'readonly',
+                Request: 'readonly',
+                Response: 'readonly',
+                Headers: 'readonly',
+                URL: 'readonly',
+                URLSearchParams: 'readonly',
                 performance: 'readonly',
+                matchMedia: 'readonly',
 
                 // Web Audio API
                 AudioContext: 'readonly',
@@ -30,6 +48,9 @@ module.exports = [
                 // Service Worker globals
                 self: 'readonly',
                 caches: 'readonly',
+                clients: 'readonly',
+                registration: 'readonly',
+                skipWaiting: 'readonly',
 
                 // Custom globals from the application (allow redefinition)
                 CircleOfFifthsApp: 'writable',
@@ -111,7 +132,7 @@ module.exports = [
             'computed-property-spacing': ['error', 'never'],
             'eol-last': ['error', 'always'],
             'func-call-spacing': ['error', 'never'],
-            indent: ['error', 4, { SwitchCase: 1 }],
+            // indent: ['error', 4, { SwitchCase: 1 }], // Disabled - handled by Prettier
             'key-spacing': ['error', { beforeColon: false, afterColon: true }],
             'keyword-spacing': ['error', { before: true, after: true }],
             'linebreak-style': ['error', 'unix'],
@@ -122,7 +143,7 @@ module.exports = [
             semi: ['error', 'always'],
             'semi-spacing': ['error', { before: false, after: true }],
             'space-before-blocks': ['error', 'always'],
-            'space-before-function-paren': ['error', 'never'],
+            // 'space-before-function-paren': ['error', 'never'], // Disabled - handled by Prettier
             'space-in-parens': ['error', 'never'],
             'space-infix-ops': 'error',
             'space-unary-ops': ['error', { words: true, nonwords: false }]
@@ -158,6 +179,29 @@ module.exports = [
                 // Browser globals for visual tests
                 getComputedStyle: 'readonly'
             }
+        }
+    },
+    {
+        // Specific rules for service worker files
+        files: ['sw.js', '**/sw.js', '**/*worker*.js'],
+        languageOptions: {
+            globals: {
+                // Service Worker specific globals
+                importScripts: 'readonly',
+                WorkerGlobalScope: 'readonly',
+                ServiceWorkerGlobalScope: 'readonly',
+                ExtendableEvent: 'readonly',
+                FetchEvent: 'readonly',
+                InstallEvent: 'readonly',
+                ActivateEvent: 'readonly',
+                MessageEvent: 'readonly',
+                NotificationEvent: 'readonly',
+                PushEvent: 'readonly',
+                SyncEvent: 'readonly'
+            }
+        },
+        rules: {
+            'no-restricted-globals': 'off' // Allow service worker globals
         }
     },
     {

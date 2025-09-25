@@ -23,10 +23,13 @@ A comprehensive web application for learning music theory through an interactive
 
 ### User Experience
 
+- **Progressive Web App**: Installable with offline functionality
+- **Multiple Themes**: Light, Dark, System, High Contrast, and Sepia themes
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Touch Optimized**: Enhanced touch interactions for mobile devices
 - **Accessibility**: Full keyboard navigation and screen reader support
 - **Fast Loading**: Optimized assets and efficient rendering
-- **Cross-Browser**: Compatible with modern browsers
+- **Cross-Browser**: Compatible with modern browsers with polyfills
 
 ## Getting Started
 
@@ -74,18 +77,25 @@ A comprehensive web application for learning music theory through an interactive
 
 ### File Structure
 
-```
+```text
 ├── index.html              # Main HTML file
+├── manifest.json           # PWA manifest
+├── sw.js                   # Service worker
 ├── css/
-│   └── styles.css          # Complete stylesheet
+│   └── styles.css          # Complete stylesheet with themes
 ├── js/
+│   ├── polyfills.js        # Browser compatibility
+│   ├── logger.js           # Logging system
 │   ├── musicTheory.js      # Music theory data and logic
 │   ├── audioEngine.js      # Web Audio API integration
 │   ├── circleRenderer.js   # SVG visualization
+│   ├── themeManager.js     # Theme system
+│   ├── themeToggle.js      # Theme UI controls
 │   ├── interactions.js     # User input handling
 │   └── app.js              # Main application controller
 ├── assets/
-│   └── favicon.svg         # Application icon
+│   ├── favicon.svg         # Application icon
+│   └── favicon.png         # Fallback icon
 └── README.md               # This documentation
 ```
 
@@ -224,13 +234,29 @@ A comprehensive web application for learning music theory through an interactive
 
     ```bash
     npm run serve
+    # or use the make interface
+    make dev
     ```
 
     The application will be available at `http://localhost:8000`
 
 4. **Run tests**:
+
     ```bash
     npm test
+    ```
+
+5. **Explore available commands**:
+
+    ```bash
+    # Show all available npm scripts with descriptions
+    npm run help
+
+    # Or use the make interface
+    make help
+
+    # Search for specific commands
+    npm run help -- --search test
     ```
 
 ### Build and Deployment
@@ -262,6 +288,7 @@ To deploy manually to GitHub Pages:
     ```
 
 2. **Push to main branch**:
+
     ```bash
     git push origin main
     ```
@@ -310,10 +337,13 @@ The GitHub Actions workflow will automatically build and deploy the site.
 
 ### Technical Improvements
 
-- Service worker for offline use
-- Progressive Web App features
-- Advanced audio effects
-- Performance analytics
+- ✅ Service worker for offline use
+- ✅ Progressive Web App features
+- ✅ Advanced audio effects
+- ✅ Performance analytics
+- Enhanced caching strategies
+- Background sync capabilities
+- Push notifications for updates
 
 ## License
 

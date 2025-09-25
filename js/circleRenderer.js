@@ -380,6 +380,41 @@ class CircleRenderer {
     }
 
     /**
+     * Highlight a specific note during playback
+     */
+    highlightNote(note, duration = 500, type = 'note') {
+        const segment = this.keySegments.get(note);
+        if (segment) {
+            // Clear any existing highlighting classes
+            segment.classList.remove('note-playing', 'chord-playing', 'progression-playing');
+
+            // Add appropriate class based on type
+            const classMap = {
+                note: 'note-playing',
+                chord: 'chord-playing',
+                progression: 'progression-playing'
+            };
+
+            const className = classMap[type] || 'note-playing';
+            segment.classList.add(className);
+
+            // Remove highlight after duration
+            setTimeout(() => {
+                segment.classList.remove(className);
+            }, duration);
+        }
+    }
+
+    /**
+     * Clear all note highlighting
+     */
+    clearNoteHighlights() {
+        this.keySegments.forEach(segment => {
+            segment.classList.remove('note-playing', 'chord-playing', 'progression-playing');
+        });
+    }
+
+    /**
      * Get key from coordinates
      */
     getKeyFromCoordinates(x, y) {

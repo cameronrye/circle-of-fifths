@@ -103,7 +103,7 @@ describe('Accessibility Tests', () => {
         };
 
         global.document = mockDocument;
-        global.CustomEvent = function(type, options = {}) {
+        global.CustomEvent = function (type, options = {}) {
             this.type = type;
             this.detail = options.detail || null;
             this.bubbles = options.bubbles || false;

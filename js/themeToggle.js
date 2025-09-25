@@ -30,6 +30,9 @@ class ThemeToggle {
         // State
         this.isOpen = false;
 
+        // Initialize logger
+        this.logger = window.loggers?.theme || window.logger || console;
+
         // Bind methods
         this.handleToggleClick = this.handleToggleClick.bind(this);
         this.handleOptionClick = this.handleOptionClick.bind(this);
@@ -45,7 +48,7 @@ class ThemeToggle {
      * Initialize the theme toggle component
      */
     init() {
-        console.log('Initializing Theme Toggle...');
+        this.logger.debug('Initializing Theme Toggle...');
 
         // Get DOM elements
         this.toggleBtn = document.getElementById('theme-toggle-btn');
@@ -53,7 +56,7 @@ class ThemeToggle {
         this.options = Array.from(document.querySelectorAll('.theme-option'));
 
         if (!this.toggleBtn || !this.dropdown) {
-            console.error('Theme toggle elements not found');
+            this.logger.error('Theme toggle elements not found');
             return;
         }
 
@@ -64,7 +67,7 @@ class ThemeToggle {
         this.updateToggleButton();
         this.updateActiveOption();
 
-        console.log('Theme Toggle initialized');
+        this.logger.debug('Theme Toggle initialized');
     }
 
     /**
@@ -302,7 +305,7 @@ class ThemeToggle {
      * Cleanup resources
      */
     destroy() {
-        console.log('Destroying Theme Toggle...');
+        this.logger.debug('Destroying Theme Toggle...');
 
         // Remove event listeners
         if (this.toggleBtn) {
@@ -321,7 +324,7 @@ class ThemeToggle {
         document.removeEventListener('click', this.handleDocumentClick);
         document.removeEventListener('themeChanged', this.handleThemeChange);
 
-        console.log('Theme Toggle destroyed');
+        this.logger.debug('Theme Toggle destroyed');
     }
 }
 

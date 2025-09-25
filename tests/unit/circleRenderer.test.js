@@ -30,17 +30,27 @@ describe('CircleRenderer Module', () => {
                     mockElement.attributes = mockElement.attributes || {};
                     mockElement.attributes[name] = value;
                     // Store common attributes as properties for easy access
-                    if (name === 'data-key') { mockElement.dataKey = value; }
-                    if (name === 'aria-label') { mockElement.ariaLabel = value; }
-                    if (name === 'role') { mockElement.role = value; }
-                    if (name === 'text-anchor') { mockElement.textAnchor = value; }
-                    if (name === 'd') { mockElement.pathData = value; }
+                    if (name === 'data-key') {
+                        mockElement.dataKey = value;
+                    }
+                    if (name === 'aria-label') {
+                        mockElement.ariaLabel = value;
+                    }
+                    if (name === 'role') {
+                        mockElement.role = value;
+                    }
+                    if (name === 'text-anchor') {
+                        mockElement.textAnchor = value;
+                    }
+                    if (name === 'd') {
+                        mockElement.pathData = value;
+                    }
                 }),
-                getAttribute: global.jest.fn((name) => {
+                getAttribute: global.jest.fn(name => {
                     return mockElement.attributes ? mockElement.attributes[name] : undefined;
                 }),
                 removeAttribute: global.jest.fn(),
-                appendChild: global.jest.fn((child) => {
+                appendChild: global.jest.fn(child => {
                     mockElement.children = mockElement.children || [];
                     mockElement.children.push(child);
                 }),
@@ -574,7 +584,7 @@ describe('CircleRenderer Module', () => {
             global.jest.useRealTimers();
         });
 
-        test('should animate transition', (done) => {
+        test('should animate transition', done => {
             const callback = global.jest.fn(() => {
                 // Verify callback was called
                 expect(callback).toHaveBeenCalled();
@@ -649,9 +659,7 @@ describe('CircleRenderer Module', () => {
 
             // Should have cleared and re-rendered
             expect(mockKeySegmentsGroup.innerHTML).toBe('');
-            expect(mockKeySegmentsGroup.appendChild.callCount).toBeGreaterThan(
-                originalAppendCalls
-            );
+            expect(mockKeySegmentsGroup.appendChild.callCount).toBeGreaterThan(originalAppendCalls);
         });
     });
 

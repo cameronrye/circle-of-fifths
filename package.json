@@ -4,6 +4,7 @@
     "description": "Interactive Circle of Fifths - Learn music theory through exploration",
     "main": "index.html",
     "scripts": {
+        "help": "node scripts/help.js",
         "test": "node tests/run-tests.js",
         "test:unit": "node tests/run-tests.js --unit",
         "test:integration": "node tests/run-tests.js --integration",

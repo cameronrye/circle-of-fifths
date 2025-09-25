@@ -3,6 +3,9 @@
  * Main application entry point and initialization
  */
 
+// Import logger for structured logging
+// Note: Logger is loaded via script tag in index.html
+
 /**
  * Main application class for the Circle of Fifths interactive music theory tool.
  * Manages initialization, component coordination, and application lifecycle.
@@ -29,6 +32,9 @@ class CircleOfFifthsApp {
 
         this.isInitialized = false;
         this.initializationPromise = null;
+
+        // Initialize logger
+        this.logger = window.loggers?.app || window.logger || console;
 
         // Bind methods
         this.handleResize = this.handleResize.bind(this);
@@ -71,7 +77,7 @@ class CircleOfFifthsApp {
      */
     async _performInitialization() {
         try {
-            console.log('Initializing Circle of Fifths application...');
+            this.logger.lifecycle('initialization-start');
 
             // Wait for DOM to be ready
             await this.waitForDOM();
@@ -89,7 +95,7 @@ class CircleOfFifthsApp {
             this.setupErrorHandling();
 
             this.isInitialized = true;
-            console.log('Circle of Fifths application initialized successfully');
+            this.logger.lifecycle('initialization-complete');
 
             // Dispatch initialization complete event
             document.dispatchEvent(
@@ -125,19 +131,19 @@ class CircleOfFifthsApp {
     initializeComponents() {
         // Initialize theme manager first (affects visual appearance)
         this.themeManager = new ThemeManager();
-        console.log('Theme manager initialized');
+        this.logger.debug('Theme manager initialized');
 
         // Initialize theme toggle UI
         this.themeToggle = new ThemeToggle(this.themeManager);
-        console.log('Theme toggle initialized');
+        this.logger.debug('Theme toggle initialized');
 
         // Initialize music theory engine
         this.musicTheory = new MusicTheory();
-        console.log('Music theory engine initialized');
+        this.logger.debug('Music theory engine initialized');
 
         // Initialize audio engine
         this.audioEngine = new AudioEngine();
-        console.log('Audio engine created (will initialize on first use)');
+        this.logger.debug('Audio engine created (will initialize on first use)');
 
         // Get SVG element
         const svgElement = document.getElementById('circle-svg');
@@ -147,7 +153,7 @@ class CircleOfFifthsApp {
 
         // Initialize circle renderer
         this.circleRenderer = new CircleRenderer(svgElement, this.musicTheory);
-        console.log('Circle renderer initialized');
+        this.logger.debug('Circle renderer initialized');
 
         // Initialize interactions handler
         this.interactionsHandler = new InteractionsHandler(
@@ -155,7 +161,7 @@ class CircleOfFifthsApp {
             this.audioEngine,
             this.musicTheory
         );
-        console.log('Interactions handler initialized');
+        this.logger.debug('Interactions handler initialized');
     }
 
     /**
@@ -304,7 +310,7 @@ class CircleOfFifthsApp {
 
         // Show error message to user
         setTimeout(() => {
-            console.error(
+            this.logger.error(
                 'Failed to initialize the Circle of Fifths application. Please refresh the page and try again.'
             );
             // Could implement a proper error modal here instead of alert
@@ -316,15 +322,15 @@ class CircleOfFifthsApp {
      */
     handleError(error) {
         // Log error for debugging
-        console.error('Application error:', error);
+        this.logger.error('Application error:', error);
 
         // Show user-friendly error message
         const errorMessage = this.getUserFriendlyErrorMessage(error);
 
         // Could implement a proper error modal here
-        // For now, use console and optionally log for critical errors
+        // For now, use logger and optionally log for critical errors
         if (this.isCriticalError(error)) {
-            console.error('Critical error:', errorMessage);
+            this.logger.error('Critical error:', errorMessage);
         }
     }
 
@@ -369,7 +375,7 @@ class CircleOfFifthsApp {
             'F1 or Shift+?: Show this help'
         ];
 
-        console.log('Keyboard Shortcuts:\n\n' + shortcuts.join('\n'));
+        this.logger.info('Keyboard Shortcuts:\n\n' + shortcuts.join('\n'));
         // Could implement a proper help modal here instead of alert
     }
 
@@ -401,9 +407,9 @@ class CircleOfFifthsApp {
             interactions: this.interactionsHandler ? this.interactionsHandler.getState() : null,
             theme: this.themeManager
                 ? {
-                    current: this.themeManager.getCurrentTheme(),
-                    effective: this.themeManager.getEffectiveTheme()
-                }
+                      current: this.themeManager.getCurrentTheme(),
+                      effective: this.themeManager.getEffectiveTheme()
+                  }
                 : null
         };
     }
@@ -446,7 +452,7 @@ class CircleOfFifthsApp {
         this.isInitialized = false;
         this.initializationPromise = null;
 
-        console.log('Circle of Fifths application destroyed');
+        this.logger.lifecycle('application-destroyed');
     }
 
     /**
@@ -468,11 +474,12 @@ class CircleOfFifthsApp {
 // Initialize application when DOM is ready
 let app;
 
-document.addEventListener('DOMContentLoaded', async() => {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
         app = new CircleOfFifthsApp();
         await app.init();
     } catch (error) {
+        // Use basic console.error since logger may not be available yet
         console.error('Failed to start Circle of Fifths application:', error);
     }
 });
@@ -491,10 +498,14 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker
             .register('/sw.js')
             .then(registration => {
-                console.log('SW registered: ', registration);
+                if (window.logger) {
+                    window.logger.debug('Service Worker registered:', registration);
+                }
             })
             .catch(registrationError => {
-                console.log('SW registration failed: ', registrationError);
+                if (window.logger) {
+                    window.logger.warn('Service Worker registration failed:', registrationError);
+                }
             });
     });
 }

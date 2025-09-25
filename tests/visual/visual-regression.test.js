@@ -116,7 +116,7 @@ describe('Visual Regression Tests', () => {
         };
 
         global.document = mockDocument;
-        global.CustomEvent = function(type, options = {}) {
+        global.CustomEvent = function (type, options = {}) {
             this.type = type;
             this.detail = options.detail || null;
             this.bubbles = options.bubbles || false;
@@ -482,10 +482,10 @@ describe('Visual Regression Tests', () => {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result
             ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            }
+                  r: parseInt(result[1], 16),
+                  g: parseInt(result[2], 16),
+                  b: parseInt(result[3], 16)
+              }
             : null;
     }
 

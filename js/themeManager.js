@@ -20,9 +20,12 @@ class ThemeManager {
      * @constructor
      */
     constructor() {
-        this.themes = ['light', 'dark', 'system'];
+        this.themes = ['light', 'dark', 'system', 'high-contrast', 'sepia'];
         this.currentTheme = 'system'; // Default to system preference
         this.storageKey = 'circle-of-fifths-theme';
+
+        // Initialize logger
+        this.logger = window.loggers?.theme || window.logger || console;
 
         // Bind methods
         this.handleSystemThemeChange = this.handleSystemThemeChange.bind(this);
@@ -36,7 +39,7 @@ class ThemeManager {
      * Initialize the theme manager
      */
     init() {
-        console.log('Initializing Theme Manager...');
+        this.logger.debug('Initializing Theme Manager...');
 
         // Load saved theme preference
         this.loadThemePreference();
@@ -50,7 +53,7 @@ class ThemeManager {
         // Setup storage change listener for cross-tab synchronization
         this.setupStorageListener();
 
-        console.log(`Theme Manager initialized with theme: ${this.currentTheme}`);
+        this.logger.debug(`Theme Manager initialized with theme: ${this.currentTheme}`);
     }
 
     /**
@@ -61,12 +64,12 @@ class ThemeManager {
             const savedTheme = localStorage.getItem(this.storageKey);
             if (savedTheme && this.themes.includes(savedTheme)) {
                 this.currentTheme = savedTheme;
-                console.log(`Loaded saved theme preference: ${savedTheme}`);
+                this.logger.debug(`Loaded saved theme preference: ${savedTheme}`);
             } else {
-                console.log('No saved theme preference found, using system default');
+                this.logger.debug('No saved theme preference found, using system default');
             }
         } catch (error) {
-            console.warn('Failed to load theme preference from localStorage:', error);
+            this.logger.warn('Failed to load theme preference from localStorage:', error);
         }
     }
 
@@ -76,9 +79,9 @@ class ThemeManager {
     saveThemePreference(theme) {
         try {
             localStorage.setItem(this.storageKey, theme);
-            console.log(`Saved theme preference: ${theme}`);
+            this.logger.debug(`Saved theme preference: ${theme}`);
         } catch (error) {
-            console.warn('Failed to save theme preference to localStorage:', error);
+            this.logger.warn('Failed to save theme preference to localStorage:', error);
         }
     }
 
@@ -106,7 +109,7 @@ class ThemeManager {
      * Handle system theme preference change
      */
     handleSystemThemeChange(event) {
-        console.log(`System theme changed to: ${event.matches ? 'dark' : 'light'}`);
+        this.logger.debug(`System theme changed to: ${event.matches ? 'dark' : 'light'}`);
 
         // Only react if current theme is 'system'
         if (this.currentTheme === 'system') {
@@ -122,7 +125,7 @@ class ThemeManager {
         if (event.key === this.storageKey && event.newValue) {
             const newTheme = event.newValue;
             if (this.themes.includes(newTheme) && newTheme !== this.currentTheme) {
-                console.log(`Theme changed in another tab: ${newTheme}`);
+                this.logger.debug(`Theme changed in another tab: ${newTheme}`);
                 this.currentTheme = newTheme;
                 this.applyTheme(newTheme);
                 this.notifyThemeChange();
@@ -135,7 +138,7 @@ class ThemeManager {
      */
     setTheme(theme) {
         if (!this.themes.includes(theme)) {
-            console.warn(`Invalid theme: ${theme}. Available themes:`, this.themes);
+            this.logger.warn(`Invalid theme: ${theme}. Available themes:`, this.themes);
             return false;
         }
 
@@ -144,7 +147,7 @@ class ThemeManager {
             return false;
         }
 
-        console.log(`Setting theme to: ${theme}`);
+        this.logger.debug(`Setting theme to: ${theme}`);
 
         this.currentTheme = theme;
         this.applyTheme(theme);
@@ -172,11 +175,11 @@ class ThemeManager {
             // Update meta theme-color for mobile browsers
             this.updateMetaThemeColor(theme);
 
-            console.log(`Applied theme: ${theme}`);
+            this.logger.debug(`Applied theme: ${theme}`);
         } else {
             // Remove theme attribute for invalid themes
             html.removeAttribute('data-theme');
-            console.log(`Invalid theme: ${theme}, removed theme attribute`);
+            this.logger.debug(`Invalid theme: ${theme}, removed theme attribute`);
         }
     }
 
@@ -188,8 +191,21 @@ class ThemeManager {
         if (metaThemeColor) {
             let color = '#3498db'; // Default blue
 
-            if (theme === 'dark' || (theme === 'system' && this.getSystemTheme() === 'dark')) {
-                color = '#2c2c2c'; // Dark surface color
+            switch (theme) {
+                case 'dark':
+                    color = '#2c2c2c';
+                    break;
+                case 'high-contrast':
+                    color = '#ffffff';
+                    break;
+                case 'sepia':
+                    color = '#fdf6e3';
+                    break;
+                case 'system':
+                    color = this.getSystemTheme() === 'dark' ? '#2c2c2c' : '#ffffff';
+                    break;
+                default:
+                    color = '#ffffff'; // Light theme
             }
 
             metaThemeColor.setAttribute('content', color);
@@ -263,7 +279,9 @@ class ThemeManager {
         const displayNames = {
             light: 'Light',
             dark: 'Dark',
-            system: 'System'
+            system: 'System',
+            'high-contrast': 'High Contrast',
+            sepia: 'Sepia'
         };
 
         return displayNames[theme] || 'Unknown';
@@ -276,7 +294,9 @@ class ThemeManager {
         const icons = {
             light: '☀️',
             dark: '🌙',
-            system: '💻'
+            system: '💻',
+            'high-contrast': '🔲',
+            sepia: '📜'
         };
 
         return icons[theme] || '❓';
@@ -289,7 +309,9 @@ class ThemeManager {
         const colors = {
             light: '#ffffff',
             dark: '#2c2c2c',
-            system: this.getSystemTheme() === 'dark' ? '#2c2c2c' : '#ffffff'
+            system: this.getSystemTheme() === 'dark' ? '#2c2c2c' : '#ffffff',
+            'high-contrast': '#ffffff',
+            sepia: '#fdf6e3'
         };
 
         return colors[theme] || '#3498db';
@@ -299,7 +321,9 @@ class ThemeManager {
      * Cleanup resources
      */
     destroy() {
-        console.log('Destroying Theme Manager...');
+        if (this.logger) {
+            this.logger.debug('Destroying Theme Manager...');
+        }
 
         // Remove system theme listener
         if (this.systemThemeMediaQuery) {
@@ -307,9 +331,13 @@ class ThemeManager {
         }
 
         // Remove storage listener
-        window.removeEventListener('storage', this.handleStorageChange);
+        if (typeof window !== 'undefined') {
+            window.removeEventListener('storage', this.handleStorageChange);
+        }
 
-        console.log('Theme Manager destroyed');
+        if (this.logger) {
+            this.logger.debug('Theme Manager destroyed');
+        }
     }
 }
 

@@ -358,7 +358,9 @@ class TestRunner {
             // Filter tests (only, skip)
             const testsToRun = this.filterTests(allTests);
             if (this.options.verbose && testsToRun.length !== allTests.length) {
-                console.log(`🔍 TestRunner: Running ${testsToRun.length} tests (${allTests.length - testsToRun.length} skipped)`);
+                console.log(
+                    `🔍 TestRunner: Running ${testsToRun.length} tests (${allTests.length - testsToRun.length} skipped)`
+                );
             }
 
             // Run tests

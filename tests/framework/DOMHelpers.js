@@ -232,6 +232,36 @@ class MockOscillatorNode extends MockAudioNode {
     }
 }
 
+class MockBiquadFilterNode extends MockAudioNode {
+    constructor() {
+        super();
+        this.frequency = new MockAudioParam(350);
+        this.Q = new MockAudioParam(1);
+        this.gain = new MockAudioParam(0);
+        this.type = 'lowpass';
+    }
+}
+
+class MockDelayNode extends MockAudioNode {
+    constructor(maxDelayTime = 1.0) {
+        super();
+        this.delayTime = new MockAudioParam(0);
+        this.maxDelayTime = maxDelayTime;
+    }
+}
+
+class MockDynamicsCompressorNode extends MockAudioNode {
+    constructor() {
+        super();
+        this.threshold = new MockAudioParam(-24);
+        this.knee = new MockAudioParam(30);
+        this.ratio = new MockAudioParam(12);
+        this.attack = new MockAudioParam(0.003);
+        this.release = new MockAudioParam(0.25);
+        this.reduction = 0;
+    }
+}
+
 class MockAudioContext {
     constructor() {
         this.state = 'suspended';
@@ -246,6 +276,18 @@ class MockAudioContext {
 
     createOscillator() {
         return new MockOscillatorNode();
+    }
+
+    createBiquadFilter() {
+        return new MockBiquadFilterNode();
+    }
+
+    createDelay(maxDelayTime = 1.0) {
+        return new MockDelayNode(maxDelayTime);
+    }
+
+    createDynamicsCompressor() {
+        return new MockDynamicsCompressorNode();
     }
 
     async resume() {
@@ -733,6 +775,9 @@ if (typeof module !== 'undefined' && module.exports) {
         MockAudioNode,
         MockGainNode,
         MockOscillatorNode,
+        MockBiquadFilterNode,
+        MockDelayNode,
+        MockDynamicsCompressorNode,
         MockAudioParam,
         setupDOMEnvironment,
         cleanupDOMEnvironment

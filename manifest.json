@@ -17,19 +17,38 @@
             "purpose": "any maskable"
         }
     ],
-    "screenshots": [
+
+    "features": ["Cross Platform", "Audio Playback", "Interactive Learning", "Responsive Design"],
+    "prefer_related_applications": false,
+    "edge_side_panel": {
+        "preferred_width": 400
+    },
+    "shortcuts": [
         {
-            "src": "./assets/screenshot-wide.png",
-            "sizes": "1280x720",
-            "type": "image/png",
-            "form_factor": "wide"
+            "name": "Play Scale",
+            "short_name": "Scale",
+            "description": "Play the scale for the current key",
+            "url": "/?action=play-scale",
+            "icons": [
+                {
+                    "src": "./assets/favicon.svg",
+                    "sizes": "any",
+                    "type": "image/svg+xml"
+                }
+            ]
         },
         {
-            "src": "./assets/screenshot-narrow.png",
-            "sizes": "640x1136",
-            "type": "image/png",
-            "form_factor": "narrow"
+            "name": "Play Chord",
+            "short_name": "Chord",
+            "description": "Play the chord for the current key",
+            "url": "/?action=play-chord",
+            "icons": [
+                {
+                    "src": "./assets/favicon.svg",
+                    "sizes": "any",
+                    "type": "image/svg+xml"
+                }
+            ]
         }
-    ],
-    "features": ["Cross Platform", "Audio Playback", "Interactive Learning", "Responsive Design"]
+    ]
 }

@@ -2,7 +2,10 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+        />
         <title>Interactive Circle of Fifths</title>
         <meta
             name="description"
@@ -11,7 +14,16 @@
 
         <!-- Preload critical resources -->
         <link rel="preload" href="css/styles.css" as="style" />
+        <link rel="preload" href="js/polyfills.js" as="script" />
+        <link rel="preload" href="js/logger.js" as="script" />
+        <link rel="preload" href="js/musicTheory.js" as="script" />
         <link rel="preload" href="js/app.js" as="script" />
+
+        <!-- DNS prefetch for potential external resources -->
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
+        <!-- Preconnect to improve performance -->
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
         <!-- Stylesheets -->
         <link rel="stylesheet" href="css/styles.css" />
@@ -52,26 +64,6 @@
                     </button>
                 </div>
 
-                <!-- Difficulty Level Toggle -->
-                <div class="difficulty-toggle" role="group" aria-label="Difficulty level selection">
-                    <button
-                        id="beginner-level"
-                        class="difficulty-btn active"
-                        aria-pressed="true"
-                        data-level="beginner"
-                    >
-                        Beginner
-                    </button>
-                    <button
-                        id="advanced-level"
-                        class="difficulty-btn"
-                        aria-pressed="false"
-                        data-level="advanced"
-                    >
-                        Advanced
-                    </button>
-                </div>
-
                 <!-- Theme Toggle -->
                 <div class="theme-toggle" role="group" aria-label="Theme selection">
                     <button
@@ -86,17 +78,50 @@
                         <span class="theme-arrow">▼</span>
                     </button>
                     <div id="theme-dropdown" class="theme-dropdown" role="menu" aria-hidden="true">
-                        <button class="theme-option" role="menuitem" data-theme="light">
+                        <button
+                            class="theme-option"
+                            role="menuitem"
+                            data-theme="light"
+                            tabindex="-1"
+                        >
                             <span class="theme-option-icon">☀️</span>
                             <span class="theme-option-text">Light</span>
                         </button>
-                        <button class="theme-option" role="menuitem" data-theme="dark">
+                        <button
+                            class="theme-option"
+                            role="menuitem"
+                            data-theme="dark"
+                            tabindex="-1"
+                        >
                             <span class="theme-option-icon">🌙</span>
                             <span class="theme-option-text">Dark</span>
                         </button>
-                        <button class="theme-option active" role="menuitem" data-theme="system">
+                        <button
+                            class="theme-option active"
+                            role="menuitem"
+                            data-theme="system"
+                            tabindex="-1"
+                        >
                             <span class="theme-option-icon">💻</span>
                             <span class="theme-option-text">System</span>
+                        </button>
+                        <button
+                            class="theme-option"
+                            role="menuitem"
+                            data-theme="high-contrast"
+                            tabindex="-1"
+                        >
+                            <span class="theme-option-icon">🔲</span>
+                            <span class="theme-option-text">High Contrast</span>
+                        </button>
+                        <button
+                            class="theme-option"
+                            role="menuitem"
+                            data-theme="sepia"
+                            tabindex="-1"
+                        >
+                            <span class="theme-option-icon">📜</span>
+                            <span class="theme-option-text">Sepia</span>
                         </button>
                     </div>
                 </div>
@@ -163,10 +188,30 @@
                             <span class="btn-icon">♬</span>
                             Progression
                         </button>
-                        <button id="stop-audio" class="audio-btn stop-btn" aria-label="Stop audio">
-                            <span class="btn-icon">⏹</span>
-                            Stop
-                        </button>
+
+                        <!-- Volume Control -->
+                        <div class="volume-control" role="group" aria-label="Volume control">
+                            <label for="volume-slider" class="volume-label">
+                                <span class="volume-icon">🔊</span>
+                                Volume
+                            </label>
+                            <input
+                                type="range"
+                                id="volume-slider"
+                                class="volume-slider"
+                                min="0"
+                                max="100"
+                                value="30"
+                                aria-label="Audio volume"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                aria-valuenow="30"
+                                aria-valuetext="30%"
+                            />
+                            <span id="volume-display" class="volume-display" aria-live="polite"
+                                >30%</span
+                            >
+                        </div>
                     </div>
                 </div>
 
@@ -200,7 +245,7 @@
                             </div>
                         </div>
 
-                        <div class="info-section advanced-only">
+                        <div class="info-section">
                             <h3 class="info-subtitle">Common Chord Progressions</h3>
                             <div id="chord-progressions" class="chord-progressions">
                                 <button class="progression-btn" data-progression="I-V-vi-IV">
@@ -235,13 +280,20 @@
             <p class="loading-text">Loading audio system...</p>
         </div>
 
-        <!-- Scripts -->
-        <script src="js/themeManager.js"></script>
-        <script src="js/themeToggle.js"></script>
-        <script src="js/musicTheory.js"></script>
-        <script src="js/audioEngine.js"></script>
-        <script src="js/circleRenderer.js"></script>
-        <script src="js/interactions.js"></script>
-        <script src="js/app.js"></script>
+        <!-- Scripts - optimized loading order -->
+        <!-- Critical polyfills loaded synchronously -->
+        <script src="js/polyfills.js"></script>
+
+        <!-- Core modules loaded with defer for better performance -->
+        <script src="js/logger.js" defer></script>
+        <script src="js/musicTheory.js" defer></script>
+        <script src="js/themeManager.js" defer></script>
+        <script src="js/audioEngine.js" defer></script>
+        <script src="js/circleRenderer.js" defer></script>
+        <script src="js/interactions.js" defer></script>
+        <script src="js/themeToggle.js" defer></script>
+
+        <!-- Main app loaded last -->
+        <script src="js/app.js" defer></script>
     </body>
 </html>
