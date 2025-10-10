@@ -418,7 +418,10 @@ describe('CircleRenderer Module', () => {
             expect(mockSvgElement.dispatchEvent).toHaveBeenCalledWith(
                 expect.objectContaining({
                     type: 'keySelected',
-                    detail: { key: 'D', mode: 'major' }
+                    detail: expect.objectContaining({
+                        key: 'D',
+                        mode: 'major'
+                    })
                 })
             );
         });
@@ -461,7 +464,10 @@ describe('CircleRenderer Module', () => {
             expect(mockSvgElement.dispatchEvent).toHaveBeenCalledWith(
                 expect.objectContaining({
                     type: 'modeChanged',
-                    detail: { mode: 'minor', key: 'C' }
+                    detail: expect.objectContaining({
+                        mode: 'minor',
+                        key: 'C'
+                    })
                 })
             );
         });
@@ -676,8 +682,12 @@ describe('CircleRenderer Module', () => {
             // Create a mock segment
             const mockSegment = {
                 querySelector: global.jest.fn(),
-                classList: { toggle: global.jest.fn() },
-                setAttribute: global.jest.fn()
+                classList: {
+                    toggle: global.jest.fn(),
+                    contains: global.jest.fn(() => false)
+                },
+                setAttribute: global.jest.fn(),
+                getAttribute: global.jest.fn(() => 'E major')
             };
             circleRenderer.keySegments.set('E', mockSegment);
 

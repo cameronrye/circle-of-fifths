@@ -207,6 +207,8 @@ async function cacheFirstStrategy(request) {
     if (networkResponse.ok) {
         const cache = await caches.open(DYNAMIC_CACHE_NAME);
         cache.put(request, networkResponse.clone());
+        // Cleanup cache periodically
+        maybeCleanupCache();
     }
 
     return networkResponse;
@@ -273,6 +275,7 @@ function isCacheFirst(pathname) {
 
 /**
  * Clean up old cache entries
+ * Called during fetch to keep cache size manageable
  */
 async function cleanupDynamicCache() {
     const cache = await caches.open(DYNAMIC_CACHE_NAME);
@@ -289,5 +292,19 @@ async function cleanupDynamicCache() {
     }
 }
 
-// Periodically clean up dynamic cache
-setInterval(cleanupDynamicCache, 60000); // Every minute
+/**
+ * Track cache cleanup to avoid running too frequently
+ */
+let lastCleanupTime = 0;
+const CLEANUP_INTERVAL = 60000; // 1 minute
+
+/**
+ * Conditionally clean up cache if enough time has passed
+ */
+async function maybeCleanupCache() {
+    const now = Date.now();
+    if (now - lastCleanupTime > CLEANUP_INTERVAL) {
+        lastCleanupTime = now;
+        await cleanupDynamicCache();
+    }
+}

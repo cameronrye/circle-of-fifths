@@ -259,18 +259,41 @@ class CircleRenderer {
             return;
         }
 
+        const previousKey = this.selectedKey;
+        const previousHighlighted = new Set(this.highlightedKeys);
+
         // Clear previous selection
         this.clearHighlights();
 
         this.selectedKey = key;
         this.highlightRelatedKeys();
-        this.updateAllSegments();
+
+        // Optimized update: only update changed segments
+        if (previousKey) {
+            this.updateSegment(previousKey); // Update old selected key
+        }
+        this.updateSegment(key); // Update new selected key
+
+        // Update previously highlighted keys
+        previousHighlighted.forEach(highlightedKey => {
+            if (!this.highlightedKeys.has(highlightedKey)) {
+                this.updateSegment(highlightedKey);
+            }
+        });
+
+        // Update newly highlighted keys
+        this.highlightedKeys.forEach(highlightedKey => {
+            if (!previousHighlighted.has(highlightedKey)) {
+                this.updateSegment(highlightedKey);
+            }
+        });
+
         this.updateCenterInfo();
 
         // Dispatch custom event
         this.svg.dispatchEvent(
             new CustomEvent('keySelected', {
-                detail: { key, mode: this.currentMode }
+                detail: { key, mode: this.currentMode, previousKey }
             })
         );
     }
@@ -301,21 +324,55 @@ class CircleRenderer {
 
     /**
      * Update all segment colors and states
+     * @param {boolean} [forceUpdate=false] - Force update all segments even if unchanged
      */
-    updateAllSegments() {
+    updateAllSegments(forceUpdate = false) {
         this.keySegments.forEach((segment, key) => {
             const path = segment.querySelector('.segment-path');
             if (path) {
                 this.updateSegmentClasses(path, key);
             }
 
-            // Update classes
-            segment.classList.toggle('active', key === this.selectedKey);
-            segment.classList.toggle('highlighted', this.highlightedKeys.has(key));
+            const isActive = key === this.selectedKey;
+            const isHighlighted = this.highlightedKeys.has(key);
 
-            // Update aria-label
-            segment.setAttribute('aria-label', `${key} ${this.currentMode}`);
+            // Only update if changed or forced
+            if (forceUpdate || segment.classList.contains('active') !== isActive) {
+                segment.classList.toggle('active', isActive);
+            }
+            if (forceUpdate || segment.classList.contains('highlighted') !== isHighlighted) {
+                segment.classList.toggle('highlighted', isHighlighted);
+            }
+
+            // Update aria-label only if changed
+            const newLabel = `${key} ${this.currentMode}`;
+            if (forceUpdate || segment.getAttribute('aria-label') !== newLabel) {
+                segment.setAttribute('aria-label', newLabel);
+            }
         });
+    }
+
+    /**
+     * Update a single segment (more efficient than updateAllSegments)
+     * @param {string} key - The key of the segment to update
+     */
+    updateSegment(key) {
+        const segment = this.keySegments.get(key);
+        if (!segment) {
+            return;
+        }
+
+        const path = segment.querySelector('.segment-path');
+        if (path) {
+            this.updateSegmentClasses(path, key);
+        }
+
+        const isActive = key === this.selectedKey;
+        const isHighlighted = this.highlightedKeys.has(key);
+
+        segment.classList.toggle('active', isActive);
+        segment.classList.toggle('highlighted', isHighlighted);
+        segment.setAttribute('aria-label', `${key} ${this.currentMode}`);
     }
 
     /**
@@ -333,19 +390,23 @@ class CircleRenderer {
             return;
         }
 
+        const previousMode = this.currentMode;
         this.currentMode = mode;
 
-        // Update colors and related keys
-        this.highlightRelatedKeys();
-        this.updateAllSegments();
-        this.updateCenterInfo();
+        // Only update if mode actually changed
+        if (previousMode !== mode) {
+            // Update colors and related keys efficiently
+            this.highlightRelatedKeys();
+            this.updateAllSegments();
+            this.updateCenterInfo();
 
-        // Dispatch custom event
-        this.svg.dispatchEvent(
-            new CustomEvent('modeChanged', {
-                detail: { mode, key: this.selectedKey }
-            })
-        );
+            // Dispatch custom event
+            this.svg.dispatchEvent(
+                new CustomEvent('modeChanged', {
+                    detail: { mode, key: this.selectedKey, previousMode }
+                })
+            );
+        }
     }
 
     /**
@@ -370,6 +431,10 @@ class CircleRenderer {
 
     /**
      * Get key from angle (for touch/mouse position)
+     * @param {number} angle - Angle in degrees (0-360)
+     * @returns {string} The key at that angle (e.g., 'C', 'G')
+     * @example
+     * const key = renderer.getKeyFromAngle(90); // Returns 'C'
      */
     getKeyFromAngle(angle) {
         // Normalize angle to 0-360
@@ -415,7 +480,12 @@ class CircleRenderer {
     }
 
     /**
-     * Get key from coordinates
+     * Get key from SVG coordinates (for click/touch events)
+     * @param {number} x - X coordinate in SVG space
+     * @param {number} y - Y coordinate in SVG space
+     * @returns {string|null} The key at those coordinates, or null if outside circle
+     * @example
+     * const key = renderer.getKeyFromCoordinates(400, 200);
      */
     getKeyFromCoordinates(x, y) {
         const dx = x - this.centerX;
@@ -432,7 +502,12 @@ class CircleRenderer {
     }
 
     /**
-     * Animate transition between modes
+     * Animate transition between modes or states
+     * @param {Function} callback - Function to call during transition
+     * @example
+     * renderer.animateTransition(() => {
+     *     // Update state during transition
+     * });
      */
     animateTransition(callback) {
         // Use CSS classes instead of inline styles for better theme compatibility
@@ -458,7 +533,10 @@ class CircleRenderer {
     }
 
     /**
-     * Resize the circle (for responsive design)
+     * Resize the circle for responsive design
+     * @param {number} newSize - New size in pixels
+     * @example
+     * renderer.resize(600); // Resize to 600x600
      */
     resize(newSize) {
         const scale = newSize / 800; // Original viewBox size

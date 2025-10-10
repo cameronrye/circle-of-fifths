@@ -793,8 +793,12 @@ class AudioEngine {
         this.currentlyPlaying.forEach(oscillator => {
             try {
                 oscillator.stop();
-            } catch {
-                // Oscillator might already be stopped
+            } catch (error) {
+                // Oscillator might already be stopped - this is expected behavior
+                // Only log if it's an unexpected error
+                if (error.name !== 'InvalidStateError') {
+                    console.warn('Unexpected error stopping oscillator:', error);
+                }
             }
         });
         this.currentlyPlaying.clear();

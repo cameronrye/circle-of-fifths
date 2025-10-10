@@ -41,6 +41,16 @@ class InteractionsHandler {
         // Track currently playing progression
         this.currentPlayingProgression = null;
 
+        // Current difficulty level (beginner or advanced)
+        this.currentDifficulty = 'beginner';
+
+        // Current relative key index for navigation
+        this.currentRelativeIndex = 0;
+
+        // ARIA live regions for accessibility
+        this.audioStatusLiveRegion = document.getElementById('audio-status-live-region');
+        this.playbackLiveRegion = document.getElementById('playback-live-region');
+
         // UI elements
         this.elements = {
             svg: document.getElementById('circle-svg'),
@@ -61,6 +71,20 @@ class InteractionsHandler {
 
         this.init();
         this.setupAudioVisualSync();
+    }
+
+    /**
+     * Get current key from circle renderer
+     */
+    get currentKey() {
+        return this.circleRenderer.getState().selectedKey;
+    }
+
+    /**
+     * Get current mode from circle renderer
+     */
+    get currentMode() {
+        return this.circleRenderer.getState().currentMode;
     }
 
     /**
@@ -332,14 +356,20 @@ class InteractionsHandler {
      * Navigate through relative keys
      */
     navigateRelativeKeys(direction) {
-        const relatedKeys = this.getRelatedKeys(this.currentKey, this.currentMode);
-        if (relatedKeys.length === 0) {
+        const relatedKeysObj = this.musicTheory.getRelatedKeys(this.currentKey, this.currentMode);
+        if (!relatedKeysObj) {
             return;
         }
 
-        const currentRelativeIndex = this.currentRelativeIndex || 0;
+        // Convert to array for navigation
+        const relatedKeys = [
+            { key: relatedKeysObj.dominant.key, relationship: 'dominant' },
+            { key: relatedKeysObj.subdominant.key, relationship: 'subdominant' },
+            { key: relatedKeysObj.relative.key, relationship: 'relative' }
+        ];
+
         const newIndex =
-            (currentRelativeIndex + direction + relatedKeys.length) % relatedKeys.length;
+            (this.currentRelativeIndex + direction + relatedKeys.length) % relatedKeys.length;
 
         this.currentRelativeIndex = newIndex;
         const newKey = relatedKeys[newIndex].key;
@@ -394,7 +424,10 @@ class InteractionsHandler {
     }
 
     /**
-     * Announce text to screen readers
+     * Announce text to screen readers using ARIA live region
+     * @param {string} text - The text to announce
+     * @example
+     * this.announceToScreenReader('C major selected');
      */
     announceToScreenReader(text) {
         // Create or update live region for announcements
@@ -413,6 +446,30 @@ class InteractionsHandler {
         }
 
         liveRegion.textContent = text;
+    }
+
+    /**
+     * Announce playback status to screen readers
+     * @param {string} status - The playback status to announce
+     * @example
+     * this.announcePlaybackStatus('Playing C major scale');
+     */
+    announcePlaybackStatus(status) {
+        if (this.playbackLiveRegion) {
+            this.playbackLiveRegion.textContent = status;
+        }
+    }
+
+    /**
+     * Announce audio status to screen readers
+     * @param {string} status - The audio status to announce
+     * @example
+     * this.announceAudioStatus('Audio initialized');
+     */
+    announceAudioStatus(status) {
+        if (this.audioStatusLiveRegion) {
+            this.audioStatusLiveRegion.textContent = status;
+        }
     }
 
     /**
@@ -525,6 +582,9 @@ class InteractionsHandler {
 
     /**
      * Update volume icon based on volume level
+     * @param {number} volume - Volume level (0-100)
+     * @example
+     * this.updateVolumeIcon(75); // Shows high volume icon
      */
     updateVolumeIcon(volume) {
         const volumeIcon = document.querySelector('.volume-icon');
@@ -634,7 +694,12 @@ class InteractionsHandler {
     }
 
     /**
-     * Update related keys display
+     * Update related keys display in the info panel
+     * @param {string} key - The key to show related keys for (e.g., 'C', 'G')
+     * @param {string} mode - The mode ('major' or 'minor')
+     * @example
+     * this.updateRelatedKeys('C', 'major');
+     * // Displays: Dominant: G, Subdominant: F, Relative: Am
      */
     updateRelatedKeys(key, mode) {
         if (!this.elements.relatedKeys) {
@@ -646,7 +711,10 @@ class InteractionsHandler {
             return;
         }
 
-        this.elements.relatedKeys.innerHTML = '';
+        // Clear existing content safely
+        while (this.elements.relatedKeys.firstChild) {
+            this.elements.relatedKeys.removeChild(this.elements.relatedKeys.firstChild);
+        }
 
         const relationships = [
             { key: relatedKeys.dominant.key, type: 'dominant', label: 'Dominant' },
@@ -668,7 +736,12 @@ class InteractionsHandler {
     }
 
     /**
-     * Update chord progressions display
+     * Update chord progressions display in the info panel
+     * @param {string} key - The key to show progressions for (e.g., 'C', 'G')
+     * @param {string} mode - The mode ('major' or 'minor')
+     * @example
+     * this.updateChordProgressions('C', 'major');
+     * // Displays buttons for: I-IV-V-I, I-V-vi-IV, etc.
      */
     updateChordProgressions(key, mode) {
         if (!this.elements.chordProgressions) {
@@ -676,7 +749,11 @@ class InteractionsHandler {
         }
 
         const progressions = this.musicTheory.getChordProgressions(key, mode);
-        this.elements.chordProgressions.innerHTML = '';
+
+        // Clear existing content safely
+        while (this.elements.chordProgressions.firstChild) {
+            this.elements.chordProgressions.removeChild(this.elements.chordProgressions.firstChild);
+        }
 
         Object.entries(progressions).forEach(([progressionKey, progression]) => {
             const button = document.createElement('button');
@@ -695,12 +772,17 @@ class InteractionsHandler {
     async initializeAudio() {
         if (!this.isAudioInitialized) {
             this.showLoading('Initializing audio...');
+            this.announceAudioStatus('Initializing audio system');
+
             const success = await this.audioEngine.initialize();
             this.isAudioInitialized = success;
             this.hideLoading();
 
-            if (!success) {
+            if (success) {
+                this.announceAudioStatus('Audio system ready');
+            } else {
                 this.showError('Failed to initialize audio. Please check your browser settings.');
+                this.announceAudioStatus('Audio initialization failed');
             }
         }
     }
@@ -711,6 +793,7 @@ class InteractionsHandler {
             // Toggle behavior: stop if currently playing, play if stopped
             if (this.playbackState.scale) {
                 this.stopAudio();
+                this.announcePlaybackStatus('Scale playback stopped');
                 return;
             }
 
@@ -720,6 +803,10 @@ class InteractionsHandler {
             this.updateButtonState('scale', true);
 
             const state = this.circleRenderer.getState();
+
+            // Announce to screen readers
+            this.announcePlaybackStatus(`Playing ${state.selectedKey} ${state.currentMode} scale`);
+
             this.audioEngine.playScale(state.selectedKey, state.currentMode);
 
             // Calculate approximate duration for scale playback
@@ -731,6 +818,7 @@ class InteractionsHandler {
             setTimeout(() => {
                 this.playbackState.scale = false;
                 this.updateButtonState('scale', false);
+                this.announcePlaybackStatus('Scale playback complete');
             }, totalDuration);
         }
     }
@@ -741,6 +829,7 @@ class InteractionsHandler {
             // Toggle behavior: stop if currently playing, play if stopped
             if (this.playbackState.chord) {
                 this.stopAudio();
+                this.announcePlaybackStatus('Chord playback stopped');
                 return;
             }
 
@@ -750,10 +839,12 @@ class InteractionsHandler {
             this.updateButtonState('chord', true);
 
             const state = this.circleRenderer.getState();
-            const chordNotes = this.musicTheory.getChordNotes(
-                state.selectedKey,
-                state.currentMode === 'major' ? 'major' : 'minor'
-            );
+            const chordType = state.currentMode === 'major' ? 'major' : 'minor';
+            const chordNotes = this.musicTheory.getChordNotes(state.selectedKey, chordType);
+
+            // Announce to screen readers
+            this.announcePlaybackStatus(`Playing ${state.selectedKey} ${chordType} chord`);
+
             this.audioEngine.playChord(chordNotes);
 
             // Reset state when chord completes
@@ -761,6 +852,7 @@ class InteractionsHandler {
             setTimeout(() => {
                 this.playbackState.chord = false;
                 this.updateButtonState('chord', false);
+                this.announcePlaybackStatus('Chord playback complete');
             }, chordDuration);
         }
     }
@@ -845,6 +937,11 @@ class InteractionsHandler {
         }
     }
 
+    /**
+     * Stop all currently playing audio
+     * @example
+     * this.stopAudio(); // Stops all scales, chords, and progressions
+     */
     stopAudio() {
         this.audioEngine.stopAll();
 
@@ -912,6 +1009,10 @@ class InteractionsHandler {
 
     /**
      * Update progression button states to show which one is playing
+     * @param {string} progressionName - Name of the progression (e.g., 'I-IV-V-I')
+     * @param {boolean} isPlaying - Whether the progression is currently playing
+     * @example
+     * this.updateProgressionButtonStates('I-IV-V-I', true);
      */
     updateProgressionButtonStates(progressionName, isPlaying) {
         if (!this.elements.chordProgressions) {
@@ -937,7 +1038,10 @@ class InteractionsHandler {
     }
 
     /**
-     * Keyboard event handlers
+     * Handle keyboard events on key segments
+     * @param {KeyboardEvent} event - The keyboard event
+     * @example
+     * segment.addEventListener('keydown', (e) => this.handleKeySegmentKeydown(e));
      */
     handleKeySegmentKeydown(event) {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -947,6 +1051,12 @@ class InteractionsHandler {
         }
     }
 
+    /**
+     * Handle global keyboard shortcuts
+     * @param {KeyboardEvent} event - The keyboard event
+     * @example
+     * document.addEventListener('keydown', (e) => this.handleGlobalKeydown(e));
+     */
     handleGlobalKeydown(event) {
         // Global keyboard shortcuts
         if (event.ctrlKey || event.metaKey) {
@@ -993,7 +1103,10 @@ class InteractionsHandler {
     }
 
     /**
-     * Utility methods
+     * Show loading indicator with custom message
+     * @param {string} [message='Loading...'] - The loading message to display
+     * @example
+     * this.showLoading('Initializing audio...');
      */
     showLoading(message = 'Loading...') {
         if (this.elements.loading) {
@@ -1003,6 +1116,11 @@ class InteractionsHandler {
         }
     }
 
+    /**
+     * Hide loading indicator
+     * @example
+     * this.hideLoading();
+     */
     hideLoading() {
         if (this.elements.loading) {
             this.elements.loading.classList.add('hidden');
@@ -1010,16 +1128,32 @@ class InteractionsHandler {
         }
     }
 
+    /**
+     * Show error message to user
+     * @param {string} message - The error message to display
+     * @example
+     * this.showError('Failed to initialize audio');
+     */
     showError(message) {
         // Simple error display - could be enhanced with a proper modal
         this.logger.error('User error:', message);
     }
 
+    /**
+     * Show tooltip for a key (placeholder for future implementation)
+     * @param {string} _key - The key to show tooltip for
+     * @param {Event} _event - The event that triggered the tooltip
+     * @private
+     */
     showKeyTooltip(_key, _event) {
         // Could implement tooltip functionality here
         // For now, we rely on the info panel updates
     }
 
+    /**
+     * Hide key tooltip (placeholder for future implementation)
+     * @private
+     */
     hideKeyTooltip() {
         // Tooltip cleanup if implemented
     }

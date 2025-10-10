@@ -6,6 +6,13 @@
             name="viewport"
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
         />
+
+        <!-- Content Security Policy -->
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; media-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';"
+        />
+
         <title>Interactive Circle of Fifths</title>
         <meta
             name="description"
@@ -280,12 +287,29 @@
             <p class="loading-text">Loading audio system...</p>
         </div>
 
+        <!-- ARIA live regions for screen reader announcements -->
+        <div
+            id="audio-status-live-region"
+            class="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+        ></div>
+        <div
+            id="playback-live-region"
+            class="sr-only"
+            role="status"
+            aria-live="assertive"
+            aria-atomic="true"
+        ></div>
+
         <!-- Scripts - optimized loading order -->
         <!-- Critical polyfills loaded synchronously -->
         <script src="js/polyfills.js"></script>
 
         <!-- Core modules loaded with defer for better performance -->
         <script src="js/logger.js" defer></script>
+        <script src="js/eventBus.js" defer></script>
         <script src="js/musicTheory.js" defer></script>
         <script src="js/themeManager.js" defer></script>
         <script src="js/audioEngine.js" defer></script>

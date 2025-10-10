@@ -73,9 +73,14 @@ describe('Circle of Fifths Application Integration', () => {
         global.document = {
             createElementNS: jest.fn((namespace, tagName) => ({
                 tagName: tagName.toUpperCase(),
-                classList: { add: jest.fn(), remove: jest.fn(), toggle: jest.fn() },
+                classList: {
+                    add: jest.fn(),
+                    remove: jest.fn(),
+                    toggle: jest.fn(),
+                    contains: jest.fn(() => false)
+                },
                 setAttribute: jest.fn(),
-                getAttribute: jest.fn(),
+                getAttribute: jest.fn(() => ''),
                 appendChild: jest.fn(),
                 querySelector: jest.fn(),
                 textContent: '',

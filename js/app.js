@@ -294,7 +294,10 @@ class CircleOfFifthsApp {
     /**
      * Handle initialization errors
      */
-    handleInitializationError(_error) {
+    handleInitializationError(error) {
+        // Log the detailed error for debugging
+        this.logger.error('Application initialization failed:', error);
+
         const loading = document.getElementById('loading');
         if (loading) {
             const loadingText = loading.querySelector('.loading-text');
@@ -310,11 +313,56 @@ class CircleOfFifthsApp {
 
         // Show error message to user
         setTimeout(() => {
-            this.logger.error(
-                'Failed to initialize the Circle of Fifths application. Please refresh the page and try again.'
+            this.showUserError(
+                'Failed to initialize the Circle of Fifths application',
+                error.message || 'Please refresh the page and try again.'
             );
-            // Could implement a proper error modal here instead of alert
         }, 1000);
+    }
+
+    /**
+     * Show user-facing error message
+     */
+    showUserError(title, message) {
+        // Create error notification element
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-notification';
+        errorDiv.setAttribute('role', 'alert');
+        errorDiv.setAttribute('aria-live', 'assertive');
+        errorDiv.innerHTML = `
+            <div class="error-content">
+                <h3 class="error-title">${this.escapeHtml(title)}</h3>
+                <p class="error-message">${this.escapeHtml(message)}</p>
+                <button class="error-close" aria-label="Close error message">×</button>
+            </div>
+        `;
+
+        // Add to document
+        document.body.appendChild(errorDiv);
+
+        // Close button handler
+        const closeBtn = errorDiv.querySelector('.error-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                errorDiv.remove();
+            });
+        }
+
+        // Auto-remove after 10 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+            }
+        }, 10000);
+    }
+
+    /**
+     * Escape HTML to prevent XSS
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     /**
@@ -496,7 +544,7 @@ if (typeof module !== 'undefined' && module.exports) {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker
-            .register('/sw.js')
+            .register('./sw.js')
             .then(registration => {
                 if (window.logger) {
                     window.logger.debug('Service Worker registered:', registration);
