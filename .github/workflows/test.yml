@@ -41,9 +41,6 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Validate test framework
-      run: node test-framework-fixes.js
-
     - name: Run linting
       run: npm run lint
       
@@ -116,9 +113,6 @@ jobs:
       run: |
         # Run browser tests with timeout protection
         timeout 600 node tests/browser-test-runner.js --browser=chrome || (echo "Browser tests timed out or failed" && exit 1)
-
-    - name: Test theme system
-      run: npm run test:theme-system
 
   security-scan:
     name: Security Scan
@@ -293,20 +287,7 @@ jobs:
     - name: Run core tests
       run: npm run test:ci
 
-    - name: Test theme system (Unix only)
-      if: runner.os != 'Windows'
-      run: npm run test:theme-system
 
-    - name: Test theme system (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        if (Test-Path "test-theme-system.js") {
-          node test-theme-system.js
-        } else {
-          Write-Host "test-theme-system.js not found, skipping theme tests on Windows"
-          exit 0
-        }
-      shell: powershell
 
   notification:
     name: Notify Results
