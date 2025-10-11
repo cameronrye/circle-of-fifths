@@ -22,8 +22,12 @@ const STATIC_ASSETS = [
     './js/themeManager.js',
     './js/themeToggle.js',
     './js/app.js',
+    './assets/logo.svg',
     './assets/favicon.svg',
     './assets/favicon.png',
+    './assets/icon-192x192.png',
+    './assets/icon-512x512.png',
+    './assets/apple-touch-icon.png',
     './manifest.json'
 ];
 
