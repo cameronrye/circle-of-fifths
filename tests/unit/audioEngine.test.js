@@ -69,7 +69,9 @@ describe('AudioEngine Module', () => {
                 compressionRatio: 4,
                 compressionKnee: 12,
                 makeupGain: 1.5,
-                useLimiter: true
+                useLimiter: true,
+                percussionEnabled: false,
+                percussionVolume: 0.4
             });
         });
     });

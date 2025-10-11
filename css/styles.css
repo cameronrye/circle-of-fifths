@@ -714,6 +714,23 @@ body {
     box-shadow: var(--shadow-md);
 }
 
+/* Toggle buttons (percussion, loop) */
+.audio-btn.toggle-btn {
+    min-width: 130px;
+}
+
+.audio-btn.toggle-btn[aria-pressed='true'] {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+    box-shadow: var(--shadow-md);
+}
+
+.audio-btn.toggle-btn[aria-pressed='true']:hover {
+    background: var(--accent-color);
+    opacity: 0.9;
+}
+
 /* ===== AUDIO SETTINGS PANEL ===== */
 .audio-settings-panel {
     margin-top: var(--spacing-md);

@@ -35,7 +35,9 @@ class InteractionsHandler {
         this.playbackState = {
             scale: false,
             chord: false,
-            progression: false
+            progression: false,
+            percussion: false,
+            loop: false
         };
 
         // Track currently playing progression
@@ -59,6 +61,8 @@ class InteractionsHandler {
             playScaleBtn: document.getElementById('play-scale'),
             playChordBtn: document.getElementById('play-chord'),
             playProgressionBtn: document.getElementById('play-progression'),
+            togglePercussionBtn: document.getElementById('toggle-percussion'),
+            toggleLoopBtn: document.getElementById('toggle-loop'),
             volumeSlider: document.getElementById('volume-slider'),
             volumeDisplay: document.getElementById('volume-display'),
             infoTitle: document.getElementById('info-title'),
@@ -538,6 +542,18 @@ class InteractionsHandler {
                 this.playProgression();
             });
         }
+
+        if (this.elements.togglePercussionBtn) {
+            this.elements.togglePercussionBtn.addEventListener('click', () => {
+                this.togglePercussion();
+            });
+        }
+
+        if (this.elements.toggleLoopBtn) {
+            this.elements.toggleLoopBtn.addEventListener('click', () => {
+                this.toggleLoop();
+            });
+        }
     }
 
     /**
@@ -559,21 +575,18 @@ class InteractionsHandler {
                 const volumeDecimal = volume / 100;
 
                 // Update display immediately for responsiveness
-                this.updateVolumeDisplay(volume);
-
-                // Debounce audio engine updates to reduce CPU usage
-                clearTimeout(volumeTimeout);
-                volumeTimeout = setTimeout(() => {
-                    this.audioEngine.setVolume(volumeDecimal);
-                }, 50);
-
-                // Update display
                 this.elements.volumeDisplay.textContent = `${volume}%`;
                 event.target.setAttribute('aria-valuenow', volume);
                 event.target.setAttribute('aria-valuetext', `${volume}%`);
 
                 // Update volume icon based on level
                 this.updateVolumeIcon(volume);
+
+                // Debounce audio engine updates to reduce CPU usage
+                clearTimeout(volumeTimeout);
+                volumeTimeout = setTimeout(() => {
+                    this.audioEngine.setVolume(volumeDecimal);
+                }, 50);
             });
 
             // Initialize volume icon
@@ -629,7 +642,7 @@ class InteractionsHandler {
             waveformSelect.value = this.audioEngine.settings.waveform;
             waveformSelect.addEventListener('change', e => {
                 this.audioEngine.settings.waveform = e.target.value;
-                this.logger.log(`Waveform changed to: ${e.target.value}`);
+                this.logger.info(`Waveform changed to: ${e.target.value}`);
             });
         }
 
@@ -641,7 +654,7 @@ class InteractionsHandler {
                 // Reinitialize audio engine to apply new reverb
                 this.audioEngine.isInitialized = false;
                 this.initializeAudio();
-                this.logger.log(`Reverb type changed to: ${e.target.value}`);
+                this.logger.info(`Reverb type changed to: ${e.target.value}`);
             });
         }
 
@@ -676,7 +689,7 @@ class InteractionsHandler {
             filterEnvelopeToggle.checked = this.audioEngine.settings.useFilterEnvelope;
             filterEnvelopeToggle.addEventListener('change', e => {
                 this.audioEngine.settings.useFilterEnvelope = e.target.checked;
-                this.logger.log(`Filter envelope: ${e.target.checked ? 'enabled' : 'disabled'}`);
+                this.logger.info(`Filter envelope: ${e.target.checked ? 'enabled' : 'disabled'}`);
             });
         }
 
@@ -685,7 +698,7 @@ class InteractionsHandler {
             stereoEnhancementToggle.checked = this.audioEngine.settings.useStereoEnhancement;
             stereoEnhancementToggle.addEventListener('change', e => {
                 this.audioEngine.settings.useStereoEnhancement = e.target.checked;
-                this.logger.log(
+                this.logger.info(
                     `Stereo enhancement: ${e.target.checked ? 'enabled' : 'disabled'}`
                 );
             });
@@ -970,22 +983,33 @@ class InteractionsHandler {
             );
             const firstProgression = Object.keys(progressions)[0];
             if (firstProgression) {
-                this.audioEngine.playProgression(
-                    state.selectedKey,
-                    state.currentMode,
-                    firstProgression
-                );
+                // Use looping if enabled
+                if (this.playbackState.loop) {
+                    this.audioEngine.playProgressionLoop(
+                        state.selectedKey,
+                        state.currentMode,
+                        firstProgression
+                    );
+                } else {
+                    this.audioEngine.playProgression(
+                        state.selectedKey,
+                        state.currentMode,
+                        firstProgression
+                    );
 
-                // Calculate approximate duration for progression
-                const progression = progressions[firstProgression];
-                const chordDuration = this.audioEngine.settings.progressionNoteLength;
-                const totalDuration = progression.roman.length * chordDuration * 1000; // Convert to milliseconds
+                    // Calculate approximate duration for progression
+                    const progression = progressions[firstProgression];
+                    const chordDuration = this.audioEngine.settings.progressionNoteLength;
+                    const totalDuration = progression.roman.length * chordDuration * 1000; // Convert to milliseconds
 
-                // Reset state when progression completes
-                setTimeout(() => {
-                    this.playbackState.progression = false;
-                    this.updateButtonState('progression', false);
-                }, totalDuration);
+                    // Reset state when progression completes (only if not looping)
+                    setTimeout(() => {
+                        if (!this.playbackState.loop) {
+                            this.playbackState.progression = false;
+                            this.updateButtonState('progression', false);
+                        }
+                    }, totalDuration);
+                }
             }
         }
     }
@@ -1006,26 +1030,65 @@ class InteractionsHandler {
             this.updateProgressionButtonStates(progressionName, true);
 
             const state = this.circleRenderer.getState();
-            this.audioEngine.playProgression(state.selectedKey, state.currentMode, progressionName);
 
-            // Calculate duration for this specific progression
-            const progressions = this.musicTheory.getChordProgressions(
-                state.selectedKey,
-                state.currentMode
-            );
-            const progression = progressions[progressionName];
-            if (progression) {
-                const chordDuration = this.audioEngine.settings.progressionNoteLength;
-                const totalDuration = progression.roman.length * chordDuration * 1000; // Convert to milliseconds
+            // Use looping if enabled
+            if (this.playbackState.loop) {
+                this.audioEngine.playProgressionLoop(state.selectedKey, state.currentMode, progressionName);
+            } else {
+                this.audioEngine.playProgression(state.selectedKey, state.currentMode, progressionName);
 
-                // Reset state when progression completes
-                setTimeout(() => {
-                    this.currentPlayingProgression = null;
-                    this.playbackState.progression = false;
-                    this.updateProgressionButtonStates(progressionName, false);
-                }, totalDuration);
+                // Calculate duration for this specific progression
+                const progressions = this.musicTheory.getChordProgressions(
+                    state.selectedKey,
+                    state.currentMode
+                );
+                const progression = progressions[progressionName];
+                if (progression) {
+                    const chordDuration = this.audioEngine.settings.progressionNoteLength;
+                    const totalDuration = progression.roman.length * chordDuration * 1000; // Convert to milliseconds
+
+                    // Reset state when progression completes (only if not looping)
+                    setTimeout(() => {
+                        if (!this.playbackState.loop) {
+                            this.currentPlayingProgression = null;
+                            this.playbackState.progression = false;
+                            this.updateProgressionButtonStates(progressionName, false);
+                        }
+                    }, totalDuration);
+                }
             }
         }
+    }
+
+    /**
+     * Toggle percussion on/off
+     */
+    togglePercussion() {
+        this.playbackState.percussion = !this.playbackState.percussion;
+        this.audioEngine.setPercussionEnabled(this.playbackState.percussion);
+        this.updateToggleButtonState('percussion', this.playbackState.percussion);
+
+        // Announce to screen readers
+        const status = this.playbackState.percussion ? 'enabled' : 'disabled';
+        this.announcePlaybackStatus(`Percussion ${status}`);
+    }
+
+    /**
+     * Toggle loop on/off
+     */
+    toggleLoop() {
+        this.playbackState.loop = !this.playbackState.loop;
+
+        // If disabling loop while playing, stop the loop
+        if (!this.playbackState.loop) {
+            this.audioEngine.setLoopingEnabled(false);
+        }
+
+        this.updateToggleButtonState('loop', this.playbackState.loop);
+
+        // Announce to screen readers
+        const status = this.playbackState.loop ? 'enabled' : 'disabled';
+        this.announcePlaybackStatus(`Loop ${status}`);
     }
 
     /**
@@ -1096,6 +1159,24 @@ class InteractionsHandler {
             // Update aria-label
             button.setAttribute('aria-label', `Play ${type}`);
         }
+    }
+
+    /**
+     * Update toggle button appearance based on state
+     */
+    updateToggleButtonState(type, isEnabled) {
+        const buttonMap = {
+            percussion: this.elements.togglePercussionBtn,
+            loop: this.elements.toggleLoopBtn
+        };
+
+        const button = buttonMap[type];
+        if (!button) {
+            return;
+        }
+
+        // Update aria-pressed attribute for accessibility
+        button.setAttribute('aria-pressed', isEnabled.toString());
     }
 
     /**

@@ -23,6 +23,9 @@ class NodePool {
     }
 
     release(node) {
+        if (!node) {
+            return; // Guard against undefined/null nodes
+        }
         if (this.pool.length < this.maxSize) {
             node.disconnect();
             // Reset to default state
@@ -127,7 +130,20 @@ class AudioEngine {
             compressionRatio: 4, // Gentler ratio
             compressionKnee: 12, // Softer knee
             makeupGain: 1.5, // Compensate for compression
-            useLimiter: true
+            useLimiter: true,
+            // Percussion settings
+            percussionEnabled: false,
+            percussionVolume: 0.4
+        };
+
+        // Looping state
+        this.loopState = {
+            enabled: false,
+            timeoutId: null,
+            currentKey: null,
+            currentMode: null,
+            currentProgression: null,
+            previousVoicing: null
         };
     }
 
@@ -733,10 +749,17 @@ class AudioEngine {
             this.nodePools.gain.release(mainGain);
             this.nodePools.gain.release(subGain);
             this.nodePools.gain.release(mixer);
-            if (this.settings.useStereoEnhancement) {
+            // Release stereo enhancement nodes if they were created
+            if (leftGain) {
                 this.nodePools.gain.release(leftGain);
+            }
+            if (rightGain) {
                 this.nodePools.gain.release(rightGain);
+            }
+            if (leftPanner) {
                 this.nodePools.panner.release(leftPanner);
+            }
+            if (rightPanner) {
                 this.nodePools.panner.release(rightPanner);
             }
             if (filter) {
@@ -832,42 +855,51 @@ class AudioEngine {
     }
 
     /**
-     * Create proper chord voicing with root in bass and close harmony above
+     * Create proper chord voicing with close harmony and musical spacing
+     * Uses close position voicing in a comfortable musical range (octaves 3-4)
      * @param {Array} notes - Array of note names
-     * @param {number} octave - Base octave for the chord
+     * @param {number} octave - Base octave for the chord (default 3 for better range)
      * @returns {Array} Array of {note, octave, pan} objects with proper voicing
      */
-    createChordVoicing(notes, octave = 4) {
+    createChordVoicing(notes, octave = 3) {
         if (notes.length === 0) {
             return [];
         }
 
         const voicing = [];
 
-        // Root note in bass octave
+        // Start with the root note in the bass
+        const rootNoteIndex = this.musicTheory.getNoteIndex(notes[0]);
         voicing.push({ note: notes[0], octave: octave, pan: 0 });
 
-        // If we have more than one note, place remaining notes in close position above
+        // Place remaining notes in true close position (within an octave above bass)
         if (notes.length > 1) {
-            let currentOctave = octave + 1;
-            let lastNoteIndex = this.musicTheory.getNoteIndex(notes[0]);
+            let currentOctave = octave;
 
             for (let i = 1; i < notes.length; i++) {
                 const currentNoteIndex = this.musicTheory.getNoteIndex(notes[i]);
+                const previousNoteIndex = this.musicTheory.getNoteIndex(notes[i - 1]);
 
-                // If the current note is lower than the last note in the chromatic scale,
-                // it means we've wrapped around, so we might need to go to the next octave
-                if (currentNoteIndex <= lastNoteIndex) {
-                    // Check if the interval is large (more than a 4th)
-                    const interval = (currentNoteIndex - lastNoteIndex + 12) % 12;
-                    if (interval > 5) {
-                        // More than a perfect 4th
-                        currentOctave++;
-                    }
+                // If current note is lower in chromatic scale than previous,
+                // we need to go up an octave to maintain ascending order
+                if (currentNoteIndex <= previousNoteIndex) {
+                    currentOctave++;
                 }
 
                 voicing.push({ note: notes[i], octave: currentOctave, pan: 0 });
-                lastNoteIndex = currentNoteIndex;
+            }
+
+            // Ensure upper voices aren't too high - keep within reasonable range
+            // If the highest note is more than 2 octaves above root, bring everything down
+            const highestVoice = voicing[voicing.length - 1];
+            const rootMidi = rootNoteIndex + octave * 12;
+            const highestMidi = this.musicTheory.getNoteIndex(highestVoice.note) + highestVoice.octave * 12;
+
+            if (highestMidi - rootMidi > 19) { // More than an octave + perfect 5th
+                // Bring upper voices down an octave for better spacing
+                for (let i = 1; i < voicing.length; i++) {
+                    voicing[i].octave--;
+                }
             }
         }
 
@@ -1066,59 +1098,213 @@ class AudioEngine {
     }
 
     /**
-     * Calculate voice leading movement between two chords
+     * Find optimal voice assignment between two chords for smooth voice leading
+     * Uses greedy algorithm: prioritize common tones, then smallest movements
+     * @param {Array} voicing1 - First chord voicing [{note, octave}, ...]
+     * @param {Array} voicing2 - Second chord voicing [{note, octave}, ...]
+     * @returns {Object} Assignment info with movements array and total movement
+     */
+    findOptimalVoiceAssignment(voicing1, voicing2) {
+        if (!voicing1 || !voicing2 || voicing1.length === 0 || voicing2.length === 0) {
+            return { movements: [], totalMovement: 0, maxLeap: 0, topVoiceMovement: 0 };
+        }
+
+        // Convert voicings to MIDI numbers for easier calculation
+        const getMidi = (voice) => this.musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
+
+        const chord1Midi = voicing1.map(v => ({ ...v, midi: getMidi(v) }));
+        const chord2Midi = voicing2.map(v => ({ ...v, midi: getMidi(v) }));
+
+        // Track which notes in chord2 have been assigned
+        const assigned = new Array(chord2Midi.length).fill(false);
+        const movements = [];
+
+        // Phase 1: Assign common tones (same note name, prefer same octave)
+        for (let i = 0; i < chord1Midi.length; i++) {
+            const voice1 = chord1Midi[i];
+            let bestMatch = -1;
+            let bestDistance = Infinity;
+
+            // Look for same note name
+            for (let j = 0; j < chord2Midi.length; j++) {
+                if (!assigned[j] && voice1.note === chord2Midi[j].note) {
+                    const distance = Math.abs(voice1.midi - chord2Midi[j].midi);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestMatch = j;
+                    }
+                }
+            }
+
+            // If we found a common tone, assign it
+            if (bestMatch !== -1) {
+                assigned[bestMatch] = true;
+                movements.push({
+                    from: voice1,
+                    to: chord2Midi[bestMatch],
+                    distance: bestDistance
+                });
+            }
+        }
+
+        // Phase 2: Assign remaining voices using greedy nearest-neighbor
+        for (let i = 0; i < chord1Midi.length; i++) {
+            // Skip if already assigned in phase 1
+            if (movements.find(m => m.from === chord1Midi[i])) {
+                continue;
+            }
+
+            const voice1 = chord1Midi[i];
+            let bestMatch = -1;
+            let bestDistance = Infinity;
+
+            // Find closest unassigned note
+            for (let j = 0; j < chord2Midi.length; j++) {
+                if (!assigned[j]) {
+                    const distance = Math.abs(voice1.midi - chord2Midi[j].midi);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestMatch = j;
+                    }
+                }
+            }
+
+            if (bestMatch !== -1) {
+                assigned[bestMatch] = true;
+                movements.push({
+                    from: voice1,
+                    to: chord2Midi[bestMatch],
+                    distance: bestDistance
+                });
+            }
+        }
+
+        // Calculate metrics
+        const totalMovement = movements.reduce((sum, m) => sum + m.distance, 0);
+        const maxLeap = movements.length > 0 ? Math.max(...movements.map(m => m.distance)) : 0;
+        const topVoiceMovement = movements.length > 0 ? movements[movements.length - 1].distance : 0;
+
+        return { movements, totalMovement, maxLeap, topVoiceMovement };
+    }
+
+    /**
+     * Calculate voice leading movement between two chords using optimal voice assignment
      * @param {Array} chord1 - First chord voicing [{note, octave}, ...]
      * @param {Array} chord2 - Second chord voicing [{note, octave}, ...]
      * @returns {number} Total semitone movement
      */
     calculateVoiceMovement(chord1, chord2) {
-        let totalMovement = 0;
-        const maxLength = Math.max(chord1.length, chord2.length);
-
-        for (let i = 0; i < maxLength; i++) {
-            const note1 = chord1[i];
-            const note2 = chord2[i];
-
-            if (note1 && note2) {
-                const midi1 = this.musicTheory.getNoteIndex(note1.note) + note1.octave * 12;
-                const midi2 = this.musicTheory.getNoteIndex(note2.note) + note2.octave * 12;
-                const movement = Math.abs(midi2 - midi1);
-                totalMovement += movement;
-            }
-        }
-
-        return totalMovement;
+        const assignment = this.findOptimalVoiceAssignment(chord1, chord2);
+        return assignment.totalMovement;
     }
 
     /**
-     * Find the best chord inversion for smooth voice leading
+     * Generate multiple voicing candidates for a chord
+     * Includes root position, inversions, and different octave placements
+     * @param {Array} notes - Chord notes
+     * @param {number} targetOctave - Target octave for voicings
+     * @returns {Array} Array of voicing candidates
+     */
+    generateVoicingCandidates(notes, targetOctave = 3) {
+        const candidates = [];
+
+        // Try each inversion
+        for (let inversion = 0; inversion < notes.length; inversion++) {
+            const invertedNotes = [...notes.slice(inversion), ...notes.slice(0, inversion)];
+
+            // Try different octave placements (octave 2, 3, and 4)
+            for (let octave = Math.max(2, targetOctave - 1); octave <= targetOctave + 1; octave++) {
+                const voicing = this.createChordVoicing(invertedNotes, octave);
+                candidates.push(voicing);
+            }
+        }
+
+        return candidates;
+    }
+
+    /**
+     * Score a voicing based on multiple musical criteria
+     * Lower scores are better
+     * @param {Array} voicing - Chord voicing to score
+     * @param {Array} previousVoicing - Previous chord voicing (for voice leading)
+     * @returns {number} Score (lower is better)
+     */
+    scoreVoicing(voicing, previousVoicing = null) {
+        let score = 0;
+
+        // If no previous voicing, just score the voicing itself
+        if (!previousVoicing || previousVoicing.length === 0) {
+            // Prefer voicings in comfortable range (C3 to C5)
+            const getMidi = (voice) => this.musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
+            const avgMidi = voicing.reduce((sum, v) => sum + getMidi(v), 0) / voicing.length;
+            const idealMidi = 60; // C4
+            score += Math.abs(avgMidi - idealMidi) * 0.5; // Range penalty
+
+            return score;
+        }
+
+        // Get optimal voice assignment
+        const assignment = this.findOptimalVoiceAssignment(previousVoicing, voicing);
+
+        // Factor 1: Total voice movement (40% weight)
+        // Prefer minimal total movement
+        score += assignment.totalMovement * 0.4;
+
+        // Factor 2: Top voice smoothness (40% weight)
+        // The melody (top voice) should move smoothly
+        score += assignment.topVoiceMovement * 0.8;
+
+        // Factor 3: Maximum leap penalty (20% weight)
+        // Penalize large leaps in any voice
+        if (assignment.maxLeap > 7) { // More than a perfect 5th
+            score += (assignment.maxLeap - 7) * 2;
+        }
+
+        // Factor 4: Range penalty
+        // Prefer voicings in comfortable range
+        const getMidi = (voice) => this.musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
+        const avgMidi = voicing.reduce((sum, v) => sum + getMidi(v), 0) / voicing.length;
+        const idealMidi = 60; // C4
+        score += Math.abs(avgMidi - idealMidi) * 0.3;
+
+        // Factor 5: Spacing penalty
+        // Penalize overly wide spacing in upper voices
+        if (voicing.length >= 2) {
+            const topTwoMidi = voicing.slice(-2).map(getMidi);
+            const spacing = topTwoMidi[1] - topTwoMidi[0];
+            if (spacing > 12) { // More than an octave between top two voices
+                score += (spacing - 12) * 0.5;
+            }
+        }
+
+        return score;
+    }
+
+    /**
+     * Find the best chord voicing for smooth voice leading
+     * Uses comprehensive search and scoring based on multiple musical criteria
      * @param {Array} notes - Chord notes
      * @param {Array} previousVoicing - Previous chord voicing
-     * @param {number} octave - Base octave
+     * @param {number} octave - Base octave (default 3 for better range)
      * @returns {Array} Optimized chord voicing
      */
-    optimizeChordVoicing(notes, previousVoicing, octave = 4) {
+    optimizeChordVoicing(notes, previousVoicing, octave = 3) {
         if (!previousVoicing || previousVoicing.length === 0) {
             return this.createChordVoicing(notes, octave);
         }
 
-        // Try different inversions and octave positions
-        let bestVoicing = this.createChordVoicing(notes, octave);
-        let smallestMovement = this.calculateVoiceMovement(previousVoicing, bestVoicing);
+        // Generate multiple voicing candidates
+        const candidates = this.generateVoicingCandidates(notes, octave);
 
-        // Try inversions
-        for (let inversion = 0; inversion < notes.length; inversion++) {
-            const invertedNotes = [...notes.slice(inversion), ...notes.slice(0, inversion)];
+        // Score each candidate
+        let bestVoicing = candidates[0];
+        let bestScore = this.scoreVoicing(candidates[0], previousVoicing);
 
-            // Try different octaves for the inverted chord
-            for (let testOctave = octave - 1; testOctave <= octave + 1; testOctave++) {
-                const testVoicing = this.createChordVoicing(invertedNotes, testOctave);
-                const movement = this.calculateVoiceMovement(previousVoicing, testVoicing);
-
-                if (movement < smallestMovement) {
-                    smallestMovement = movement;
-                    bestVoicing = testVoicing;
-                }
+        for (let i = 1; i < candidates.length; i++) {
+            const score = this.scoreVoicing(candidates[i], previousVoicing);
+            if (score < bestScore) {
+                bestScore = score;
+                bestVoicing = candidates[i];
             }
         }
 
@@ -1127,8 +1313,33 @@ class AudioEngine {
 
     /**
      * Play a chord progression with optimized voice leading
+     *
+     * @param {string} key - Key signature (e.g., 'C', 'G', 'F#')
+     * @param {string} mode - Major or minor
+     * @param {string} progressionName - Name of the progression (e.g., 'ii-V-I', 'I-V-vi-IV')
+     * @param {Object} previousVoicing - Previous voicing for voice leading (optional)
+     * @returns {Object} Object containing finalVoicing and totalDuration
+     *
+     * @description
+     * This method plays a chord progression with sophisticated voice leading optimization:
+     *
+     * 1. **Key Consistency**: All chords are derived from the specified key and mode.
+     *    Roman numerals are converted to actual chord roots using the scale of the given key.
+     *    Example: In C major, 'ii' → D minor, 'V' → G major, 'I' → C major
+     *
+     * 2. **Voice Leading Optimization**: Each chord is voiced to minimize voice movement
+     *    from the previous chord, creating smooth melodic lines in all voices.
+     *    - Common tones are retained in the same voice
+     *    - Other voices move by the smallest possible interval
+     *    - Top voice (melody) is prioritized for smooth stepwise motion
+     *
+     * 3. **Diatonic Integrity**: All chord notes are guaranteed to be diatonic to the key
+     *    (except in minor mode where the V chord may use the raised leading tone)
+     *
+     * 4. **Loop Compatibility**: Returns the final voicing so it can be used as the
+     *    previousVoicing parameter in the next iteration, ensuring smooth loop transitions
      */
-    async playProgression(key, mode, progressionName) {
+    async playProgression(key, mode, progressionName, previousVoicing = null) {
         if (!this.isInitialized) {
             await this.initialize();
         }
@@ -1138,21 +1349,30 @@ class AudioEngine {
 
         if (!progression) {
             console.warn(`Progression ${progressionName} not found for ${key} ${mode}`);
-            return;
+            return { finalVoicing: null, totalDuration: 0 };
         }
 
         const chordDuration = this.settings.progressionNoteLength;
         let currentTime = this.audioContext.currentTime;
-        let previousVoicing = null;
+        let lastVoicing = previousVoicing;
 
+        // Process each chord in the progression
+        // All chords are derived from the same key - no modulation occurs
         progression.roman.forEach((romanNumeral, _index) => {
+            // Convert roman numeral to actual chord root in the current key
+            // This ensures all chords are diatonic to the key
             const chordRoot = this.musicTheory.romanToChord(romanNumeral, key, mode);
+
+            // Determine chord quality (major, minor, diminished) from roman numeral
             const chordQuality = this.getChordQuality(romanNumeral, mode);
+
+            // Get the actual notes of the chord
             const chordNotes = this.musicTheory.getChordNotes(chordRoot, chordQuality);
 
             // Optimize voice leading for smooth progression
-            const voicing = this.optimizeChordVoicing(chordNotes, previousVoicing, 4);
-            previousVoicing = voicing;
+            // This chooses the best inversion and octave placement to minimize voice movement
+            const voicing = this.optimizeChordVoicing(chordNotes, lastVoicing, 3);
+            lastVoicing = voicing;
 
             // Emit progression chord events for highlighting
             voicing.forEach(({ note }) => {
@@ -1211,6 +1431,11 @@ class AudioEngine {
                 }
             });
 
+            // Play percussion pattern if enabled
+            if (this.settings.percussionEnabled) {
+                this.playPercussionPattern(currentTime, chordDuration);
+            }
+
             // Schedule cleanup for chord gain
             const cleanupDelay = (currentTime + chordDuration + 0.1 - this.audioContext.currentTime) * 1000;
             setTimeout(() => {
@@ -1226,6 +1451,82 @@ class AudioEngine {
 
             currentTime += chordDuration;
         });
+
+        const totalDuration = progression.roman.length * chordDuration;
+        return { finalVoicing: lastVoicing, totalDuration };
+    }
+
+    /**
+     * Play a chord progression with looping
+     * Maintains consistent key and smooth voice leading across loop boundaries
+     *
+     * @param {string} key - Key signature (e.g., 'C', 'G', 'F#')
+     * @param {string} mode - Major or minor
+     * @param {string} progressionName - Name of the progression (e.g., 'ii-V-I')
+     *
+     * @description
+     * This method ensures that:
+     * 1. The progression stays in the same key throughout all loop iterations
+     * 2. Voice leading is optimized across loop boundaries (last chord → first chord)
+     * 3. The final voicing of each iteration is used as the starting point for the next
+     * 4. No key modulation occurs - all chords remain diatonic to the original key
+     */
+    async playProgressionLoop(key, mode, progressionName) {
+        if (!this.isInitialized) {
+            await this.initialize();
+        }
+
+        // Store loop parameters - these remain constant throughout all iterations
+        // This ensures the progression never changes keys
+        this.loopState.enabled = true;
+        this.loopState.currentKey = key;           // Key is locked for all iterations
+        this.loopState.currentMode = mode;         // Mode is locked for all iterations
+        this.loopState.currentProgression = progressionName;
+
+        // Play first iteration
+        // If previousVoicing exists from a previous loop, use it for smooth continuation
+        const result = await this.playProgression(key, mode, progressionName, this.loopState.previousVoicing);
+
+        if (!result || result.totalDuration === 0) {
+            this.loopState.enabled = false;
+            return;
+        }
+
+        // Store final voicing for smooth loop transition
+        // This voicing will be used to optimize voice leading when looping back to the first chord
+        this.loopState.previousVoicing = result.finalVoicing;
+
+        // Schedule next iteration if looping is still enabled
+        if (this.loopState.enabled) {
+            const scheduleNextLoop = () => {
+                if (!this.loopState.enabled) {
+                    return;
+                }
+
+                // Play next iteration with voice leading from previous
+                // IMPORTANT: We always use the stored key, mode, and progression
+                // This guarantees no key changes occur during looping
+                this.playProgression(
+                    this.loopState.currentKey,        // Same key as first iteration
+                    this.loopState.currentMode,       // Same mode as first iteration
+                    this.loopState.currentProgression,
+                    this.loopState.previousVoicing    // Voice leading from last chord
+                ).then(nextResult => {
+                    if (nextResult && nextResult.finalVoicing) {
+                        // Update voicing for next loop iteration
+                        this.loopState.previousVoicing = nextResult.finalVoicing;
+                    }
+
+                    // Schedule next loop after current one completes
+                    if (this.loopState.enabled) {
+                        this.loopState.timeoutId = setTimeout(scheduleNextLoop, nextResult.totalDuration * 1000);
+                    }
+                });
+            };
+
+            // Schedule next loop to start when current one completes
+            this.loopState.timeoutId = setTimeout(scheduleNextLoop, result.totalDuration * 1000);
+        }
     }
 
     /**
@@ -1257,9 +1558,203 @@ class AudioEngine {
     }
 
     /**
+     * Create kick drum sound using oscillator with pitch envelope
+     * @param {number} startTime - When to start the kick drum
+     * @returns {Object} Audio nodes for cleanup
+     */
+    createKickDrum(startTime) {
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+
+        // Kick drum: pitch envelope from 150Hz to 40Hz
+        osc.frequency.setValueAtTime(150, startTime);
+        osc.frequency.exponentialRampToValueAtTime(40, startTime + 0.05);
+
+        // Volume envelope: quick attack, short decay
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(this.settings.percussionVolume * 1.2, startTime + 0.001);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        const stopTime = startTime + 0.15;
+        osc.start(startTime);
+        osc.stop(stopTime);
+
+        this.currentlyPlaying.add(osc);
+        osc.addEventListener('ended', () => {
+            this.currentlyPlaying.delete(osc);
+        });
+
+        return { oscillator: osc, gainNode: gain };
+    }
+
+    /**
+     * Create snare drum sound using noise with bandpass filter
+     * @param {number} startTime - When to start the snare drum
+     * @returns {Object} Audio nodes for cleanup
+     */
+    createSnareDrum(startTime) {
+        // Create noise buffer
+        const bufferSize = this.audioContext.sampleRate * 0.1;
+        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+
+        const noise = this.audioContext.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.audioContext.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1000;
+        filter.Q.value = 1;
+
+        const gain = this.audioContext.createGain();
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(this.settings.percussionVolume * 0.8, startTime + 0.001);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.1);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+
+        const stopTime = startTime + 0.1;
+        noise.start(startTime);
+        noise.stop(stopTime);
+
+        this.currentlyPlaying.add(noise);
+        noise.addEventListener('ended', () => {
+            this.currentlyPlaying.delete(noise);
+        });
+
+        return { source: noise, filter: filter, gainNode: gain };
+    }
+
+    /**
+     * Create hi-hat sound using high-frequency noise
+     * @param {number} startTime - When to start the hi-hat
+     * @returns {Object} Audio nodes for cleanup
+     */
+    createHiHat(startTime) {
+        // Create noise buffer
+        const bufferSize = this.audioContext.sampleRate * 0.05;
+        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+
+        const noise = this.audioContext.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.audioContext.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 7000;
+
+        const gain = this.audioContext.createGain();
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(this.settings.percussionVolume * 0.3, startTime + 0.001);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.05);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+
+        const stopTime = startTime + 0.05;
+        noise.start(startTime);
+        noise.stop(stopTime);
+
+        this.currentlyPlaying.add(noise);
+        noise.addEventListener('ended', () => {
+            this.currentlyPlaying.delete(noise);
+        });
+
+        return { source: noise, filter: filter, gainNode: gain };
+    }
+
+    /**
+     * Play percussion pattern for one chord duration
+     * @param {number} startTime - When to start the pattern
+     * @param {number} duration - Duration of the chord (pattern length)
+     */
+    playPercussionPattern(startTime, duration) {
+        if (!this.settings.percussionEnabled) {
+            return;
+        }
+
+        // Kick drum on beat 1
+        this.createKickDrum(startTime);
+
+        // Hi-hat pattern: every quarter beat (4 hits per chord)
+        const hiHatInterval = duration / 4;
+        for (let i = 0; i < 4; i++) {
+            this.createHiHat(startTime + i * hiHatInterval);
+        }
+
+        // Snare on beat 3 (halfway through)
+        this.createSnareDrum(startTime + duration / 2);
+    }
+
+    /**
+     * Enable or disable percussion
+     * @param {boolean} enabled - Whether percussion should be enabled
+     */
+    setPercussionEnabled(enabled) {
+        this.settings.percussionEnabled = enabled;
+    }
+
+    /**
+     * Enable or disable looping
+     * @param {boolean} enabled - Whether looping should be enabled
+     */
+    setLoopingEnabled(enabled) {
+        if (!enabled && this.loopState.enabled) {
+            // Disable looping - clear timeout but let current iteration finish
+            if (this.loopState.timeoutId) {
+                clearTimeout(this.loopState.timeoutId);
+                this.loopState.timeoutId = null;
+            }
+            this.loopState.enabled = false;
+        }
+        // Note: enabling is handled by playProgressionLoop
+    }
+
+    /**
+     * Check if looping is currently enabled
+     * @returns {boolean} True if looping is active
+     */
+    isLooping() {
+        return this.loopState.enabled;
+    }
+
+    /**
+     * Check if percussion is currently enabled
+     * @returns {boolean} True if percussion is active
+     */
+    isPercussionEnabled() {
+        return this.settings.percussionEnabled;
+    }
+
+    /**
      * Stop all currently playing audio
      */
     stopAll() {
+        // Clear loop timeout if active
+        if (this.loopState.timeoutId) {
+            clearTimeout(this.loopState.timeoutId);
+            this.loopState.timeoutId = null;
+        }
+
+        // Reset loop state
+        this.loopState.enabled = false;
+        this.loopState.currentKey = null;
+        this.loopState.currentMode = null;
+        this.loopState.currentProgression = null;
+        this.loopState.previousVoicing = null;
+
         this.currentlyPlaying.forEach(oscillator => {
             try {
                 oscillator.stop();
@@ -1617,12 +2112,12 @@ class AudioEngine {
             const chordNotes = this.musicTheory.getChordNotes(chordRoot, chordQuality);
             const chordDuration = chordRhythm[index] || this.settings.progressionNoteLength;
 
-            // Optimize voice leading
-            const voicing = this.optimizeChordVoicing(chordNotes, previousVoicing, 4);
+            // Optimize voice leading (octave 3 for better range)
+            const voicing = this.optimizeChordVoicing(chordNotes, previousVoicing, 3);
             previousVoicing = voicing;
 
             // Schedule chord with precise timing
-            this.scheduleChord(chordNotes, 4, currentTime, chordDuration);
+            this.scheduleChord(chordNotes, 3, currentTime, chordDuration);
 
             currentTime += chordDuration;
         });

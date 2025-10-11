@@ -182,55 +182,102 @@ const SCALE_PATTERNS = {
     melodicMinor: [2, 1, 2, 2, 2, 2, 1] // W-H-W-W-W-W-H (ascending)
 };
 
-// Chord progressions for each key
+/**
+ * Chord Progressions for Major and Minor Modes
+ *
+ * All progressions are defined using Roman numeral analysis:
+ * - Uppercase (I, IV, V) = Major chords
+ * - Lowercase (ii, iii, vi) = Minor chords
+ * - Lowercase with ° (vii°) = Diminished chords
+ *
+ * All chords in each progression are diatonic to the key (with noted exceptions in minor mode).
+ * When played, roman numerals are converted to actual chord roots based on the current key,
+ * ensuring the progression stays in the same key throughout all iterations and loops.
+ */
 const CHORD_PROGRESSIONS = {
     major: {
         'I-V-vi-IV': {
             name: 'Pop Progression',
             roman: ['I', 'V', 'vi', 'IV'],
-            description: 'Most popular progression in modern music'
+            description: 'Most popular progression in modern music',
+            // Example in C major: C - G - Am - F
+            // Function: Tonic - Dominant - Submediant - Subdominant
+            // Voice leading: Excellent (multiple common tones between chords)
         },
         'ii-V-I': {
             name: 'Jazz Progression',
             roman: ['ii', 'V', 'I'],
-            description: 'Essential jazz cadence'
+            description: 'Essential jazz cadence',
+            // Example in C major: Dm - G - C
+            // Function: Supertonic - Dominant - Tonic (classic cadential progression)
+            // Voice leading: Excellent (D is common between ii and V, G is common between V and I)
+            // Loop transition: C → Dm (smooth, 5 semitone total movement)
+            // Note: This progression DOES NOT change keys when looping - all chords remain
+            // diatonic to the original key. The loop transition from I back to ii is optimized
+            // for smooth voice leading.
         },
         'vi-IV-I-V': {
             name: 'Circle Progression',
             roman: ['vi', 'IV', 'I', 'V'],
-            description: 'Follows circle of fifths backwards'
+            description: 'Follows circle of fifths backwards',
+            // Example in C major: Am - F - C - G
+            // Function: Follows descending fifths pattern
+            // Voice leading: Very smooth (follows natural voice leading patterns)
         },
         'I-vi-ii-V': {
             name: 'Doo-Wop Progression',
             roman: ['I', 'vi', 'ii', 'V'],
-            description: 'Classic 1950s progression'
+            description: 'Classic 1950s progression',
+            // Example in C major: C - Am - Dm - G
+            // Function: Tonic - Submediant - Supertonic - Dominant
+            // Voice leading: Excellent stepwise motion in all voices
         },
         'I-IV-V-I': {
             name: 'Basic Cadence',
             roman: ['I', 'IV', 'V', 'I'],
-            description: 'Fundamental tonic-subdominant-dominant-tonic'
+            description: 'Fundamental tonic-subdominant-dominant-tonic',
+            // Example in C major: C - F - G - C
+            // Function: Classic functional harmony progression
+            // Voice leading: Perfect loop (ends on same chord it starts with)
         }
     },
     minor: {
         'i-VII-VI-VII': {
             name: 'Minor Pop',
             roman: ['i', 'VII', 'VI', 'VII'],
-            description: 'Popular minor progression'
+            description: 'Popular minor progression',
+            // Example in A minor: Am - G - F - G
+            // Function: Uses natural minor scale (no raised leading tone)
+            // Voice leading: Smooth descending and ascending motion
+            // All chords are diatonic to natural minor
         },
         'i-iv-V-i': {
             name: 'Minor Cadence',
             roman: ['i', 'iv', 'V', 'i'],
-            description: 'Basic minor cadence'
+            description: 'Basic minor cadence',
+            // Example in A minor: Am - Dm - E - Am
+            // Function: Classic minor cadence with dominant resolution
+            // Note: V chord (E major) uses raised leading tone (G#) from harmonic minor
+            // This is standard practice in minor keys for stronger dominant function
+            // Voice leading: Perfect loop (ends on same chord it starts with)
         },
         'i-VI-III-VII': {
             name: 'Andalusian',
             roman: ['i', 'VI', 'III', 'VII'],
-            description: 'Spanish/Flamenco progression'
+            description: 'Spanish/Flamenco progression',
+            // Example in A minor: Am - F - C - G
+            // Function: Descending bass line (A - F - C - G)
+            // Voice leading: Characteristic Spanish/Flamenco sound
+            // All chords are diatonic to natural minor
         },
         'i-v-iv-i': {
             name: 'Natural Minor',
             roman: ['i', 'v', 'iv', 'i'],
-            description: 'All natural minor chords'
+            description: 'All natural minor chords',
+            // Example in A minor: Am - Em - Dm - Am
+            // Function: Pure natural minor (no raised leading tone)
+            // Voice leading: Very smooth, all voices move by step or stay
+            // Perfect loop (ends on same chord it starts with)
         }
     }
 };
@@ -476,7 +523,35 @@ class MusicTheory {
     }
 
     /**
-     * Convert roman numeral to actual chord name
+     * Convert roman numeral to actual chord root note
+     *
+     * This is the KEY method that ensures progressions stay in the same key.
+     * It maps roman numerals to scale degrees in the specified key.
+     *
+     * @param {string} roman - Roman numeral (e.g., 'ii', 'V', 'I')
+     * @param {string} key - The key to use (e.g., 'C', 'G', 'F#')
+     * @param {string} mode - 'major' or 'minor'
+     * @returns {string} The chord root note in the specified key
+     *
+     * @example
+     * // In C major:
+     * romanToChord('ii', 'C', 'major')  // Returns 'D' (D minor)
+     * romanToChord('V', 'C', 'major')   // Returns 'G' (G major)
+     * romanToChord('I', 'C', 'major')   // Returns 'C' (C major)
+     *
+     * // In G major:
+     * romanToChord('ii', 'G', 'major')  // Returns 'A' (A minor)
+     * romanToChord('V', 'G', 'major')   // Returns 'D' (D major)
+     * romanToChord('I', 'G', 'major')   // Returns 'G' (G major)
+     *
+     * @description
+     * This method ensures that all chords in a progression are diatonic to the key:
+     * 1. Gets the scale notes for the specified key and mode
+     * 2. Maps the roman numeral to a scale degree (I=1st, ii=2nd, iii=3rd, etc.)
+     * 3. Returns the corresponding note from the scale
+     *
+     * This guarantees that progressions never modulate or change keys unless
+     * explicitly requested by changing the key parameter.
      */
     romanToChord(roman, key, mode = 'major') {
         if (!roman || !key) {
@@ -487,17 +562,25 @@ class MusicTheory {
         key = key.charAt(0).toUpperCase() + key.slice(1);
         mode = mode.toLowerCase();
 
+        // Get the scale notes for this key - this is what keeps us in the same key
         const scaleNotes = this.getScaleNotes(key, mode);
         if (scaleNotes.length === 0) {
             return roman;
         }
 
+        // Define the roman numerals for each scale degree
+        // Major: I ii iii IV V vi vii°
+        // Minor: i ii° III iv v VI VII
         const romanNumerals =
             mode === 'major'
                 ? ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°']
                 : ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
 
+        // Find which scale degree this roman numeral represents
         const index = romanNumerals.findIndex(r => r.toLowerCase() === roman.toLowerCase());
+
+        // Return the corresponding note from the scale
+        // This ensures the chord is diatonic to the key
         if (index !== -1 && scaleNotes[index]) {
             return scaleNotes[index];
         }
