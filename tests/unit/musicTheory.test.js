@@ -277,6 +277,58 @@ describe('MusicTheory Module', () => {
             expect(related.subdominant.mode).toBe('major');
             expect(related.relative.mode).toBe('minor');
         });
+
+        test('should work with flat keys (Db, Ab, Eb, Bb)', () => {
+            // Test Db major
+            const relatedDb = musicTheory.getRelatedKeys('Db', 'major');
+            expect(relatedDb).not.toBeNull();
+            expect(relatedDb.dominant.key).toBe('Ab');
+            expect(relatedDb.subdominant.key).toBe('Gb');
+
+            // Test Ab major
+            const relatedAb = musicTheory.getRelatedKeys('Ab', 'major');
+            expect(relatedAb).not.toBeNull();
+            expect(relatedAb.dominant.key).toBe('Eb');
+            expect(relatedAb.subdominant.key).toBe('Db');
+
+            // Test Eb major
+            const relatedEb = musicTheory.getRelatedKeys('Eb', 'major');
+            expect(relatedEb).not.toBeNull();
+            expect(relatedEb.dominant.key).toBe('Bb');
+            expect(relatedEb.subdominant.key).toBe('Ab');
+
+            // Test Bb major
+            const relatedBb = musicTheory.getRelatedKeys('Bb', 'major');
+            expect(relatedBb).not.toBeNull();
+            expect(relatedBb.dominant.key).toBe('F');
+            expect(relatedBb.subdominant.key).toBe('Eb');
+        });
+
+        test('should handle enharmonic equivalents (C# vs Db, F# vs Gb, etc.)', () => {
+            // C# should work like Db
+            const relatedCSharp = musicTheory.getRelatedKeys('C#', 'major');
+            const relatedDb = musicTheory.getRelatedKeys('Db', 'major');
+            expect(relatedCSharp).not.toBeNull();
+            expect(relatedDb).not.toBeNull();
+            expect(relatedCSharp.dominant.key).toBe(relatedDb.dominant.key);
+            expect(relatedCSharp.subdominant.key).toBe(relatedDb.subdominant.key);
+
+            // G# should work like Ab
+            const relatedGSharp = musicTheory.getRelatedKeys('G#', 'major');
+            const relatedAb = musicTheory.getRelatedKeys('Ab', 'major');
+            expect(relatedGSharp).not.toBeNull();
+            expect(relatedAb).not.toBeNull();
+            expect(relatedGSharp.dominant.key).toBe(relatedAb.dominant.key);
+            expect(relatedGSharp.subdominant.key).toBe(relatedAb.subdominant.key);
+
+            // Gb should work like F#
+            const relatedGb = musicTheory.getRelatedKeys('Gb', 'major');
+            const relatedFSharp = musicTheory.getRelatedKeys('F#', 'major');
+            expect(relatedGb).not.toBeNull();
+            expect(relatedFSharp).not.toBeNull();
+            expect(relatedGb.dominant.key).toBe(relatedFSharp.dominant.key);
+            expect(relatedGb.subdominant.key).toBe(relatedFSharp.subdominant.key);
+        });
     });
 
     describe('getChordProgressions()', () => {

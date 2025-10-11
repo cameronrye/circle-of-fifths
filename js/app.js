@@ -37,7 +37,6 @@ class CircleOfFifthsApp {
         this.logger = window.loggers?.app || window.logger || console;
 
         // Bind methods
-        this.handleResize = this.handleResize.bind(this);
         this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     }
 
@@ -168,9 +167,6 @@ class CircleOfFifthsApp {
      * Setup global event listeners
      */
     setupGlobalEventListeners() {
-        // Window resize handling
-        window.addEventListener('resize', this.handleResize);
-
         // Page visibility change handling
         document.addEventListener('visibilitychange', this.handleVisibilityChange);
 
@@ -182,10 +178,8 @@ class CircleOfFifthsApp {
             });
         }
 
-        // Handle orientation change on mobile
-        window.addEventListener('orientationchange', () => {
-            setTimeout(this.handleResize, 100);
-        });
+        // Note: Window resize and orientation change handling removed
+        // SVG viewBox handles responsive scaling automatically
 
         // Keyboard shortcuts help
         document.addEventListener('keydown', event => {
@@ -232,38 +226,7 @@ class CircleOfFifthsApp {
         });
     }
 
-    /**
-     * Handle window resize
-     */
-    handleResize() {
-        if (!this.isInitialized) {
-            return;
-        }
-
-        // Debounce resize handling
-        clearTimeout(this.resizeTimeout);
-        this.resizeTimeout = setTimeout(() => {
-            this.performResize();
-        }, 250);
-    }
-
-    /**
-     * Perform resize operations
-     */
-    performResize() {
-        // Update circle renderer if needed
-        const svg = document.getElementById('circle-svg');
-        if (svg && this.circleRenderer) {
-            const rect = svg.getBoundingClientRect();
-            const size = Math.min(rect.width, rect.height);
-
-            // Only resize if significant change
-            if (Math.abs(size - this.lastSize) > 50) {
-                this.circleRenderer.resize(size);
-                this.lastSize = size;
-            }
-        }
-    }
+    // Note: Resize handling methods removed - SVG viewBox handles scaling automatically
 
     /**
      * Handle page visibility change
@@ -475,7 +438,6 @@ class CircleOfFifthsApp {
         console.log('Destroying Circle of Fifths application...');
 
         // Remove event listeners
-        window.removeEventListener('resize', this.handleResize);
         document.removeEventListener('visibilitychange', this.handleVisibilityChange);
 
         // Cleanup components
@@ -489,11 +451,6 @@ class CircleOfFifthsApp {
 
         if (this.themeManager) {
             this.themeManager.destroy();
-        }
-
-        // Clear timeouts
-        if (this.resizeTimeout) {
-            clearTimeout(this.resizeTimeout);
         }
 
         // Reset state

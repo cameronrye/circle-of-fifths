@@ -91,9 +91,10 @@ class CircleRenderer {
         const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         group.classList.add('key-segment');
         group.setAttribute('data-key', key);
+        group.setAttribute('data-index', index.toString());
         group.setAttribute('role', 'button');
         group.setAttribute('tabindex', '0');
-        group.setAttribute('aria-label', `${key} ${this.currentMode}`);
+        group.setAttribute('aria-label', this.getKeyAriaLabel(key, index));
 
         // Calculate angles (start from top, go clockwise)
         const startAngle = ((index * this.segmentAngle - 90) * Math.PI) / 180;
@@ -144,6 +145,45 @@ class CircleRenderer {
     }
 
     /**
+     * Get display text for a key, including enharmonic equivalents where appropriate
+     * @param {string} key - The key name
+     * @param {number} index - The position in the circle (0-11)
+     * @returns {string} The display text (e.g., 'F♯/G♭' for position 6)
+     */
+    getKeyDisplayText(key, index) {
+        // Show enharmonic equivalents for positions 6-10 (bottom half of circle)
+        // These are the keys that have common enharmonic equivalents
+        const enharmonicDisplay = {
+            6: 'F♯/G♭', // F# or Gb
+            7: 'D♭/C♯', // Db or C#
+            8: 'A♭/G♯', // Ab or G#
+            9: 'E♭/D♯', // Eb or D#
+            10: 'B♭/A♯' // Bb or A#
+        };
+
+        return enharmonicDisplay[index] || key;
+    }
+
+    /**
+     * Get aria-label text for a key, including enharmonic information
+     * @param {string} key - The key name
+     * @param {number} index - The position in the circle (0-11)
+     * @returns {string} The aria-label text (e.g., 'F sharp or G flat major')
+     */
+    getKeyAriaLabel(key, index) {
+        const enharmonicAriaLabels = {
+            6: 'F sharp or G flat',
+            7: 'D flat or C sharp',
+            8: 'A flat or G sharp',
+            9: 'E flat or D sharp',
+            10: 'B flat or A sharp'
+        };
+
+        const keyLabel = enharmonicAriaLabels[index] || key.replace('#', ' sharp').replace('b', ' flat');
+        return `${keyLabel} ${this.currentMode}`;
+    }
+
+    /**
      * Create text label for segment
      */
     createSegmentText(key, index) {
@@ -160,10 +200,19 @@ class CircleRenderer {
         text.setAttribute('y', y);
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
-        text.setAttribute('font-size', '18');
-        text.setAttribute('font-weight', '600');
         text.setAttribute('pointer-events', 'none');
-        text.textContent = key;
+
+        // Get display text (may include enharmonic equivalents)
+        const displayText = this.getKeyDisplayText(key, index);
+
+        // Adjust font size for enharmonic labels (they're longer)
+        const isEnharmonic = displayText.includes('/');
+        text.setAttribute('font-size', isEnharmonic ? '14' : '18');
+        text.setAttribute('font-weight', '600');
+
+        // Add mode indicator for minor mode (e.g., 'Cm' instead of 'C')
+        const modeIndicator = this.currentMode === 'minor' ? 'm' : '';
+        text.textContent = isEnharmonic ? displayText : `${displayText}${modeIndicator}`;
 
         return text;
     }
@@ -376,6 +425,29 @@ class CircleRenderer {
     }
 
     /**
+     * Update all segment text labels to reflect current mode
+     * Called when switching between major and minor modes
+     */
+    updateSegmentLabels() {
+        this.keySegments.forEach((segment, key) => {
+            const textElement = segment.querySelector('.key-text');
+            const index = parseInt(segment.getAttribute('data-index') || '0', 10);
+
+            if (textElement) {
+                const displayText = this.getKeyDisplayText(key, index);
+                const isEnharmonic = displayText.includes('/');
+
+                // Add mode indicator for minor mode (but not for enharmonic labels)
+                const modeIndicator = this.currentMode === 'minor' ? 'm' : '';
+                textElement.textContent = isEnharmonic ? displayText : `${displayText}${modeIndicator}`;
+            }
+
+            // Also update aria-label for accessibility
+            segment.setAttribute('aria-label', this.getKeyAriaLabel(key, index));
+        });
+    }
+
+    /**
      * Switch between major and minor modes.
      * Updates the visualization to show the appropriate key relationships.
      *
@@ -395,6 +467,9 @@ class CircleRenderer {
 
         // Only update if mode actually changed
         if (previousMode !== mode) {
+            // Update text labels to show/hide mode indicator
+            this.updateSegmentLabels();
+
             // Update colors and related keys efficiently
             this.highlightRelatedKeys();
             this.updateAllSegments();
@@ -532,22 +607,9 @@ class CircleRenderer {
         };
     }
 
-    /**
-     * Resize the circle for responsive design
-     * @param {number} newSize - New size in pixels
-     * @example
-     * renderer.resize(600); // Resize to 600x600
-     */
-    resize(newSize) {
-        const scale = newSize / 800; // Original viewBox size
-        this.outerRadius = 320 * scale;
-        this.innerRadius = 180 * scale;
-        this.centerX = 400 * scale;
-        this.centerY = 400 * scale;
-
-        // Re-render with new dimensions
-        this.init();
-    }
+    // Note: Resize method removed - SVG viewBox handles scaling automatically
+    // The viewBox="0 0 800 800" attribute on the SVG element ensures the circle
+    // scales responsively without needing to re-render on window resize.
 }
 
 // Export for use in other modules

@@ -139,8 +139,10 @@
 
 - All 12 major keys with proper key signatures
 - All 12 minor keys (natural minor)
-- Enharmonic equivalents
-- Sharp and flat notation
+- **Standard Music Theory Notation**: The circle uses flats on the left side (Db, Ab, Eb, Bb) and sharps on the right (F#), following traditional music theory conventions
+- **Enharmonic Equivalents**: Positions 6-10 display both sharp and flat names (e.g., F♯/G♭) for educational clarity
+- **Mode Indicators**: Minor mode keys display with 'm' suffix (e.g., 'Cm') for clear visual distinction
+- Full support for both sharp and flat key inputs
 
 ### Relationships
 

@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Enharmonic Equivalent Display** - Positions 6-10 in the circle now show both sharp and flat names (e.g., 'F♯/G♭') for educational clarity
+- **Minor Mode Visual Indicator** - Keys in minor mode now display with 'm' suffix (e.g., 'Cm') for clear visual distinction
+- **Enharmonic Normalization** - getRelatedKeys() method now handles both sharp and flat key inputs (C# and Db, F# and Gb, etc.)
+- **Comprehensive Test Coverage** - Added tests for flat keys and enharmonic equivalents in musicTheory.test.js
+- **Enhanced Accessibility** - Aria-labels now announce both enharmonic names for screen readers (e.g., "F sharp or G flat major")
 - **EventBus** - Publish-subscribe event system for loose component coupling
 - **ARIA Live Regions** - Real-time screen reader announcements for audio playback
 - User-facing error notification system with accessible UI
@@ -35,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **CRITICAL**: Circle of Fifths array now uses standard music theory notation with flats on the left side (Db, Ab, Eb, Bb) instead of sharps throughout
+- **CRITICAL**: Flat key lookup failure - getRelatedKeys() now works correctly with flat keys (Db, Ab, Eb, Bb) through enharmonic normalization
 - **CRITICAL**: Service worker registration failing on GitHub Pages deployment
 - **HIGH**: Undefined instance variables (`currentDifficulty`, `currentRelativeIndex`) in InteractionsHandler
 - **HIGH**: Service worker memory leak from setInterval preventing termination
@@ -42,6 +49,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MEDIUM**: XSS vulnerability from innerHTML usage
 - **MEDIUM**: Missing user feedback when initialization errors occur
 - Navigation through relative keys now properly uses MusicTheory.getRelatedKeys()
+
+### Removed
+
+- **Resize Method** - Removed unnecessary resize() method from CircleRenderer and resize event handlers from app.js (SVG viewBox handles responsive scaling automatically)
 
 ### Security
 

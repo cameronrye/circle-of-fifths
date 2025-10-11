@@ -16,7 +16,8 @@ const NOTES = {
 };
 
 // Circle of Fifths order (clockwise from C)
-const CIRCLE_OF_FIFTHS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F'];
+// Uses standard music theory notation: sharps on right (F#), flats on left (Db, Ab, Eb, Bb)
+const CIRCLE_OF_FIFTHS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F'];
 
 // Major key signatures
 const MAJOR_KEYS = {
@@ -478,13 +479,32 @@ class MusicTheory {
         key = key.charAt(0).toUpperCase() + key.slice(1);
         mode = mode.toLowerCase();
 
-        const keyIndex = CIRCLE_OF_FIFTHS.indexOf(key);
+        // Enharmonic normalization map - converts both sharps and flats to the notation used in CIRCLE_OF_FIFTHS
+        // This allows the method to work with both C# and Db, F# and Gb, etc.
+        const enharmonicMap = {
+            'C#': 'Db',
+            'Db': 'Db',
+            'D#': 'Eb',
+            'Eb': 'Eb',
+            'F#': 'F#',
+            'Gb': 'F#',
+            'G#': 'Ab',
+            'Ab': 'Ab',
+            'A#': 'Bb',
+            'Bb': 'Bb'
+        };
+
+        // Normalize the key to match CIRCLE_OF_FIFTHS notation
+        const normalizedKey = enharmonicMap[key] || key;
+
+        const keyIndex = CIRCLE_OF_FIFTHS.indexOf(normalizedKey);
         if (keyIndex === -1) {
             return null;
         }
 
-        // Determine if we should use flat notation based on the original key
-        const useFlats = key.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(key);
+        // Determine if we should use flat notation based on the normalized key
+        const useFlats =
+            normalizedKey.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(normalizedKey);
 
         const dominantRaw = CIRCLE_OF_FIFTHS[(keyIndex + 1) % 12];
         const subdominantRaw = CIRCLE_OF_FIFTHS[(keyIndex - 1 + 12) % 12];

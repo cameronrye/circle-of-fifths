@@ -146,8 +146,17 @@ function getScaleDegree(note, scale) {
 ## Key Signatures and Circle of Fifths
 
 ### Circle of Fifths Implementation
+
+**Standard Music Theory Notation:**
+The Circle of Fifths uses **sharps on the right** (clockwise) and **flats on the left** (counter-clockwise). This is the standard convention taught in music theory.
+
 ```javascript
-const CIRCLE_OF_FIFTHS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F'];
+// Standard Circle of Fifths notation (sharps on right, flats on left)
+const CIRCLE_OF_FIFTHS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F'];
+//                         ↑ Start at top, go clockwise →
+//                         Sharps: F# (position 6)
+//                         Flats: Db, Ab, Eb, Bb (positions 7-10)
+
 const CIRCLE_OF_FOURTHS = ['C', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb', 'Bbb', 'Ebb', 'Abb'];
 
 function getRelativeMinor(majorKey) {
@@ -162,6 +171,65 @@ function getRelativeMajor(minorKey) {
   return CHROMATIC_SCALE[majorIndex];
 }
 ```
+
+### Enharmonic Normalization for Circle of Fifths
+
+When working with the Circle of Fifths, you need to handle enharmonic equivalents (e.g., C# vs Db, F# vs Gb). Here's how to normalize user input:
+
+```javascript
+// Map enharmonic equivalents to the notation used in CIRCLE_OF_FIFTHS
+const ENHARMONIC_NORMALIZATION = {
+  'C#': 'Db',  // C# → Db (standard for position 7)
+  'Db': 'Db',  // Db stays Db
+  'D#': 'Eb',  // D# → Eb (standard for position 9)
+  'Eb': 'Eb',  // Eb stays Eb
+  'F#': 'F#',  // F# stays F# (standard for position 6)
+  'Gb': 'F#',  // Gb → F# (enharmonic equivalent)
+  'G#': 'Ab',  // G# → Ab (standard for position 8)
+  'Ab': 'Ab',  // Ab stays Ab
+  'A#': 'Bb',  // A# → Bb (standard for position 10)
+  'Bb': 'Bb'   // Bb stays Bb
+};
+
+function normalizeKeyForCircle(key) {
+  return ENHARMONIC_NORMALIZATION[key] || key;
+}
+
+// Example usage:
+function getRelatedKeys(key, mode = 'major') {
+  // Normalize the key to match CIRCLE_OF_FIFTHS notation
+  const normalizedKey = normalizeKeyForCircle(key);
+  const keyIndex = CIRCLE_OF_FIFTHS.indexOf(normalizedKey);
+
+  if (keyIndex === -1) {
+    return null; // Invalid key
+  }
+
+  // Get dominant (one step clockwise)
+  const dominant = CIRCLE_OF_FIFTHS[(keyIndex + 1) % 12];
+
+  // Get subdominant (one step counter-clockwise)
+  const subdominant = CIRCLE_OF_FIFTHS[(keyIndex - 1 + 12) % 12];
+
+  // Get relative minor/major
+  const relative = mode === 'major'
+    ? getRelativeMinor(normalizedKey)
+    : getRelativeMajor(normalizedKey);
+
+  return { dominant, subdominant, relative };
+}
+
+// Both C# and Db will work correctly:
+getRelatedKeys('C#', 'major'); // Returns same as getRelatedKeys('Db', 'major')
+getRelatedKeys('Db', 'major'); // { dominant: 'Ab', subdominant: 'Gb', relative: 'Bb' }
+```
+
+### Why This Notation Matters
+
+1. **Educational Accuracy**: Students learn that moving clockwise adds sharps, moving counter-clockwise adds flats
+2. **Key Signature Consistency**: Db major has 5 flats (standard), not C# major with 7 sharps (rare)
+3. **Visual Clarity**: The circle visually represents the relationship between sharp and flat keys
+4. **Music Theory Convention**: This is the standard notation used in music theory textbooks and education
 
 ### Key Signature Calculation
 ```javascript
