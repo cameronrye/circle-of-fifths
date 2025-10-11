@@ -132,6 +132,7 @@ class InteractionsHandler {
         this.setupModeToggle();
         this.setupAudioControls();
         this.setupVolumeControl();
+        this.setupAudioSettings();
         this.setupKeyboardNavigation();
         this.setupInfoPanelInteractions();
         this.updateInfoPanel();
@@ -598,6 +599,96 @@ class InteractionsHandler {
             } else {
                 volumeIcon.textContent = '🔊'; // High volume
             }
+        }
+    }
+
+    /**
+     * Setup advanced audio settings panel
+     */
+    setupAudioSettings() {
+        const toggleBtn = document.getElementById('audio-settings-toggle');
+        const panel = document.getElementById('audio-settings-panel');
+        const waveformSelect = document.getElementById('waveform-select');
+        const reverbTypeSelect = document.getElementById('reverb-type-select');
+        const stereoWidthSlider = document.getElementById('stereo-width-slider');
+        const reverbLevelSlider = document.getElementById('reverb-level-slider');
+        const filterEnvelopeToggle = document.getElementById('filter-envelope-toggle');
+        const stereoEnhancementToggle = document.getElementById('stereo-enhancement-toggle');
+
+        if (!toggleBtn || !panel) return;
+
+        // Toggle panel visibility
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = panel.getAttribute('aria-hidden') === 'true';
+            panel.setAttribute('aria-hidden', !isHidden);
+            toggleBtn.setAttribute('aria-expanded', isHidden);
+        });
+
+        // Waveform selection
+        if (waveformSelect) {
+            waveformSelect.value = this.audioEngine.settings.waveform;
+            waveformSelect.addEventListener('change', e => {
+                this.audioEngine.settings.waveform = e.target.value;
+                this.logger.log(`Waveform changed to: ${e.target.value}`);
+            });
+        }
+
+        // Reverb type selection
+        if (reverbTypeSelect) {
+            reverbTypeSelect.value = this.audioEngine.settings.reverbType;
+            reverbTypeSelect.addEventListener('change', e => {
+                this.audioEngine.settings.reverbType = e.target.value;
+                // Reinitialize audio engine to apply new reverb
+                this.audioEngine.isInitialized = false;
+                this.initializeAudio();
+                this.logger.log(`Reverb type changed to: ${e.target.value}`);
+            });
+        }
+
+        // Stereo width slider
+        if (stereoWidthSlider) {
+            stereoWidthSlider.value = this.audioEngine.settings.stereoWidth;
+            document.getElementById('stereo-width-value').textContent =
+                this.audioEngine.settings.stereoWidth.toFixed(2);
+
+            stereoWidthSlider.addEventListener('input', e => {
+                const value = parseFloat(e.target.value);
+                this.audioEngine.settings.stereoWidth = value;
+                document.getElementById('stereo-width-value').textContent = value.toFixed(2);
+            });
+        }
+
+        // Reverb level slider
+        if (reverbLevelSlider) {
+            reverbLevelSlider.value = this.audioEngine.settings.reverbLevel;
+            document.getElementById('reverb-level-value').textContent =
+                this.audioEngine.settings.reverbLevel.toFixed(2);
+
+            reverbLevelSlider.addEventListener('input', e => {
+                const value = parseFloat(e.target.value);
+                this.audioEngine.settings.reverbLevel = value;
+                document.getElementById('reverb-level-value').textContent = value.toFixed(2);
+            });
+        }
+
+        // Filter envelope toggle
+        if (filterEnvelopeToggle) {
+            filterEnvelopeToggle.checked = this.audioEngine.settings.useFilterEnvelope;
+            filterEnvelopeToggle.addEventListener('change', e => {
+                this.audioEngine.settings.useFilterEnvelope = e.target.checked;
+                this.logger.log(`Filter envelope: ${e.target.checked ? 'enabled' : 'disabled'}`);
+            });
+        }
+
+        // Stereo enhancement toggle
+        if (stereoEnhancementToggle) {
+            stereoEnhancementToggle.checked = this.audioEngine.settings.useStereoEnhancement;
+            stereoEnhancementToggle.addEventListener('change', e => {
+                this.audioEngine.settings.useStereoEnhancement = e.target.checked;
+                this.logger.log(
+                    `Stereo enhancement: ${e.target.checked ? 'enabled' : 'disabled'}`
+                );
+            });
         }
     }
 

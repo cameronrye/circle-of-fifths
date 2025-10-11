@@ -49,19 +49,27 @@ describe('AudioEngine Module', () => {
                 decayTime: 0.1,
                 sustainLevel: 0.7,
                 releaseTime: 0.3,
-                waveform: 'sine',
+                waveform: 'warmSine',
                 useMultiOscillator: true,
+                useStereoEnhancement: true,
+                useFilterEnvelope: true,
                 subOscillatorLevel: 0.2,
                 detuneAmount: 5,
+                stereoWidth: 0.25,
                 filterCutoff: 2000,
-                filterResonance: 1,
+                filterResonance: 2.5,
+                filterEnvelopeAmount: 4,
                 useEffects: true,
+                reverbType: 'room',
                 reverbLevel: 0.2,
                 delayLevel: 0.1,
                 delayTime: 0.15,
                 delayFeedback: 0.3,
-                compressionThreshold: -24,
-                compressionRatio: 12
+                compressionThreshold: -18,
+                compressionRatio: 4,
+                compressionKnee: 12,
+                makeupGain: 1.5,
+                useLimiter: true
             });
         });
     });

@@ -4,6 +4,51 @@
  */
 
 /**
+ * Node pool for reusing audio nodes to improve performance
+ * @class NodePool
+ */
+class NodePool {
+    constructor(audioContext, createFn, maxSize = 50) {
+        this.audioContext = audioContext;
+        this.createFn = createFn;
+        this.maxSize = maxSize;
+        this.pool = [];
+    }
+
+    acquire() {
+        if (this.pool.length > 0) {
+            return this.pool.pop();
+        }
+        return this.createFn(this.audioContext);
+    }
+
+    release(node) {
+        if (this.pool.length < this.maxSize) {
+            node.disconnect();
+            // Reset to default state
+            if (node.gain) {
+                node.gain.value = 1;
+            }
+            if (node.frequency) {
+                node.frequency.value = 350;
+            }
+            this.pool.push(node);
+        }
+    }
+
+    clear() {
+        this.pool.forEach(node => {
+            try {
+                node.disconnect();
+            } catch (e) {
+                // Node might already be disconnected
+            }
+        });
+        this.pool = [];
+    }
+}
+
+/**
  * Audio engine for synthesizing and playing musical notes, chords, and progressions.
  * Uses the Web Audio API for real-time audio synthesis with configurable parameters.
  *
@@ -28,6 +73,12 @@ class AudioEngine {
         this.isInitialized = false;
         this.currentlyPlaying = new Set();
         this.musicTheory = new MusicTheory();
+
+        // Custom waveforms for enhanced sound quality
+        this.customWaves = null;
+
+        // Node pools for performance optimization
+        this.nodePools = null;
 
         // Event listeners for note highlighting
         this.noteEventListeners = new Set();
@@ -54,21 +105,29 @@ class AudioEngine {
             decayTime: 0.1,
             sustainLevel: 0.7,
             releaseTime: 0.3,
-            waveform: 'sine', // sine, square, sawtooth, triangle
+            waveform: 'warmSine', // warmSine, piano, organ, sine, square, sawtooth, triangle
             // Enhanced synthesis settings
             useMultiOscillator: true,
+            useStereoEnhancement: true,
+            useFilterEnvelope: true,
             subOscillatorLevel: 0.2,
             detuneAmount: 5, // cents
+            stereoWidth: 0.25, // 0-1, amount of stereo spread
             filterCutoff: 2000, // Hz
-            filterResonance: 1,
+            filterResonance: 2.5, // Increased for more character
+            filterEnvelopeAmount: 4, // Multiplier for filter frequency
             // Effects settings
             useEffects: true,
+            reverbType: 'room', // room, hall, plate
             reverbLevel: 0.2,
             delayLevel: 0.1,
             delayTime: 0.15,
             delayFeedback: 0.3,
-            compressionThreshold: -24,
-            compressionRatio: 12
+            compressionThreshold: -18, // Less aggressive
+            compressionRatio: 4, // Gentler ratio
+            compressionKnee: 12, // Softer knee
+            makeupGain: 1.5, // Compensate for compression
+            useLimiter: true
         };
     }
 
@@ -95,6 +154,12 @@ class AudioEngine {
             // Create audio context
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
+            // Create custom waveforms for enhanced sound quality
+            this.createCustomWaveforms();
+
+            // Initialize node pools for performance
+            this.initializeNodePools();
+
             // Create master gain node
             this.masterGain = this.audioContext.createGain();
             this.masterGain.gain.value = this.settings.masterVolume;
@@ -118,6 +183,145 @@ class AudioEngine {
             console.error('Failed to initialize audio engine:', error);
             return false;
         }
+    }
+
+    /**
+     * Initialize node pools for performance optimization
+     */
+    initializeNodePools() {
+        this.nodePools = {
+            gain: new NodePool(this.audioContext, ctx => ctx.createGain(), 50),
+            filter: new NodePool(this.audioContext, ctx => ctx.createBiquadFilter(), 30),
+            panner: new NodePool(
+                this.audioContext,
+                ctx => {
+                    // Use StereoPannerNode if available, otherwise use PannerNode as fallback
+                    if (ctx.createStereoPanner) {
+                        return ctx.createStereoPanner();
+                    } else {
+                        // Fallback to PannerNode for test environments
+                        const panner = ctx.createPanner();
+                        panner.panningModel = 'equalpower';
+                        panner.setPosition(0, 0, 0);
+                        return panner;
+                    }
+                },
+                30
+            )
+        };
+    }
+
+    /**
+     * Create custom waveforms with rich harmonic content
+     */
+    createCustomWaveforms() {
+        // Check if createPeriodicWave is available (browser environment)
+        if (!this.audioContext.createPeriodicWave) {
+            console.warn('createPeriodicWave not available, using basic waveforms');
+            this.customWaves = null;
+            return;
+        }
+
+        try {
+            this.customWaves = {
+                piano: this.createPianoWave(),
+                warmSine: this.createWarmSineWave(),
+                softSquare: this.createSoftSquareWave(),
+                organ: this.createOrganWave()
+            };
+        } catch (error) {
+            console.warn('Failed to create custom waveforms:', error);
+            this.customWaves = null;
+        }
+    }
+
+    /**
+     * Piano-like tone with natural harmonic decay
+     */
+    createPianoWave() {
+        const real = new Float32Array([0, 1.0, 0.5, 0.3, 0.2, 0.15, 0.1, 0.05, 0.02]);
+        const imag = new Float32Array(real.length);
+        return this.audioContext.createPeriodicWave(real, imag, { disableNormalization: false });
+    }
+
+    /**
+     * Warm sine with subtle harmonics for richness
+     */
+    createWarmSineWave() {
+        const real = new Float32Array([0, 1.0, 0.05, 0.02, 0.01]);
+        const imag = new Float32Array(real.length);
+        return this.audioContext.createPeriodicWave(real, imag, { disableNormalization: false });
+    }
+
+    /**
+     * Soft square wave with reduced high harmonics (less harsh)
+     */
+    createSoftSquareWave() {
+        const harmonics = 16;
+        const real = new Float32Array(harmonics);
+        const imag = new Float32Array(harmonics);
+
+        for (let i = 1; i < harmonics; i += 2) {
+            const harmonic = (i + 1) / 2;
+            real[i] = (1 / i) * Math.pow(0.8, harmonic);
+        }
+
+        return this.audioContext.createPeriodicWave(real, imag, { disableNormalization: false });
+    }
+
+    /**
+     * Organ-like tone with specific harmonic ratios
+     */
+    createOrganWave() {
+        const real = new Float32Array([0, 0.8, 0.6, 0.4, 0.5, 0.3, 0.2, 0.1]);
+        const imag = new Float32Array(real.length);
+        return this.audioContext.createPeriodicWave(real, imag, { disableNormalization: false });
+    }
+
+    /**
+     * Generate impulse response buffer algorithmically for convolution reverb
+     * @param {string} type - 'room', 'hall', or 'plate'
+     * @returns {AudioBuffer} Impulse response buffer
+     */
+    generateImpulseResponse(type = 'room') {
+        const sampleRate = this.audioContext.sampleRate;
+        let duration, decay;
+
+        switch (type) {
+            case 'hall':
+                duration = 3.0;
+                decay = 3.0;
+                break;
+            case 'plate':
+                duration = 1.5;
+                decay = 1.5;
+                break;
+            case 'room':
+            default:
+                duration = 1.0;
+                decay = 1.0;
+        }
+
+        const length = sampleRate * duration;
+        const impulse = this.audioContext.createBuffer(2, length, sampleRate);
+        const leftChannel = impulse.getChannelData(0);
+        const rightChannel = impulse.getChannelData(1);
+
+        for (let i = 0; i < length; i++) {
+            const t = i / sampleRate;
+            const envelope = Math.exp(-t / decay);
+
+            leftChannel[i] = (Math.random() * 2 - 1) * envelope;
+            rightChannel[i] = (Math.random() * 2 - 1) * envelope;
+
+            if (t < 0.05) {
+                const reflectionDecay = Math.exp(-t / 0.01);
+                leftChannel[i] += (Math.random() * 2 - 1) * reflectionDecay * 0.5;
+                rightChannel[i] += (Math.random() * 2 - 1) * reflectionDecay * 0.5;
+            }
+        }
+
+        return impulse;
     }
 
     /**
@@ -160,19 +364,29 @@ class AudioEngine {
         delay.connect(delayFeedback);
         delayFeedback.connect(delay);
 
-        // Simple reverb using multiple delays (impulse response would be better)
-        const reverb = this.createSimpleReverb();
+        // High-quality convolution reverb
+        const reverb = this.createConvolutionReverb(this.settings.reverbType);
 
-        // Compressor for dynamic range control
+        // Musical compressor with softer settings
         const compressor = this.audioContext.createDynamicsCompressor();
         compressor.threshold.value = this.settings.compressionThreshold;
-        compressor.knee.value = 30;
+        compressor.knee.value = this.settings.compressionKnee;
         compressor.ratio.value = this.settings.compressionRatio;
         compressor.attack.value = 0.003;
         compressor.release.value = 0.25;
 
+        // Makeup gain to compensate for compression
+        const makeupGain = this.audioContext.createGain();
+        makeupGain.gain.value = this.settings.makeupGain;
+
+        // Safety limiter to prevent clipping
+        let limiter = null;
+        if (this.settings.useLimiter) {
+            limiter = this.createSafetyLimiter();
+        }
+
         // Connect the effects chain
-        // Input -> High-pass -> Low-pass -> Delay (wet/dry) -> Reverb -> Compressor -> Output
+        // Input -> High-pass -> Low-pass -> Delay (wet/dry) -> Reverb -> Compressor -> Makeup Gain -> Limiter -> Output
 
         // Main signal path
         highPassFilter.connect(lowPassFilter);
@@ -190,12 +404,18 @@ class AudioEngine {
         // Reverb processing
         delayMixer.connect(reverb.input);
 
-        // Final compression
+        // Compression and limiting
         reverb.output.connect(compressor);
+        compressor.connect(makeupGain);
+
+        const finalOutput = limiter || makeupGain;
+        if (limiter) {
+            makeupGain.connect(limiter);
+        }
 
         return {
             input: highPassFilter,
-            output: compressor,
+            output: finalOutput,
             nodes: {
                 highPassFilter,
                 lowPassFilter,
@@ -205,54 +425,109 @@ class AudioEngine {
                 delayDry,
                 delayMixer,
                 reverb,
-                compressor
+                compressor,
+                makeupGain,
+                limiter
             }
         };
     }
 
     /**
-     * Create simple reverb using multiple delays
+     * Create high-quality convolution reverb with algorithmic impulse response
+     * Falls back to simple delay-based reverb if ConvolverNode is not available
+     * @param {string} type - 'room', 'hall', or 'plate'
      * @returns {Object} Reverb with input and output nodes
      */
-    createSimpleReverb() {
+    createConvolutionReverb(type = 'room') {
+        // Check if createConvolver is available (browser environment)
+        if (!this.audioContext.createConvolver) {
+            console.warn('createConvolver not available, using simple delay-based reverb');
+            return this.createSimpleDelayReverb();
+        }
+
+        try {
+            const convolver = this.audioContext.createConvolver();
+            const reverbInput = this.audioContext.createGain();
+            const reverbOutput = this.audioContext.createGain();
+            const reverbWet = this.audioContext.createGain();
+            const reverbDry = this.audioContext.createGain();
+
+            reverbWet.gain.value = this.settings.reverbLevel;
+            reverbDry.gain.value = 1 - this.settings.reverbLevel;
+
+            // Generate and set impulse response
+            convolver.buffer = this.generateImpulseResponse(type);
+            convolver.normalize = true;
+
+            // Connect: input → dry → output
+            reverbInput.connect(reverbDry);
+            reverbDry.connect(reverbOutput);
+
+            // Connect: input → convolver → wet → output
+            reverbInput.connect(convolver);
+            convolver.connect(reverbWet);
+            reverbWet.connect(reverbOutput);
+
+            return {
+                input: reverbInput,
+                output: reverbOutput,
+                convolver
+            };
+        } catch (error) {
+            console.warn('Failed to create convolution reverb, using simple delay-based reverb:', error);
+            return this.createSimpleDelayReverb();
+        }
+    }
+
+    /**
+     * Create simple delay-based reverb as fallback
+     * Used when ConvolverNode is not available (e.g., in test environments)
+     * @returns {Object} Reverb with input and output nodes
+     */
+    createSimpleDelayReverb() {
         const reverbInput = this.audioContext.createGain();
         const reverbOutput = this.audioContext.createGain();
+        const delays = [0.037, 0.053, 0.079, 0.097];
 
-        const reverbWet = this.audioContext.createGain();
-        const reverbDry = this.audioContext.createGain();
-
-        reverbWet.gain.value = this.settings.reverbLevel;
-        reverbDry.gain.value = 1 - this.settings.reverbLevel;
-
-        // Create multiple delays for reverb effect
-        const delays = [0.03, 0.05, 0.07, 0.09, 0.11, 0.13].map(time => {
-            const delay = this.audioContext.createDelay(0.2);
+        delays.forEach(time => {
+            const delay = this.audioContext.createDelay();
             delay.delayTime.value = time;
-
             const gain = this.audioContext.createGain();
-            gain.gain.value = 0.15 / (time * 10); // Decay over time
+            gain.gain.value = this.settings.reverbLevel / delays.length;
 
             reverbInput.connect(delay);
             delay.connect(gain);
-            gain.connect(reverbWet);
-
-            return { delay, gain };
+            gain.connect(reverbOutput);
         });
 
-        // Mix wet and dry signals
-        reverbInput.connect(reverbDry);
-        reverbWet.connect(reverbOutput);
-        reverbDry.connect(reverbOutput);
+        // Also connect dry signal
+        const dryGain = this.audioContext.createGain();
+        dryGain.gain.value = 1 - this.settings.reverbLevel;
+        reverbInput.connect(dryGain);
+        dryGain.connect(reverbOutput);
 
         return {
             input: reverbInput,
-            output: reverbOutput,
-            delays
+            output: reverbOutput
         };
     }
 
     /**
-     * Create proper ADSR envelope
+     * Create safety limiter to prevent clipping
+     * @returns {DynamicsCompressorNode} Limiter node
+     */
+    createSafetyLimiter() {
+        const limiter = this.audioContext.createDynamicsCompressor();
+        limiter.threshold.value = -1.0; // Just below 0dB
+        limiter.knee.value = 0.0; // Hard knee (brick wall)
+        limiter.ratio.value = 20.0; // Heavy limiting
+        limiter.attack.value = 0.001; // Very fast attack
+        limiter.release.value = 0.01; // Fast release
+        return limiter;
+    }
+
+    /**
+     * Create improved ADSR envelope with anti-click protection
      * @param {GainNode} gainNode - The gain node to apply envelope to
      * @param {number} startTime - When to start the envelope
      * @param {number} duration - Total duration of the note
@@ -265,88 +540,216 @@ class AudioEngine {
 
         const sustainTime = Math.max(0, duration - attackTime - decayTime - releaseTime);
         const peakGain = 0.3;
+        const minGain = 0.00001; // Very small but not zero to prevent issues
 
-        gainNode.gain.setValueAtTime(0, startTime);
+        // Start from very small value (anti-click)
+        gainNode.gain.setValueAtTime(minGain, startTime);
 
-        // Attack: Linear ramp to peak
+        // Attack: Linear ramp to peak (smooth start)
         gainNode.gain.linearRampToValueAtTime(peakGain, startTime + attackTime);
 
         // Decay: Exponential ramp to sustain level
         gainNode.gain.exponentialRampToValueAtTime(
-            peakGain * sustainLevel,
+            Math.max(peakGain * sustainLevel, minGain),
             startTime + attackTime + decayTime
         );
 
         // Sustain: Hold at sustain level
         gainNode.gain.setValueAtTime(
-            peakGain * sustainLevel,
+            Math.max(peakGain * sustainLevel, minGain),
             startTime + attackTime + decayTime + sustainTime
         );
 
-        // Release: Exponential ramp to zero
-        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        // Release: Use setTargetAtTime for smoother exponential decay
+        const releaseStart = startTime + attackTime + decayTime + sustainTime;
+        gainNode.gain.setTargetAtTime(minGain, releaseStart, releaseTime / 5);
+
+        // Final safety ramp to ensure complete silence
+        gainNode.gain.setValueAtTime(minGain, startTime + duration);
     }
 
     /**
-     * Create enhanced multi-oscillator synthesis
+     * Create filter with envelope modulation for expressive sound
+     * @param {number} frequency - Note frequency
+     * @param {number} startTime - Start time
+     * @param {number} duration - Duration
+     * @returns {BiquadFilterNode} Configured filter
      */
-    createEnhancedOscillator(frequency, startTime, duration, waveform = 'sine') {
+    createDynamicFilter(frequency, startTime, duration) {
+        const filter = this.nodePools.filter.acquire();
+        filter.type = 'lowpass';
+        filter.Q.value = this.settings.filterResonance;
+
+        // Calculate filter frequencies based on note frequency
+        const baseFreq = Math.max(frequency * 1.5, 200);
+        const peakFreq = Math.min(frequency * this.settings.filterEnvelopeAmount, 8000);
+        const sustainFreq = Math.max(frequency * 2.5, 400);
+
+        const attackTime = this.settings.attackTime;
+        const decayTime = this.settings.decayTime;
+
+        // Filter envelope follows ADSR
+        filter.frequency.setValueAtTime(baseFreq, startTime);
+        filter.frequency.exponentialRampToValueAtTime(peakFreq, startTime + attackTime);
+        filter.frequency.exponentialRampToValueAtTime(
+            sustainFreq,
+            startTime + attackTime + decayTime
+        );
+
+        // Release: Filter closes
+        filter.frequency.exponentialRampToValueAtTime(baseFreq, startTime + duration);
+
+        return filter;
+    }
+
+    /**
+     * Calculate appropriate gain based on number of notes and frequency
+     * @param {number} noteCount - Number of simultaneous notes
+     * @param {number} frequency - Average frequency
+     * @returns {number} Gain multiplier
+     */
+    calculateDynamicGain(noteCount, frequency) {
+        // Base gain reduction for multiple notes
+        const countGain = 1 / Math.sqrt(noteCount);
+
+        // Frequency-dependent gain (equal-loudness compensation)
+        let freqGain = 1.0;
+        if (frequency < 200) {
+            freqGain = 1.1; // Slight boost for bass
+        } else if (frequency > 2000) {
+            freqGain = 0.9; // Slight cut for highs
+        }
+
+        return countGain * freqGain;
+    }
+
+    /**
+     * Create enhanced multi-oscillator synthesis with all improvements
+     * Includes: custom waveforms, stereo enhancement, filter envelope, dynamic gain
+     * @param {number} frequency - Note frequency in Hz
+     * @param {number} startTime - Start time in audio context time
+     * @param {number} duration - Duration in seconds
+     * @param {string} waveform - Waveform type
+     * @param {number} _pan - Pan position (reserved for future use, currently handled by chord voicing)
+     */
+    createEnhancedOscillator(frequency, startTime, duration, waveform = 'warmSine', _pan = 0) {
         if (!this.isInitialized) {
             return null;
         }
 
         if (!this.settings.useMultiOscillator) {
-            // Fall back to simple oscillator
             return this.createSimpleOscillator(frequency, startTime, duration, waveform);
         }
 
-        // Create main oscillator
+        const oscillators = [];
+
+        // Create main oscillator (center)
         const mainOsc = this.audioContext.createOscillator();
-        mainOsc.type = waveform;
-        mainOsc.frequency.setValueAtTime(frequency, startTime);
+        const mainGain = this.nodePools.gain.acquire();
+        mainGain.gain.value = 0.5;
 
-        // Create sub-oscillator (octave down)
+        // Create sub-oscillator (octave down, center, for bass)
         const subOsc = this.audioContext.createOscillator();
-        subOsc.type = waveform;
+        const subGain = this.nodePools.gain.acquire();
         subOsc.frequency.setValueAtTime(frequency / 2, startTime);
-
-        // Create detuned oscillator for richness
-        const detunedOsc = this.audioContext.createOscillator();
-        detunedOsc.type = waveform;
-        detunedOsc.frequency.setValueAtTime(frequency, startTime);
-        detunedOsc.detune.setValueAtTime(this.settings.detuneAmount, startTime);
-
-        // Create gain nodes for mixing
-        const mainGain = this.audioContext.createGain();
-        const subGain = this.audioContext.createGain();
-        const detunedGain = this.audioContext.createGain();
-        const mixer = this.audioContext.createGain();
-
-        // Set mixing levels
-        mainGain.gain.value = 0.6;
         subGain.gain.value = this.settings.subOscillatorLevel;
-        detunedGain.gain.value = 0.2;
 
-        // Connect oscillators to their gain nodes
-        mainOsc.connect(mainGain);
-        subOsc.connect(subGain);
-        detunedOsc.connect(detunedGain);
+        // Set waveforms (use custom waveforms if available)
+        [mainOsc, subOsc].forEach(osc => {
+            osc.frequency.setValueAtTime(frequency, startTime);
+            if (this.customWaves && this.customWaves[waveform]) {
+                osc.setPeriodicWave(this.customWaves[waveform]);
+            } else {
+                osc.type = waveform;
+            }
+        });
 
-        // Mix all oscillators
-        mainGain.connect(mixer);
-        subGain.connect(mixer);
-        detunedGain.connect(mixer);
+        oscillators.push(mainOsc, subOsc);
 
-        // Apply ADSR envelope to the mixer
+        // Stereo enhancement with detuned oscillators
+        let leftOsc, rightOsc, leftGain, rightGain, leftPanner, rightPanner;
+
+        if (this.settings.useStereoEnhancement) {
+            // Left detuned oscillator
+            leftOsc = this.audioContext.createOscillator();
+            leftGain = this.nodePools.gain.acquire();
+            leftPanner = this.nodePools.panner.acquire();
+            leftOsc.frequency.setValueAtTime(frequency, startTime);
+            leftOsc.detune.setValueAtTime(-this.settings.detuneAmount, startTime);
+            leftPanner.pan.value = -this.settings.stereoWidth;
+            leftGain.gain.value = 0.25;
+
+            // Right detuned oscillator
+            rightOsc = this.audioContext.createOscillator();
+            rightGain = this.nodePools.gain.acquire();
+            rightPanner = this.nodePools.panner.acquire();
+            rightOsc.frequency.setValueAtTime(frequency, startTime);
+            rightOsc.detune.setValueAtTime(this.settings.detuneAmount, startTime);
+            rightPanner.pan.value = this.settings.stereoWidth;
+            rightGain.gain.value = 0.25;
+
+            // Set waveforms for stereo oscillators
+            [leftOsc, rightOsc].forEach(osc => {
+                if (this.customWaves && this.customWaves[waveform]) {
+                    osc.setPeriodicWave(this.customWaves[waveform]);
+                } else {
+                    osc.type = waveform;
+                }
+            });
+
+            oscillators.push(leftOsc, rightOsc);
+        }
+
+        // Create mixer
+        const mixer = this.nodePools.gain.acquire();
+
+        // Connect oscillators
+        mainOsc.connect(mainGain).connect(mixer);
+        subOsc.connect(subGain).connect(mixer);
+
+        if (this.settings.useStereoEnhancement) {
+            leftOsc.connect(leftGain).connect(leftPanner).connect(mixer);
+            rightOsc.connect(rightGain).connect(rightPanner).connect(mixer);
+        }
+
+        // Apply ADSR envelope to mixer
         this.createADSREnvelope(mixer, startTime, duration);
 
-        // Connect to master gain
-        mixer.connect(this.masterGain);
+        // Add dynamic filter envelope if enabled
+        let filter = null;
+        if (this.settings.useFilterEnvelope) {
+            filter = this.createDynamicFilter(frequency, startTime, duration);
+            mixer.connect(filter);
+            filter.connect(this.masterGain);
+        } else {
+            mixer.connect(this.masterGain);
+        }
+
+        // Schedule cleanup and node pool release
+        const stopBuffer = 0.05; // 50ms buffer after envelope completes
+        const cleanupTime = (startTime + duration + stopBuffer - this.audioContext.currentTime) * 1000;
+
+        setTimeout(() => {
+            this.nodePools.gain.release(mainGain);
+            this.nodePools.gain.release(subGain);
+            this.nodePools.gain.release(mixer);
+            if (this.settings.useStereoEnhancement) {
+                this.nodePools.gain.release(leftGain);
+                this.nodePools.gain.release(rightGain);
+                this.nodePools.panner.release(leftPanner);
+                this.nodePools.panner.release(rightPanner);
+            }
+            if (filter) {
+                this.nodePools.filter.release(filter);
+            }
+        }, Math.max(0, cleanupTime));
 
         return {
-            oscillators: [mainOsc, subOsc, detunedOsc],
+            oscillators: oscillators,
             gainNode: mixer,
-            mainOscillator: mainOsc // For backward compatibility
+            filter: filter,
+            mainOscillator: mainOsc,
+            stopBuffer: stopBuffer // Return buffer time for proper oscillator stopping
         };
     }
 
@@ -408,18 +811,18 @@ class AudioEngine {
         );
 
         if (synthResult) {
-            // Handle both simple and multi-oscillator results
             const oscillators = synthResult.oscillators || [
                 synthResult.oscillator || synthResult.mainOscillator
             ];
+            const stopBuffer = synthResult.stopBuffer || 0.05;
+            const stopTime = startTime + noteDuration + stopBuffer;
 
             oscillators.forEach(osc => {
                 if (osc) {
                     osc.start(startTime);
-                    osc.stop(startTime + noteDuration);
+                    osc.stop(stopTime); // Stop after envelope completes
                     this.currentlyPlaying.add(osc);
 
-                    // Clean up after note ends
                     osc.addEventListener('ended', () => {
                         this.currentlyPlaying.delete(osc);
                     });
@@ -432,7 +835,7 @@ class AudioEngine {
      * Create proper chord voicing with root in bass and close harmony above
      * @param {Array} notes - Array of note names
      * @param {number} octave - Base octave for the chord
-     * @returns {Array} Array of {note, octave} objects with proper voicing
+     * @returns {Array} Array of {note, octave, pan} objects with proper voicing
      */
     createChordVoicing(notes, octave = 4) {
         if (notes.length === 0) {
@@ -442,7 +845,7 @@ class AudioEngine {
         const voicing = [];
 
         // Root note in bass octave
-        voicing.push({ note: notes[0], octave: octave });
+        voicing.push({ note: notes[0], octave: octave, pan: 0 });
 
         // If we have more than one note, place remaining notes in close position above
         if (notes.length > 1) {
@@ -463,10 +866,18 @@ class AudioEngine {
                     }
                 }
 
-                voicing.push({ note: notes[i], octave: currentOctave });
+                voicing.push({ note: notes[i], octave: currentOctave, pan: 0 });
                 lastNoteIndex = currentNoteIndex;
             }
         }
+
+        // Add pan positions for stereo spread
+        const noteCount = voicing.length;
+        voicing.forEach((voice, index) => {
+            // Spread notes across stereo field: -0.4 to +0.4
+            voice.pan =
+                noteCount > 1 ? ((index / (noteCount - 1)) - 0.5) * 0.8 : 0;
+        });
 
         return voicing;
     }
@@ -496,34 +907,58 @@ class AudioEngine {
         const startTime = this.audioContext.currentTime;
         const oscillators = [];
 
-        // Create proper chord voicing
+        // Create proper chord voicing with pan positions
         const voicing = this.createChordVoicing(notes, octave);
+
+        // Calculate dynamic gain based on chord size
+        const avgFrequency =
+            voicing.reduce(
+                (sum, v) => sum + this.musicTheory.getNoteFrequency(v.note, v.octave),
+                0
+            ) / voicing.length;
+        const dynamicGainValue = this.calculateDynamicGain(voicing.length, avgFrequency);
+
+        // Create dynamic gain node for the entire chord
+        const chordGain = this.nodePools.gain.acquire();
+        chordGain.gain.value = dynamicGainValue;
+        chordGain.connect(this.masterGain);
 
         // Emit chord start events for highlighting
         voicing.forEach(({ note }) => {
             this.emitNoteEvent(note, 'chord-start');
         });
 
-        voicing.forEach(({ note, octave: noteOctave }) => {
+        voicing.forEach(({ note, octave: noteOctave, pan }) => {
             const frequency = this.musicTheory.getNoteFrequency(note, noteOctave);
 
             const synthResult = this.createOscillator(
                 frequency,
                 startTime,
                 chordDuration,
-                this.settings.waveform
+                this.settings.waveform,
+                pan
             );
 
             if (synthResult) {
-                // Handle both simple and multi-oscillator results
                 const noteOscillators = synthResult.oscillators || [
                     synthResult.oscillator || synthResult.mainOscillator
                 ];
+                const stopBuffer = synthResult.stopBuffer || 0.05;
+                const stopTime = startTime + chordDuration + stopBuffer;
+
+                // Disconnect from master gain and connect through chord gain instead
+                if (synthResult.filter) {
+                    synthResult.filter.disconnect();
+                    synthResult.filter.connect(chordGain);
+                } else if (synthResult.gainNode) {
+                    synthResult.gainNode.disconnect();
+                    synthResult.gainNode.connect(chordGain);
+                }
 
                 noteOscillators.forEach(osc => {
                     if (osc) {
                         osc.start(startTime);
-                        osc.stop(startTime + chordDuration);
+                        osc.stop(stopTime);
                         oscillators.push(osc);
                         this.currentlyPlaying.add(osc);
                     }
@@ -532,6 +967,11 @@ class AudioEngine {
         });
 
         // Clean up after chord ends
+        const cleanupTime = (startTime + chordDuration + 0.1 - this.audioContext.currentTime) * 1000;
+        setTimeout(() => {
+            this.nodePools.gain.release(chordGain);
+        }, Math.max(0, cleanupTime));
+
         oscillators.forEach(osc => {
             osc.addEventListener('ended', () => {
                 this.currentlyPlaying.delete(osc);
@@ -602,15 +1042,16 @@ class AudioEngine {
             this.emitNoteEvent(note, 'start');
 
             if (synthResult) {
-                // Handle both simple and multi-oscillator results
                 const oscillators = synthResult.oscillators || [
                     synthResult.oscillator || synthResult.mainOscillator
                 ];
+                const stopBuffer = synthResult.stopBuffer || 0.05;
+                const stopTime = currentTime + noteDuration + stopBuffer;
 
                 oscillators.forEach(osc => {
                     if (osc) {
                         osc.start(currentTime);
-                        osc.stop(currentTime + noteDuration);
+                        osc.stop(stopTime);
                         this.currentlyPlaying.add(osc);
 
                         osc.addEventListener('ended', () => {
@@ -718,6 +1159,19 @@ class AudioEngine {
                 this.emitNoteEvent(note, 'progression-chord');
             });
 
+            // Calculate dynamic gain for this chord
+            const avgFrequency =
+                voicing.reduce(
+                    (sum, v) => sum + this.musicTheory.getNoteFrequency(v.note, v.octave),
+                    0
+                ) / voicing.length;
+            const dynamicGainValue = this.calculateDynamicGain(voicing.length, avgFrequency);
+
+            // Create dynamic gain node for this chord
+            const chordGain = this.nodePools.gain.acquire();
+            chordGain.gain.value = dynamicGainValue;
+            chordGain.connect(this.masterGain);
+
             // Play chord with optimized voicing
             const oscillators = [];
             voicing.forEach(({ note, octave: noteOctave }) => {
@@ -731,21 +1185,37 @@ class AudioEngine {
                 );
 
                 if (synthResult) {
-                    // Handle both simple and multi-oscillator results
                     const noteOscillators = synthResult.oscillators || [
                         synthResult.oscillator || synthResult.mainOscillator
                     ];
+                    const stopBuffer = synthResult.stopBuffer || 0.05;
+                    const stopTime = currentTime + chordDuration + stopBuffer;
+
+                    // Disconnect from master gain and connect through chord gain
+                    if (synthResult.filter) {
+                        synthResult.filter.disconnect();
+                        synthResult.filter.connect(chordGain);
+                    } else if (synthResult.gainNode) {
+                        synthResult.gainNode.disconnect();
+                        synthResult.gainNode.connect(chordGain);
+                    }
 
                     noteOscillators.forEach(osc => {
                         if (osc) {
                             osc.start(currentTime);
-                            osc.stop(currentTime + chordDuration);
+                            osc.stop(stopTime);
                             oscillators.push(osc);
                             this.currentlyPlaying.add(osc);
                         }
                     });
                 }
             });
+
+            // Schedule cleanup for chord gain
+            const cleanupDelay = (currentTime + chordDuration + 0.1 - this.audioContext.currentTime) * 1000;
+            setTimeout(() => {
+                this.nodePools.gain.release(chordGain);
+            }, Math.max(0, cleanupDelay));
 
             // Clean up
             oscillators.forEach(osc => {
@@ -976,11 +1446,13 @@ class AudioEngine {
             const oscillators = synthResult.oscillators || [
                 synthResult.oscillator || synthResult.mainOscillator
             ];
+            const stopBuffer = synthResult.stopBuffer || 0.05;
+            const stopTime = startTime + duration + stopBuffer;
 
             oscillators.forEach(osc => {
                 if (osc) {
                     osc.start(startTime);
-                    osc.stop(startTime + duration);
+                    osc.stop(stopTime);
                     this.currentlyPlaying.add(osc);
 
                     osc.addEventListener('ended', () => {
@@ -1162,6 +1634,16 @@ class AudioEngine {
     dispose() {
         this.stopScheduler();
         this.stopAll();
+
+        // Clear node pools
+        if (this.nodePools) {
+            Object.values(this.nodePools).forEach(pool => {
+                if (pool && pool.clear) {
+                    pool.clear();
+                }
+            });
+        }
+
         if (this.audioContext && this.audioContext.state !== 'closed') {
             this.audioContext.close();
         }

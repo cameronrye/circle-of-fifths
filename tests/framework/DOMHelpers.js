@@ -262,6 +262,45 @@ class MockDynamicsCompressorNode extends MockAudioNode {
     }
 }
 
+class MockPannerNode extends MockAudioNode {
+    constructor() {
+        super();
+        this.panningModel = 'equalpower';
+        this.distanceModel = 'inverse';
+        this.refDistance = 1;
+        this.maxDistance = 10000;
+        this.rolloffFactor = 1;
+        this.coneInnerAngle = 360;
+        this.coneOuterAngle = 360;
+        this.coneOuterGain = 0;
+        this.positionX = new MockAudioParam(0);
+        this.positionY = new MockAudioParam(0);
+        this.positionZ = new MockAudioParam(0);
+        this.orientationX = new MockAudioParam(1);
+        this.orientationY = new MockAudioParam(0);
+        this.orientationZ = new MockAudioParam(0);
+    }
+
+    setPosition(x, y, z) {
+        this.positionX.value = x;
+        this.positionY.value = y;
+        this.positionZ.value = z;
+    }
+
+    setOrientation(x, y, z) {
+        this.orientationX.value = x;
+        this.orientationY.value = y;
+        this.orientationZ.value = z;
+    }
+}
+
+class MockStereoPannerNode extends MockAudioNode {
+    constructor() {
+        super();
+        this.pan = new MockAudioParam(0);
+    }
+}
+
 class MockAudioContext {
     constructor() {
         this.state = 'suspended';
@@ -288,6 +327,14 @@ class MockAudioContext {
 
     createDynamicsCompressor() {
         return new MockDynamicsCompressorNode();
+    }
+
+    createPanner() {
+        return new MockPannerNode();
+    }
+
+    createStereoPanner() {
+        return new MockStereoPannerNode();
     }
 
     async resume() {
