@@ -5,6 +5,11 @@
 
 A comprehensive web application for learning music theory through an interactive Circle of Fifths visualization. This educational tool combines visual design with audio feedback to help users understand key relationships, scales, and chord progressions.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://cameronrye.github.io/circle-of-fifths/)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.18.0-brightgreen)](https://nodejs.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 </div>
 
 🌐 **Live Demo**: [https://cameronrye.github.io/circle-of-fifths/](https://cameronrye.github.io/circle-of-fifths/)
