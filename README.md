@@ -1,9 +1,10 @@
 <div align="center">
   <img src="assets/logo.svg" alt="Circle of Fifths Logo" width="120" height="120">
 
-  # Interactive Circle of Fifths
+# Interactive Circle of Fifths
 
-  A comprehensive web application for learning music theory through an interactive Circle of Fifths visualization. This educational tool combines visual design with audio feedback to help users understand key relationships, scales, and chord progressions.
+A comprehensive web application for learning music theory through an interactive Circle of Fifths visualization. This educational tool combines visual design with audio feedback to help users understand key relationships, scales, and chord progressions.
+
 </div>
 
 🌐 **Live Demo**: [https://cameronrye.github.io/circle-of-fifths/](https://cameronrye.github.io/circle-of-fifths/)

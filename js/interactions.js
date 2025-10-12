@@ -36,9 +36,9 @@ class InteractionsHandler {
             scale: false,
             chord: false,
             progression: false,
-            percussion: true,  // Default enabled
-            bass: false,       // Default disabled
-            loop: true         // Default enabled
+            percussion: true, // Default enabled
+            bass: false, // Default disabled
+            loop: true // Default enabled
         };
 
         // Track currently playing progression
@@ -583,7 +583,9 @@ class InteractionsHandler {
         this.updateToggleButtonState('bass', this.playbackState.bass);
         this.updateToggleButtonState('loop', this.playbackState.loop);
 
-        this.logger.info('Toggle buttons initialized: percussion and loop enabled, bass disabled by default');
+        this.logger.info(
+            'Toggle buttons initialized: percussion and loop enabled, bass disabled by default'
+        );
     }
 
     /**
@@ -658,7 +660,9 @@ class InteractionsHandler {
         const filterEnvelopeToggle = document.getElementById('filter-envelope-toggle');
         const stereoEnhancementToggle = document.getElementById('stereo-enhancement-toggle');
 
-        if (!toggleBtn || !panel) return;
+        if (!toggleBtn || !panel) {
+            return;
+        }
 
         // Toggle panel visibility
         toggleBtn.addEventListener('click', () => {
@@ -1031,7 +1035,8 @@ class InteractionsHandler {
         // Restore button state after initialization
         if (this.elements.playProgressionBtn && this.elements.playProgressionBtn.disabled) {
             this.elements.playProgressionBtn.disabled = false;
-            this.elements.playProgressionBtn.innerHTML = '<span class="btn-icon">♬</span>Progression';
+            this.elements.playProgressionBtn.innerHTML =
+                '<span class="btn-icon">♬</span>Progression';
         }
 
         if (this.isAudioInitialized) {
@@ -1104,9 +1109,17 @@ class InteractionsHandler {
 
             // Use looping if enabled
             if (this.playbackState.loop) {
-                this.audioEngine.playProgressionLoop(state.selectedKey, state.currentMode, progressionName);
+                this.audioEngine.playProgressionLoop(
+                    state.selectedKey,
+                    state.currentMode,
+                    progressionName
+                );
             } else {
-                this.audioEngine.playProgression(state.selectedKey, state.currentMode, progressionName);
+                this.audioEngine.playProgression(
+                    state.selectedKey,
+                    state.currentMode,
+                    progressionName
+                );
 
                 // Calculate duration for this specific progression
                 const progressions = this.musicTheory.getChordProgressions(

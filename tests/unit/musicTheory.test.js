@@ -501,7 +501,8 @@ describe('MusicTheory Module', () => {
     describe('getCircleOfFifthsKeys()', () => {
         test('should return all keys in circle of fifths order', () => {
             const keys = musicTheory.getCircleOfFifthsKeys();
-            expect(keys).toEqual(['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F']);
+            // Updated to use flat keys instead of sharp keys for better music theory representation
+            expect(keys).toEqual(['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F']);
             expect(keys).toHaveLength(12);
         });
 

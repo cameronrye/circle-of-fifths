@@ -647,35 +647,30 @@ describe('CircleRenderer Module', () => {
     });
 
     describe('Responsive Design', () => {
-        test('should resize circle dimensions', () => {
-            const newSize = 400; // Half of original 800
-
-            circleRenderer.resize(newSize);
-
-            expect(circleRenderer.outerRadius).toBe(160); // 320 * 0.5
-            expect(circleRenderer.innerRadius).toBe(90); // 180 * 0.5
-            expect(circleRenderer.centerX).toBe(200); // 400 * 0.5
-            expect(circleRenderer.centerY).toBe(200); // 400 * 0.5
+        test('should have responsive circle dimensions', () => {
+            // The resize method was removed in favor of CSS-based responsive design
+            // Circle dimensions are now calculated based on SVG viewBox
+            expect(circleRenderer.outerRadius).toBeDefined();
+            expect(circleRenderer.innerRadius).toBeDefined();
+            expect(circleRenderer.centerX).toBeDefined();
+            expect(circleRenderer.centerY).toBeDefined();
         });
 
-        test('should re-render after resize', () => {
-            const originalAppendCalls = mockKeySegmentsGroup.appendChild.callCount;
-
-            circleRenderer.resize(600);
-
-            // Should have cleared and re-rendered
-            expect(mockKeySegmentsGroup.innerHTML).toBe('');
-            expect(mockKeySegmentsGroup.appendChild.callCount).toBeGreaterThan(originalAppendCalls);
+        test('should maintain proper proportions', () => {
+            // Verify that the circle maintains proper proportions
+            const radiusRatio = circleRenderer.innerRadius / circleRenderer.outerRadius;
+            expect(radiusRatio).toBeGreaterThan(0);
+            expect(radiusRatio).toBeLessThan(1);
         });
     });
 
     describe('Accessibility and ARIA', () => {
         test('should set proper ARIA attributes on segments', () => {
-            const segment = circleRenderer.createKeySegment('Bb', 9);
+            const segment = circleRenderer.createKeySegment('Eb', 9);
 
             expect(segment.getAttribute('role')).toBe('button');
             expect(segment.getAttribute('tabindex')).toBe('0');
-            expect(segment.getAttribute('aria-label')).toBe('Bb major');
+            expect(segment.getAttribute('aria-label')).toBe('E flat or D sharp major');
         });
 
         test('should update ARIA labels when mode changes', () => {

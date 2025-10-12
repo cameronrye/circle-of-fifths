@@ -186,7 +186,8 @@ class CircleRenderer {
             10: 'B flat or A sharp'
         };
 
-        const keyLabel = enharmonicAriaLabels[index] || key.replace('#', ' sharp').replace('b', ' flat');
+        const keyLabel =
+            enharmonicAriaLabels[index] || key.replace('#', ' sharp').replace('b', ' flat');
         return `${keyLabel} ${this.currentMode}`;
     }
 
@@ -455,7 +456,9 @@ class CircleRenderer {
 
                 // Add mode indicator for minor mode (but not for enharmonic labels)
                 const modeIndicator = this.currentMode === 'minor' ? 'm' : '';
-                textElement.textContent = isEnharmonic ? displayText : `${displayText}${modeIndicator}`;
+                textElement.textContent = isEnharmonic
+                    ? displayText
+                    : `${displayText}${modeIndicator}`;
             }
 
             // Also update aria-label for accessibility

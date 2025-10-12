@@ -1,6 +1,6 @@
 {
     "name": "circle-of-fifths",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Interactive Circle of Fifths - Learn music theory through exploration",
     "main": "index.html",
     "scripts": {

@@ -205,7 +205,7 @@ const CHORD_PROGRESSIONS = {
         'I-V-vi-IV': {
             name: 'Pop Progression',
             roman: ['I', 'V', 'vi', 'IV'],
-            description: 'Most popular progression in modern music',
+            description: 'Most popular progression in modern music'
             // Example in C major: C - G - Am - F
             // Function: Tonic - Dominant - Submediant - Subdominant
             // Voice leading: Excellent (multiple common tones between chords)
@@ -213,7 +213,7 @@ const CHORD_PROGRESSIONS = {
         'ii-V-I': {
             name: 'Jazz Progression',
             roman: ['ii', 'V', 'I'],
-            description: 'Essential jazz cadence',
+            description: 'Essential jazz cadence'
             // Example in C major: Dm - G - C
             // Function: Supertonic - Dominant - Tonic (classic cadential progression)
             // Voice leading: Excellent (D is common between ii and V, G is common between V and I)
@@ -225,7 +225,7 @@ const CHORD_PROGRESSIONS = {
         'vi-IV-I-V': {
             name: 'Circle Progression',
             roman: ['vi', 'IV', 'I', 'V'],
-            description: 'Follows circle of fifths backwards',
+            description: 'Follows circle of fifths backwards'
             // Example in C major: Am - F - C - G
             // Function: Follows descending fifths pattern
             // Voice leading: Very smooth (follows natural voice leading patterns)
@@ -233,7 +233,7 @@ const CHORD_PROGRESSIONS = {
         'I-vi-ii-V': {
             name: 'Doo-Wop Progression',
             roman: ['I', 'vi', 'ii', 'V'],
-            description: 'Classic 1950s progression',
+            description: 'Classic 1950s progression'
             // Example in C major: C - Am - Dm - G
             // Function: Tonic - Submediant - Supertonic - Dominant
             // Voice leading: Excellent stepwise motion in all voices
@@ -241,7 +241,7 @@ const CHORD_PROGRESSIONS = {
         'I-IV-V-I': {
             name: 'Basic Cadence',
             roman: ['I', 'IV', 'V', 'I'],
-            description: 'Fundamental tonic-subdominant-dominant-tonic',
+            description: 'Fundamental tonic-subdominant-dominant-tonic'
             // Example in C major: C - F - G - C
             // Function: Classic functional harmony progression
             // Voice leading: Perfect loop (ends on same chord it starts with)
@@ -251,7 +251,7 @@ const CHORD_PROGRESSIONS = {
         'i-VII-VI-VII': {
             name: 'Minor Pop',
             roman: ['i', 'VII', 'VI', 'VII'],
-            description: 'Popular minor progression',
+            description: 'Popular minor progression'
             // Example in A minor: Am - G - F - G
             // Function: Uses natural minor scale (no raised leading tone)
             // Voice leading: Smooth descending and ascending motion
@@ -260,7 +260,7 @@ const CHORD_PROGRESSIONS = {
         'i-iv-V-i': {
             name: 'Minor Cadence',
             roman: ['i', 'iv', 'V', 'i'],
-            description: 'Basic minor cadence',
+            description: 'Basic minor cadence'
             // Example in A minor: Am - Dm - E - Am
             // Function: Classic minor cadence with dominant resolution
             // Note: V chord (E major) uses raised leading tone (G#) from harmonic minor
@@ -270,7 +270,7 @@ const CHORD_PROGRESSIONS = {
         'i-VI-III-VII': {
             name: 'Andalusian',
             roman: ['i', 'VI', 'III', 'VII'],
-            description: 'Spanish/Flamenco progression',
+            description: 'Spanish/Flamenco progression'
             // Example in A minor: Am - F - C - G
             // Function: Descending bass line (A - F - C - G)
             // Voice leading: Characteristic Spanish/Flamenco sound
@@ -279,7 +279,7 @@ const CHORD_PROGRESSIONS = {
         'i-v-iv-i': {
             name: 'Natural Minor',
             roman: ['i', 'v', 'iv', 'i'],
-            description: 'All natural minor chords',
+            description: 'All natural minor chords'
             // Example in A minor: Am - Em - Dm - Am
             // Function: Pure natural minor (no raised leading tone)
             // Voice leading: Very smooth, all voices move by step or stay
@@ -499,15 +499,15 @@ class MusicTheory {
         // - This matches standard music notation conventions and the circle of fifths layout
         const enharmonicMap = {
             'C#': 'Db', // Normalize to flat (Db major is more common than C# major)
-            'Db': 'Db',
+            Db: 'Db',
             'D#': 'Eb', // Normalize to flat (Eb major is standard)
-            'Eb': 'Eb',
+            Eb: 'Eb',
             'F#': 'F#', // Keep as sharp (F# major is more common than Gb major)
-            'Gb': 'F#', // Normalize to sharp
+            Gb: 'F#', // Normalize to sharp
             'G#': 'Ab', // Normalize to flat (Ab major is standard)
-            'Ab': 'Ab',
+            Ab: 'Ab',
             'A#': 'Bb', // Normalize to flat (Bb major is standard)
-            'Bb': 'Bb'
+            Bb: 'Bb'
         };
 
         // Normalize the key to match CIRCLE_OF_FIFTHS notation
@@ -520,7 +520,8 @@ class MusicTheory {
 
         // Determine if we should use flat notation based on the normalized key
         const useFlats =
-            normalizedKey.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(normalizedKey);
+            normalizedKey.includes('b') ||
+            ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(normalizedKey);
 
         const dominantRaw = CIRCLE_OF_FIFTHS[(keyIndex + 1) % 12];
         const subdominantRaw = CIRCLE_OF_FIFTHS[(keyIndex - 1 + 12) % 12];

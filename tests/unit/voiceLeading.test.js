@@ -27,7 +27,7 @@ describe('Voice Leading', () => {
             const voicing = audioEngine.createChordVoicing(notes, 3);
 
             expect(voicing).toHaveLength(3);
-            
+
             // Check that all notes are in reasonable range (octave 3-4)
             voicing.forEach(voice => {
                 expect(voice.octave).toBeGreaterThanOrEqual(3);
@@ -40,7 +40,7 @@ describe('Voice Leading', () => {
             const voicing = audioEngine.createChordVoicing(notes, 3);
 
             // Calculate MIDI numbers
-            const getMidi = (voice) => musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
+            const getMidi = voice => musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
             const midiNumbers = voicing.map(getMidi);
 
             // Check that voicing spans less than 2 octaves
@@ -52,7 +52,7 @@ describe('Voice Leading', () => {
             const notes = ['C', 'E', 'G'];
             const voicing = audioEngine.createChordVoicing(notes, 3);
 
-            const getMidi = (voice) => musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
+            const getMidi = voice => musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
             const midiNumbers = voicing.map(getMidi);
 
             // Each note should be higher than or equal to the previous
@@ -114,7 +114,7 @@ describe('Voice Leading', () => {
 
         test('should handle empty voicings gracefully', () => {
             const assignment = audioEngine.findOptimalVoiceAssignment([], []);
-            
+
             expect(assignment.totalMovement).toBe(0);
             expect(assignment.movements).toHaveLength(0);
         });
@@ -150,7 +150,7 @@ describe('Voice Leading', () => {
 
         test('should prefer smooth voice leading', () => {
             const cMajor = audioEngine.createChordVoicing(['C', 'E', 'G'], 3);
-            
+
             // Create two F major voicings - one smooth, one with large leaps
             const fMajorSmooth = audioEngine.createChordVoicing(['F', 'A', 'C'], 3);
             const fMajorWide = audioEngine.createChordVoicing(['F', 'A', 'C'], 5);
@@ -199,10 +199,10 @@ describe('Voice Leading', () => {
         test('should create smooth top voice melody', () => {
             // Test a common progression: I-IV-V-I in C major
             const chords = [
-                ['C', 'E', 'G'],  // I
-                ['F', 'A', 'C'],  // IV
-                ['G', 'B', 'D'],  // V
-                ['C', 'E', 'G']   // I
+                ['C', 'E', 'G'], // I
+                ['F', 'A', 'C'], // IV
+                ['G', 'B', 'D'], // V
+                ['C', 'E', 'G'] // I
             ];
 
             let previousVoicing = null;
@@ -210,12 +210,15 @@ describe('Voice Leading', () => {
 
             chords.forEach(chordNotes => {
                 const voicing = audioEngine.optimizeChordVoicing(chordNotes, previousVoicing, 3);
-                
+
                 if (previousVoicing) {
-                    const assignment = audioEngine.findOptimalVoiceAssignment(previousVoicing, voicing);
+                    const assignment = audioEngine.findOptimalVoiceAssignment(
+                        previousVoicing,
+                        voicing
+                    );
                     topVoiceMovements.push(assignment.topVoiceMovement);
                 }
-                
+
                 previousVoicing = voicing;
             });
 
@@ -229,10 +232,10 @@ describe('Voice Leading', () => {
     describe('Integration: Chord Progressions', () => {
         test('should create smooth I-IV-V-I progression', () => {
             const chords = [
-                ['C', 'E', 'G'],  // I
-                ['F', 'A', 'C'],  // IV
-                ['G', 'B', 'D'],  // V
-                ['C', 'E', 'G']   // I
+                ['C', 'E', 'G'], // I
+                ['F', 'A', 'C'], // IV
+                ['G', 'B', 'D'], // V
+                ['C', 'E', 'G'] // I
             ];
 
             let previousVoicing = null;
@@ -240,12 +243,15 @@ describe('Voice Leading', () => {
 
             chords.forEach(chordNotes => {
                 const voicing = audioEngine.optimizeChordVoicing(chordNotes, previousVoicing, 3);
-                
+
                 if (previousVoicing) {
-                    const assignment = audioEngine.findOptimalVoiceAssignment(previousVoicing, voicing);
+                    const assignment = audioEngine.findOptimalVoiceAssignment(
+                        previousVoicing,
+                        voicing
+                    );
                     totalMovement += assignment.totalMovement;
                 }
-                
+
                 previousVoicing = voicing;
             });
 
@@ -255,9 +261,9 @@ describe('Voice Leading', () => {
 
         test('should create smooth ii-V-I jazz progression', () => {
             const chords = [
-                ['D', 'F', 'A'],  // ii (Dm)
-                ['G', 'B', 'D'],  // V (G)
-                ['C', 'E', 'G']   // I (C)
+                ['D', 'F', 'A'], // ii (Dm)
+                ['G', 'B', 'D'], // V (G)
+                ['C', 'E', 'G'] // I (C)
             ];
 
             let previousVoicing = null;
@@ -265,12 +271,15 @@ describe('Voice Leading', () => {
 
             chords.forEach(chordNotes => {
                 const voicing = audioEngine.optimizeChordVoicing(chordNotes, previousVoicing, 3);
-                
+
                 if (previousVoicing) {
-                    const assignment = audioEngine.findOptimalVoiceAssignment(previousVoicing, voicing);
+                    const assignment = audioEngine.findOptimalVoiceAssignment(
+                        previousVoicing,
+                        voicing
+                    );
                     movements.push(assignment.totalMovement);
                 }
-                
+
                 previousVoicing = voicing;
             });
 
@@ -281,4 +290,3 @@ describe('Voice Leading', () => {
         });
     });
 });
-

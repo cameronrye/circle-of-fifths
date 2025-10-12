@@ -32,7 +32,7 @@ class NodePool {
             // Node is from a different audio context, don't add it to the pool
             try {
                 node.disconnect();
-            } catch (e) {
+            } catch {
                 // Node might already be disconnected
             }
             return;
@@ -54,7 +54,7 @@ class NodePool {
         this.pool.forEach(node => {
             try {
                 node.disconnect();
-            } catch (e) {
+            } catch {
                 // Node might already be disconnected
             }
         });
@@ -148,8 +148,8 @@ class AudioEngine {
             percussionVolume: 0.4,
             // Bass settings
             bassEnabled: false,
-            bassVolume: 1.2,  // Increased for better audibility
-            bassOctave: 2     // Raised octave for more audible frequency range
+            bassVolume: 1.2, // Increased for better audibility
+            bassOctave: 2 // Raised octave for more audible frequency range
         };
 
         // Looping state
@@ -506,7 +506,10 @@ class AudioEngine {
                 convolver
             };
         } catch (error) {
-            console.warn('Failed to create convolution reverb, using simple delay-based reverb:', error);
+            console.warn(
+                'Failed to create convolution reverb, using simple delay-based reverb:',
+                error
+            );
             return this.createSimpleDelayReverb();
         }
     }
@@ -765,30 +768,34 @@ class AudioEngine {
 
         // Schedule cleanup and node pool release
         const stopBuffer = 0.05; // 50ms buffer after envelope completes
-        const cleanupTime = (startTime + duration + stopBuffer - this.audioContext.currentTime) * 1000;
+        const cleanupTime =
+            (startTime + duration + stopBuffer - this.audioContext.currentTime) * 1000;
 
-        const timeoutId = setTimeout(() => {
-            this.cleanupTimeouts.delete(timeoutId);
-            this.nodePools.gain.release(mainGain);
-            this.nodePools.gain.release(subGain);
-            this.nodePools.gain.release(mixer);
-            // Release stereo enhancement nodes if they were created
-            if (leftGain) {
-                this.nodePools.gain.release(leftGain);
-            }
-            if (rightGain) {
-                this.nodePools.gain.release(rightGain);
-            }
-            if (leftPanner) {
-                this.nodePools.panner.release(leftPanner);
-            }
-            if (rightPanner) {
-                this.nodePools.panner.release(rightPanner);
-            }
-            if (filter) {
-                this.nodePools.filter.release(filter);
-            }
-        }, Math.max(0, cleanupTime));
+        const timeoutId = setTimeout(
+            () => {
+                this.cleanupTimeouts.delete(timeoutId);
+                this.nodePools.gain.release(mainGain);
+                this.nodePools.gain.release(subGain);
+                this.nodePools.gain.release(mixer);
+                // Release stereo enhancement nodes if they were created
+                if (leftGain) {
+                    this.nodePools.gain.release(leftGain);
+                }
+                if (rightGain) {
+                    this.nodePools.gain.release(rightGain);
+                }
+                if (leftPanner) {
+                    this.nodePools.panner.release(leftPanner);
+                }
+                if (rightPanner) {
+                    this.nodePools.panner.release(rightPanner);
+                }
+                if (filter) {
+                    this.nodePools.filter.release(filter);
+                }
+            },
+            Math.max(0, cleanupTime)
+        );
         this.cleanupTimeouts.add(timeoutId);
 
         return {
@@ -923,9 +930,11 @@ class AudioEngine {
             // If the highest note is more than 2 octaves above root, bring everything down
             const highestVoice = voicing[voicing.length - 1];
             const rootMidi = rootNoteIndex + octave * 12;
-            const highestMidi = this.musicTheory.getNoteIndex(highestVoice.note) + highestVoice.octave * 12;
+            const highestMidi =
+                this.musicTheory.getNoteIndex(highestVoice.note) + highestVoice.octave * 12;
 
-            if (highestMidi - rootMidi > 19) { // More than an octave + perfect 5th
+            if (highestMidi - rootMidi > 19) {
+                // More than an octave + perfect 5th
                 // Bring upper voices down an octave for better spacing
                 for (let i = 1; i < voicing.length; i++) {
                     voicing[i].octave--;
@@ -937,8 +946,7 @@ class AudioEngine {
         const noteCount = voicing.length;
         voicing.forEach((voice, index) => {
             // Spread notes across stereo field: -0.4 to +0.4
-            voice.pan =
-                noteCount > 1 ? ((index / (noteCount - 1)) - 0.5) * 0.8 : 0;
+            voice.pan = noteCount > 1 ? (index / (noteCount - 1) - 0.5) * 0.8 : 0;
         });
 
         return voicing;
@@ -1035,11 +1043,15 @@ class AudioEngine {
         });
 
         // Clean up after chord ends
-        const cleanupTime = (startTime + chordDuration + 0.1 - this.audioContext.currentTime) * 1000;
-        const timeoutId = setTimeout(() => {
-            this.cleanupTimeouts.delete(timeoutId);
-            this.nodePools.gain.release(chordGain);
-        }, Math.max(0, cleanupTime));
+        const cleanupTime =
+            (startTime + chordDuration + 0.1 - this.audioContext.currentTime) * 1000;
+        const timeoutId = setTimeout(
+            () => {
+                this.cleanupTimeouts.delete(timeoutId);
+                this.nodePools.gain.release(chordGain);
+            },
+            Math.max(0, cleanupTime)
+        );
         this.cleanupTimeouts.add(timeoutId);
 
         oscillators.forEach(osc => {
@@ -1154,7 +1166,7 @@ class AudioEngine {
         }
 
         // Convert voicings to MIDI numbers for easier calculation
-        const getMidi = (voice) => this.musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
+        const getMidi = voice => this.musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
 
         const chord1Midi = voicing1.map(v => ({ ...v, midi: getMidi(v) }));
         const chord2Midi = voicing2.map(v => ({ ...v, midi: getMidi(v) }));
@@ -1226,7 +1238,8 @@ class AudioEngine {
         // Calculate metrics
         const totalMovement = movements.reduce((sum, m) => sum + m.distance, 0);
         const maxLeap = movements.length > 0 ? Math.max(...movements.map(m => m.distance)) : 0;
-        const topVoiceMovement = movements.length > 0 ? movements[movements.length - 1].distance : 0;
+        const topVoiceMovement =
+            movements.length > 0 ? movements[movements.length - 1].distance : 0;
 
         return { movements, totalMovement, maxLeap, topVoiceMovement };
     }
@@ -1279,7 +1292,7 @@ class AudioEngine {
         // If no previous voicing, just score the voicing itself
         if (!previousVoicing || previousVoicing.length === 0) {
             // Prefer voicings in comfortable range (C3 to C5)
-            const getMidi = (voice) => this.musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
+            const getMidi = voice => this.musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
             const avgMidi = voicing.reduce((sum, v) => sum + getMidi(v), 0) / voicing.length;
             const idealMidi = 60; // C4
             score += Math.abs(avgMidi - idealMidi) * 0.5; // Range penalty
@@ -1300,13 +1313,14 @@ class AudioEngine {
 
         // Factor 3: Maximum leap penalty (20% weight)
         // Penalize large leaps in any voice
-        if (assignment.maxLeap > 7) { // More than a perfect 5th
+        if (assignment.maxLeap > 7) {
+            // More than a perfect 5th
             score += (assignment.maxLeap - 7) * 2;
         }
 
         // Factor 4: Range penalty
         // Prefer voicings in comfortable range
-        const getMidi = (voice) => this.musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
+        const getMidi = voice => this.musicTheory.getNoteIndex(voice.note) + voice.octave * 12;
         const avgMidi = voicing.reduce((sum, v) => sum + getMidi(v), 0) / voicing.length;
         const idealMidi = 60; // C4
         score += Math.abs(avgMidi - idealMidi) * 0.3;
@@ -1316,7 +1330,8 @@ class AudioEngine {
         if (voicing.length >= 2) {
             const topTwoMidi = voicing.slice(-2).map(getMidi);
             const spacing = topTwoMidi[1] - topTwoMidi[0];
-            if (spacing > 12) { // More than an octave between top two voices
+            if (spacing > 12) {
+                // More than an octave between top two voices
                 score += (spacing - 12) * 0.5;
             }
         }
@@ -1486,11 +1501,15 @@ class AudioEngine {
             }
 
             // Schedule cleanup for chord gain
-            const cleanupDelay = (currentTime + chordDuration + 0.1 - this.audioContext.currentTime) * 1000;
-            const timeoutId = setTimeout(() => {
-                this.cleanupTimeouts.delete(timeoutId);
-                this.nodePools.gain.release(chordGain);
-            }, Math.max(0, cleanupDelay));
+            const cleanupDelay =
+                (currentTime + chordDuration + 0.1 - this.audioContext.currentTime) * 1000;
+            const timeoutId = setTimeout(
+                () => {
+                    this.cleanupTimeouts.delete(timeoutId);
+                    this.nodePools.gain.release(chordGain);
+                },
+                Math.max(0, cleanupDelay)
+            );
             this.cleanupTimeouts.add(timeoutId);
 
             // Clean up
@@ -1530,13 +1549,18 @@ class AudioEngine {
         // Store loop parameters - these remain constant throughout all iterations
         // This ensures the progression never changes keys
         this.loopState.enabled = true;
-        this.loopState.currentKey = key;           // Key is locked for all iterations
-        this.loopState.currentMode = mode;         // Mode is locked for all iterations
+        this.loopState.currentKey = key; // Key is locked for all iterations
+        this.loopState.currentMode = mode; // Mode is locked for all iterations
         this.loopState.currentProgression = progressionName;
 
         // Play first iteration
         // If previousVoicing exists from a previous loop, use it for smooth continuation
-        const result = await this.playProgression(key, mode, progressionName, this.loopState.previousVoicing);
+        const result = await this.playProgression(
+            key,
+            mode,
+            progressionName,
+            this.loopState.previousVoicing
+        );
 
         if (!result || result.totalDuration === 0) {
             this.loopState.enabled = false;
@@ -1558,10 +1582,10 @@ class AudioEngine {
                 // IMPORTANT: We always use the stored key, mode, and progression
                 // This guarantees no key changes occur during looping
                 this.playProgression(
-                    this.loopState.currentKey,        // Same key as first iteration
-                    this.loopState.currentMode,       // Same mode as first iteration
+                    this.loopState.currentKey, // Same key as first iteration
+                    this.loopState.currentMode, // Same mode as first iteration
                     this.loopState.currentProgression,
-                    this.loopState.previousVoicing    // Voice leading from last chord
+                    this.loopState.previousVoicing // Voice leading from last chord
                 ).then(nextResult => {
                     if (nextResult && nextResult.finalVoicing) {
                         // Update voicing for next loop iteration
@@ -1570,7 +1594,10 @@ class AudioEngine {
 
                     // Schedule next loop after current one completes
                     if (this.loopState.enabled) {
-                        this.loopState.timeoutId = setTimeout(scheduleNextLoop, nextResult.totalDuration * 1000);
+                        this.loopState.timeoutId = setTimeout(
+                            scheduleNextLoop,
+                            nextResult.totalDuration * 1000
+                        );
                     }
                 });
             };
@@ -1795,7 +1822,10 @@ class AudioEngine {
 
         // Volume envelope - more aggressive for better audibility
         masterGain.gain.setValueAtTime(0, startTime);
-        masterGain.gain.linearRampToValueAtTime(this.settings.bassVolume * 1.2, startTime + attackTime);
+        masterGain.gain.linearRampToValueAtTime(
+            this.settings.bassVolume * 1.2,
+            startTime + attackTime
+        );
         masterGain.gain.linearRampToValueAtTime(sustainLevel, startTime + attackTime + decayTime);
         masterGain.gain.setValueAtTime(sustainLevel, startTime + duration - releaseTime);
         masterGain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
@@ -1846,7 +1876,12 @@ class AudioEngine {
         this.createBassNote(chordRoot, this.settings.bassOctave, startTime, duration * 0.7);
 
         // Play root note again on beat 3 (halfway through) for rhythmic interest
-        this.createBassNote(chordRoot, this.settings.bassOctave, startTime + duration / 2, duration * 0.7);
+        this.createBassNote(
+            chordRoot,
+            this.settings.bassOctave,
+            startTime + duration / 2,
+            duration * 0.7
+        );
     }
 
     /**

@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [1.1.0] - 2025-10-12
+
+### Added
+
 - **Enharmonic Equivalent Display** - Positions 6-10 in the circle now show both sharp and flat names (e.g., 'F♯/G♭') for educational clarity
 - **Minor Mode Visual Indicator** - Keys in minor mode now display with 'm' suffix (e.g., 'Cm') for clear visual distinction
 - **Enharmonic Normalization** - getRelatedKeys() method now handles both sharp and flat key inputs (C# and Db, F# and Gb, etc.)
