@@ -43,6 +43,11 @@ const MAJOR_KEYS = {
         signature: '6 sharps (F#, C#, G#, D#, A#, E#)',
         accidentals: ['F#', 'C#', 'G#', 'D#', 'A#', 'E#']
     },
+    // THEORETICAL KEYS (rarely used in practice):
+    // C# major (7 sharps) - enharmonic equivalent of Db major (5 flats) is preferred
+    // A# major (10 sharps with double sharps!) - enharmonic equivalent Bb major (2 flats) is standard
+    // These keys are included for theoretical completeness but are not in the CIRCLE_OF_FIFTHS
+    // array and cannot be selected in the UI. In practice, musicians use the flat equivalents.
     'C#': {
         sharps: 7,
         flats: 0,
@@ -359,6 +364,8 @@ class MusicTheory {
             return (naturalIndices[naturalIndex] + accidental + 12) % 12;
         }
 
+        // Warn about invalid note and default to C
+        console.warn(`Invalid note: "${note}", defaulting to C (index 0)`);
         return 0; // Default to C if note not found
     }
 
@@ -481,16 +488,25 @@ class MusicTheory {
 
         // Enharmonic normalization map - converts both sharps and flats to the notation used in CIRCLE_OF_FIFTHS
         // This allows the method to work with both C# and Db, F# and Gb, etc.
+        //
+        // DESIGN DECISION: Normalize to the notation that matches CIRCLE_OF_FIFTHS array
+        // - Sharp keys (right side of circle): F# is preferred over Gb (more common in practice)
+        // - Flat keys (left side of circle): Db, Ab, Eb, Bb are preferred over their sharp equivalents
+        //
+        // Musical rationale:
+        // - F# major (6 sharps) is more commonly used than Gb major (6 flats)
+        // - Db major (5 flats) is more commonly used than C# major (7 sharps)
+        // - This matches standard music notation conventions and the circle of fifths layout
         const enharmonicMap = {
-            'C#': 'Db',
+            'C#': 'Db', // Normalize to flat (Db major is more common than C# major)
             'Db': 'Db',
-            'D#': 'Eb',
+            'D#': 'Eb', // Normalize to flat (Eb major is standard)
             'Eb': 'Eb',
-            'F#': 'F#',
-            'Gb': 'F#',
-            'G#': 'Ab',
+            'F#': 'F#', // Keep as sharp (F# major is more common than Gb major)
+            'Gb': 'F#', // Normalize to sharp
+            'G#': 'Ab', // Normalize to flat (Ab major is standard)
             'Ab': 'Ab',
-            'A#': 'Bb',
+            'A#': 'Bb', // Normalize to flat (Bb major is standard)
             'Bb': 'Bb'
         };
 

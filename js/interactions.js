@@ -36,8 +36,9 @@ class InteractionsHandler {
             scale: false,
             chord: false,
             progression: false,
-            percussion: false,
-            loop: false
+            percussion: true,  // Default enabled
+            bass: false,       // Default disabled
+            loop: true         // Default enabled
         };
 
         // Track currently playing progression
@@ -62,6 +63,7 @@ class InteractionsHandler {
             playChordBtn: document.getElementById('play-chord'),
             playProgressionBtn: document.getElementById('play-progression'),
             togglePercussionBtn: document.getElementById('toggle-percussion'),
+            toggleBassBtn: document.getElementById('toggle-bass'),
             toggleLoopBtn: document.getElementById('toggle-loop'),
             volumeSlider: document.getElementById('volume-slider'),
             volumeDisplay: document.getElementById('volume-display'),
@@ -140,6 +142,7 @@ class InteractionsHandler {
         this.setupKeyboardNavigation();
         this.setupInfoPanelInteractions();
         this.updateInfoPanel();
+        this.initializeDefaultToggleStates();
 
         // Hide loading screen after initialization
         setTimeout(() => this.hideLoading(), 500);
@@ -349,7 +352,7 @@ class InteractionsHandler {
      * Navigate through keys using keyboard
      */
     navigateKeys(direction) {
-        const keys = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#', 'G#', 'D#', 'A#', 'F'];
+        const keys = this.musicTheory.getCircleOfFifthsKeys();
         const currentIndex = keys.indexOf(this.currentKey);
         let newIndex = (currentIndex + direction + keys.length) % keys.length;
 
@@ -549,11 +552,38 @@ class InteractionsHandler {
             });
         }
 
+        if (this.elements.toggleBassBtn) {
+            this.elements.toggleBassBtn.addEventListener('click', () => {
+                this.toggleBass();
+            });
+        }
+
         if (this.elements.toggleLoopBtn) {
             this.elements.toggleLoopBtn.addEventListener('click', () => {
                 this.toggleLoop();
             });
         }
+    }
+
+    /**
+     * Initialize default toggle button states (percussion and loop enabled by default, bass disabled)
+     */
+    initializeDefaultToggleStates() {
+        // Set percussion enabled in audio engine
+        this.audioEngine.setPercussionEnabled(this.playbackState.percussion);
+
+        // Set bass enabled in audio engine
+        this.audioEngine.setBassEnabled(this.playbackState.bass);
+
+        // Set loop enabled in audio engine
+        this.audioEngine.setLoopingEnabled(this.playbackState.loop);
+
+        // Update button visual states to match
+        this.updateToggleButtonState('percussion', this.playbackState.percussion);
+        this.updateToggleButtonState('bass', this.playbackState.bass);
+        this.updateToggleButtonState('loop', this.playbackState.loop);
+
+        this.logger.info('Toggle buttons initialized: percussion and loop enabled, bass disabled by default');
     }
 
     /**
@@ -815,10 +845,8 @@ class InteractionsHandler {
             return;
         }
 
-        // Clear existing content safely
-        while (this.elements.relatedKeys.firstChild) {
-            this.elements.relatedKeys.removeChild(this.elements.relatedKeys.firstChild);
-        }
+        // Clear existing content efficiently using replaceChildren()
+        this.elements.relatedKeys.replaceChildren();
 
         const relationships = [
             { key: relatedKeys.dominant.key, type: 'dominant', label: 'Dominant' },
@@ -854,10 +882,8 @@ class InteractionsHandler {
 
         const progressions = this.musicTheory.getChordProgressions(key, mode);
 
-        // Clear existing content safely
-        while (this.elements.chordProgressions.firstChild) {
-            this.elements.chordProgressions.removeChild(this.elements.chordProgressions.firstChild);
-        }
+        // Clear existing content efficiently using replaceChildren()
+        this.elements.chordProgressions.replaceChildren();
 
         Object.entries(progressions).forEach(([progressionKey, progression]) => {
             const button = document.createElement('button');
@@ -892,7 +918,22 @@ class InteractionsHandler {
     }
 
     async playScale() {
+        // Show loading state during audio initialization
+        if (!this.isAudioInitialized && this.elements.playScaleBtn) {
+            this.elements.playScaleBtn.disabled = true;
+            const iconSpan = this.elements.playScaleBtn.querySelector('.btn-icon');
+            const iconHTML = iconSpan ? iconSpan.outerHTML : '';
+            this.elements.playScaleBtn.innerHTML = iconHTML + 'Initializing...';
+        }
+
         await this.initializeAudio();
+
+        // Restore button state after initialization
+        if (this.elements.playScaleBtn && this.elements.playScaleBtn.disabled) {
+            this.elements.playScaleBtn.disabled = false;
+            this.elements.playScaleBtn.innerHTML = '<span class="btn-icon">♪</span>Scale';
+        }
+
         if (this.isAudioInitialized) {
             // Toggle behavior: stop if currently playing, play if stopped
             if (this.playbackState.scale) {
@@ -928,7 +969,22 @@ class InteractionsHandler {
     }
 
     async playChord() {
+        // Show loading state during audio initialization
+        if (!this.isAudioInitialized && this.elements.playChordBtn) {
+            this.elements.playChordBtn.disabled = true;
+            const iconSpan = this.elements.playChordBtn.querySelector('.btn-icon');
+            const iconHTML = iconSpan ? iconSpan.outerHTML : '';
+            this.elements.playChordBtn.innerHTML = iconHTML + 'Initializing...';
+        }
+
         await this.initializeAudio();
+
+        // Restore button state after initialization
+        if (this.elements.playChordBtn && this.elements.playChordBtn.disabled) {
+            this.elements.playChordBtn.disabled = false;
+            this.elements.playChordBtn.innerHTML = '<span class="btn-icon">♫</span>Chord';
+        }
+
         if (this.isAudioInitialized) {
             // Toggle behavior: stop if currently playing, play if stopped
             if (this.playbackState.chord) {
@@ -962,7 +1018,22 @@ class InteractionsHandler {
     }
 
     async playProgression() {
+        // Show loading state during audio initialization
+        if (!this.isAudioInitialized && this.elements.playProgressionBtn) {
+            this.elements.playProgressionBtn.disabled = true;
+            const iconSpan = this.elements.playProgressionBtn.querySelector('.btn-icon');
+            const iconHTML = iconSpan ? iconSpan.outerHTML : '';
+            this.elements.playProgressionBtn.innerHTML = iconHTML + 'Initializing...';
+        }
+
         await this.initializeAudio();
+
+        // Restore button state after initialization
+        if (this.elements.playProgressionBtn && this.elements.playProgressionBtn.disabled) {
+            this.elements.playProgressionBtn.disabled = false;
+            this.elements.playProgressionBtn.innerHTML = '<span class="btn-icon">♬</span>Progression';
+        }
+
         if (this.isAudioInitialized) {
             // Toggle behavior: stop if currently playing, play if stopped
             if (this.playbackState.progression) {
@@ -1074,6 +1145,19 @@ class InteractionsHandler {
     }
 
     /**
+     * Toggle bass on/off
+     */
+    toggleBass() {
+        this.playbackState.bass = !this.playbackState.bass;
+        this.audioEngine.setBassEnabled(this.playbackState.bass);
+        this.updateToggleButtonState('bass', this.playbackState.bass);
+
+        // Announce to screen readers
+        const status = this.playbackState.bass ? 'enabled' : 'disabled';
+        this.announcePlaybackStatus(`Bass ${status}`);
+    }
+
+    /**
      * Toggle loop on/off
      */
     toggleLoop() {
@@ -1120,6 +1204,31 @@ class InteractionsHandler {
     }
 
     /**
+     * Generic method to update button state with icon and text
+     * @param {HTMLElement} button - The button element to update
+     * @param {boolean} isActive - Whether the button should be in active state
+     * @param {string} activeText - Text to display when active
+     * @param {string} inactiveText - Text to display when inactive
+     * @param {string} icon - Icon character to display
+     * @private
+     */
+    _updateButtonWithIcon(button, isActive, activeText, inactiveText, icon) {
+        if (!button) {
+            return;
+        }
+
+        if (isActive) {
+            button.classList.add('active');
+            button.innerHTML = `<span class="btn-icon">${icon}</span>${activeText}`;
+            button.setAttribute('aria-label', activeText);
+        } else {
+            button.classList.remove('active');
+            button.innerHTML = `<span class="btn-icon">${icon}</span>${inactiveText}`;
+            button.setAttribute('aria-label', `Play ${inactiveText}`);
+        }
+    }
+
+    /**
      * Update button appearance based on playback state
      */
     updateButtonState(type, isPlaying) {
@@ -1129,36 +1238,23 @@ class InteractionsHandler {
             progression: this.elements.playProgressionBtn
         };
 
-        const button = buttonMap[type];
-        if (!button) {
-            return;
-        }
+        const textMap = {
+            scale: 'Scale',
+            chord: 'Chord',
+            progression: 'Progression'
+        };
 
-        if (isPlaying) {
-            button.classList.add('active');
-            // Find the icon span and preserve it, then update the text
-            const iconSpan = button.querySelector('.btn-icon');
-            const iconHTML = iconSpan ? iconSpan.outerHTML : '';
-            button.innerHTML = iconHTML + 'Stop';
-            // Update aria-label
-            button.setAttribute('aria-label', `Stop ${type}`);
-        } else {
-            button.classList.remove('active');
-            // Restore original button content
-            const textMap = {
-                scale: 'Scale',
-                chord: 'Chord',
-                progression: 'Progression'
-            };
-            const iconMap = {
-                scale: '♪',
-                chord: '♫',
-                progression: '♬'
-            };
-            button.innerHTML = `<span class="btn-icon">${iconMap[type]}</span>${textMap[type]}`;
-            // Update aria-label
-            button.setAttribute('aria-label', `Play ${type}`);
-        }
+        const iconMap = {
+            scale: '♪',
+            chord: '♫',
+            progression: '♬'
+        };
+
+        const button = buttonMap[type];
+        const text = textMap[type];
+        const icon = iconMap[type];
+
+        this._updateButtonWithIcon(button, isPlaying, 'Stop', text, icon);
     }
 
     /**
@@ -1167,6 +1263,7 @@ class InteractionsHandler {
     updateToggleButtonState(type, isEnabled) {
         const buttonMap = {
             percussion: this.elements.togglePercussionBtn,
+            bass: this.elements.toggleBassBtn,
             loop: this.elements.toggleLoopBtn
         };
 

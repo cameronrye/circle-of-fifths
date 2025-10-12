@@ -3,6 +3,13 @@
  * Handles SVG rendering and visual updates
  */
 
+// Circle dimension constants (based on 800x800 viewBox)
+const SVG_SIZE = 800;
+const CIRCLE_CENTER = SVG_SIZE / 2; // 400
+const OUTER_RADIUS_RATIO = 0.4; // 40% of SVG size
+const INNER_RADIUS_RATIO = 0.225; // 22.5% of SVG size
+const KEYS_IN_CIRCLE = 12;
+
 /**
  * Renders and manages the interactive Circle of Fifths visualization using SVG.
  * Handles key selection, mode switching, highlighting, and visual feedback.
@@ -30,12 +37,12 @@ class CircleRenderer {
         this.selectedKey = 'C';
         this.highlightedKeys = new Set();
 
-        // Circle dimensions
-        this.centerX = 400;
-        this.centerY = 400;
-        this.outerRadius = 320;
-        this.innerRadius = 180;
-        this.segmentAngle = 30; // 360 / 12 keys
+        // Circle dimensions (calculated from constants for maintainability)
+        this.centerX = CIRCLE_CENTER;
+        this.centerY = CIRCLE_CENTER;
+        this.outerRadius = SVG_SIZE * OUTER_RADIUS_RATIO; // 320
+        this.innerRadius = SVG_SIZE * INNER_RADIUS_RATIO; // 180
+        this.segmentAngle = 360 / KEYS_IN_CIRCLE; // 30 degrees per segment
 
         // Remove hardcoded colors - now using CSS custom properties via classes
 
@@ -393,8 +400,10 @@ class CircleRenderer {
                 segment.classList.toggle('highlighted', isHighlighted);
             }
 
-            // Update aria-label only if changed
-            const newLabel = `${key} ${this.currentMode}`;
+            // Update aria-label with more context for screen readers
+            const keySignature = this.musicTheory.getKeySignature(key, this.currentMode);
+            const selectionState = isActive ? 'Currently selected' : 'Press Enter to select';
+            const newLabel = `${key} ${this.currentMode}. ${keySignature.signature}. ${selectionState}`;
             if (forceUpdate || segment.getAttribute('aria-label') !== newLabel) {
                 segment.setAttribute('aria-label', newLabel);
             }
@@ -421,7 +430,14 @@ class CircleRenderer {
 
         segment.classList.toggle('active', isActive);
         segment.classList.toggle('highlighted', isHighlighted);
-        segment.setAttribute('aria-label', `${key} ${this.currentMode}`);
+
+        // Update aria-label with more context for screen readers
+        const keySignature = this.musicTheory.getKeySignature(key, this.currentMode);
+        const selectionState = isActive ? 'Currently selected' : 'Press Enter to select';
+        segment.setAttribute(
+            'aria-label',
+            `${key} ${this.currentMode}. ${keySignature.signature}. ${selectionState}`
+        );
     }
 
     /**
@@ -514,7 +530,8 @@ class CircleRenderer {
     getKeyFromAngle(angle) {
         // Normalize angle to 0-360
         let normalizedAngle = (((angle + 90) % 360) + 360) % 360;
-        const keyIndex = Math.floor(normalizedAngle / this.segmentAngle);
+        // Ensure keyIndex is within bounds (0-11) to prevent array out of bounds
+        const keyIndex = Math.floor(normalizedAngle / this.segmentAngle) % 12;
         const keys = this.musicTheory.getCircleOfFifthsKeys();
         return keys[keyIndex] || null;
     }

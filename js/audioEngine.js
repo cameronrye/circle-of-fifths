@@ -26,6 +26,17 @@ class NodePool {
         if (!node) {
             return; // Guard against undefined/null nodes
         }
+        // Verify the node belongs to this pool's audio context
+        // This prevents nodes from old contexts being added after reinitialization
+        if (node.context && node.context !== this.audioContext) {
+            // Node is from a different audio context, don't add it to the pool
+            try {
+                node.disconnect();
+            } catch (e) {
+                // Node might already be disconnected
+            }
+            return;
+        }
         if (this.pool.length < this.maxSize) {
             node.disconnect();
             // Reset to default state
@@ -76,6 +87,7 @@ class AudioEngine {
         this.isInitialized = false;
         this.currentlyPlaying = new Set();
         this.musicTheory = new MusicTheory();
+        this.cleanupTimeouts = new Set(); // Track cleanup timeouts for proper disposal
 
         // Custom waveforms for enhanced sound quality
         this.customWaves = null;
@@ -133,7 +145,11 @@ class AudioEngine {
             useLimiter: true,
             // Percussion settings
             percussionEnabled: false,
-            percussionVolume: 0.4
+            percussionVolume: 0.4,
+            // Bass settings
+            bassEnabled: false,
+            bassVolume: 1.2,  // Increased for better audibility
+            bassOctave: 2     // Raised octave for more audible frequency range
         };
 
         // Looping state
@@ -692,7 +708,10 @@ class AudioEngine {
             leftPanner = this.nodePools.panner.acquire();
             leftOsc.frequency.setValueAtTime(frequency, startTime);
             leftOsc.detune.setValueAtTime(-this.settings.detuneAmount, startTime);
-            leftPanner.pan.value = -this.settings.stereoWidth;
+            // Use setValueAtTime for Web Audio API compliance
+            if (leftPanner.pan) {
+                leftPanner.pan.setValueAtTime(-this.settings.stereoWidth, startTime);
+            }
             leftGain.gain.value = 0.25;
 
             // Right detuned oscillator
@@ -701,7 +720,10 @@ class AudioEngine {
             rightPanner = this.nodePools.panner.acquire();
             rightOsc.frequency.setValueAtTime(frequency, startTime);
             rightOsc.detune.setValueAtTime(this.settings.detuneAmount, startTime);
-            rightPanner.pan.value = this.settings.stereoWidth;
+            // Use setValueAtTime for Web Audio API compliance
+            if (rightPanner.pan) {
+                rightPanner.pan.setValueAtTime(this.settings.stereoWidth, startTime);
+            }
             rightGain.gain.value = 0.25;
 
             // Set waveforms for stereo oscillators
@@ -745,7 +767,8 @@ class AudioEngine {
         const stopBuffer = 0.05; // 50ms buffer after envelope completes
         const cleanupTime = (startTime + duration + stopBuffer - this.audioContext.currentTime) * 1000;
 
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
+            this.cleanupTimeouts.delete(timeoutId);
             this.nodePools.gain.release(mainGain);
             this.nodePools.gain.release(subGain);
             this.nodePools.gain.release(mixer);
@@ -766,6 +789,7 @@ class AudioEngine {
                 this.nodePools.filter.release(filter);
             }
         }, Math.max(0, cleanupTime));
+        this.cleanupTimeouts.add(timeoutId);
 
         return {
             oscillators: oscillators,
@@ -818,6 +842,12 @@ class AudioEngine {
      * await audioEngine.playNote('A', 4, 2.0);
      */
     async playNote(note, octave = 4, duration = null) {
+        // Validate input parameters
+        if (!note || typeof note !== 'string') {
+            console.warn('playNote: Invalid note parameter');
+            return;
+        }
+
         if (!this.isInitialized) {
             await this.initialize();
         }
@@ -931,6 +961,12 @@ class AudioEngine {
      * await audioEngine.playChord(['A', 'C', 'E'], 4, 3.0);
      */
     async playChord(notes, octave = 4, duration = null) {
+        // Validate input parameters
+        if (!Array.isArray(notes) || notes.length === 0) {
+            console.warn('playChord: Invalid notes array - must be a non-empty array');
+            return;
+        }
+
         if (!this.isInitialized) {
             await this.initialize();
         }
@@ -1000,9 +1036,11 @@ class AudioEngine {
 
         // Clean up after chord ends
         const cleanupTime = (startTime + chordDuration + 0.1 - this.audioContext.currentTime) * 1000;
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
+            this.cleanupTimeouts.delete(timeoutId);
             this.nodePools.gain.release(chordGain);
         }, Math.max(0, cleanupTime));
+        this.cleanupTimeouts.add(timeoutId);
 
         oscillators.forEach(osc => {
             osc.addEventListener('ended', () => {
@@ -1017,6 +1055,12 @@ class AudioEngine {
      * Example: C-D-E-F-G-A-B-C-C-B-A-G-F-E-D-C
      */
     async playScale(key, mode = 'major', octave = 4) {
+        // Validate input parameters
+        if (!key || typeof key !== 'string') {
+            console.warn('playScale: Invalid key parameter');
+            return;
+        }
+
         if (!this.isInitialized) {
             await this.initialize();
         }
@@ -1436,11 +1480,18 @@ class AudioEngine {
                 this.playPercussionPattern(currentTime, chordDuration);
             }
 
+            // Play bass pattern if enabled
+            if (this.settings.bassEnabled) {
+                this.playBassPattern(chordRoot, currentTime, chordDuration);
+            }
+
             // Schedule cleanup for chord gain
             const cleanupDelay = (currentTime + chordDuration + 0.1 - this.audioContext.currentTime) * 1000;
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
+                this.cleanupTimeouts.delete(timeoutId);
                 this.nodePools.gain.release(chordGain);
             }, Math.max(0, cleanupDelay));
+            this.cleanupTimeouts.add(timeoutId);
 
             // Clean up
             oscillators.forEach(osc => {
@@ -1699,6 +1750,106 @@ class AudioEngine {
     }
 
     /**
+     * Create bass note sound using oscillator with envelope
+     * @param {string} note - The note name (e.g., 'C', 'F#', 'Bb')
+     * @param {number} octave - The octave for the bass note
+     * @param {number} startTime - When to start the bass note
+     * @param {number} duration - Duration of the bass note
+     * @returns {Object} Audio nodes for cleanup
+     */
+    createBassNote(note, octave, startTime, duration) {
+        const frequency = this.musicTheory.getNoteFrequency(note, octave);
+
+        // Create main bass oscillator (sine wave)
+        const mainOsc = this.audioContext.createOscillator();
+        const mainGain = this.audioContext.createGain();
+
+        // Create harmonic oscillator (triangle wave) for more presence
+        const harmonicOsc = this.audioContext.createOscillator();
+        const harmonicGain = this.audioContext.createGain();
+
+        // Create filter and master gain for bass
+        const filter = this.audioContext.createBiquadFilter();
+        const masterGain = this.audioContext.createGain();
+
+        // Main oscillator: sine wave for warm, round bass tone
+        mainOsc.type = 'sine';
+        mainOsc.frequency.setValueAtTime(frequency, startTime);
+        mainGain.gain.value = 0.7; // 70% of the mix
+
+        // Harmonic oscillator: triangle wave for presence and definition
+        harmonicOsc.type = 'triangle';
+        harmonicOsc.frequency.setValueAtTime(frequency, startTime);
+        harmonicGain.gain.value = 0.3; // 30% of the mix
+
+        // Low-pass filter for smooth bass with more presence
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1500, startTime); // Increased from 800Hz for more brightness
+        filter.Q.value = 1.5; // Slight resonance for character
+
+        // ADSR envelope for punchy bass
+        const attackTime = 0.005; // Very fast attack for punch
+        const decayTime = 0.08;
+        const sustainLevel = this.settings.bassVolume * 0.85; // Higher sustain level
+        const releaseTime = 0.15;
+
+        // Volume envelope - more aggressive for better audibility
+        masterGain.gain.setValueAtTime(0, startTime);
+        masterGain.gain.linearRampToValueAtTime(this.settings.bassVolume * 1.2, startTime + attackTime);
+        masterGain.gain.linearRampToValueAtTime(sustainLevel, startTime + attackTime + decayTime);
+        masterGain.gain.setValueAtTime(sustainLevel, startTime + duration - releaseTime);
+        masterGain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+        // Connect audio graph: both oscillators -> filter -> master gain -> output
+        mainOsc.connect(mainGain);
+        harmonicOsc.connect(harmonicGain);
+        mainGain.connect(filter);
+        harmonicGain.connect(filter);
+        filter.connect(masterGain);
+        masterGain.connect(this.masterGain);
+
+        const stopTime = startTime + duration;
+        mainOsc.start(startTime);
+        harmonicOsc.start(startTime);
+        mainOsc.stop(stopTime);
+        harmonicOsc.stop(stopTime);
+
+        this.currentlyPlaying.add(mainOsc);
+        this.currentlyPlaying.add(harmonicOsc);
+
+        mainOsc.addEventListener('ended', () => {
+            this.currentlyPlaying.delete(mainOsc);
+        });
+        harmonicOsc.addEventListener('ended', () => {
+            this.currentlyPlaying.delete(harmonicOsc);
+        });
+
+        return {
+            oscillators: [mainOsc, harmonicOsc],
+            filter: filter,
+            gainNode: masterGain
+        };
+    }
+
+    /**
+     * Play bass pattern for one chord duration
+     * @param {string} chordRoot - The root note of the chord (e.g., 'C', 'F#', 'Bb')
+     * @param {number} startTime - When to start the pattern
+     * @param {number} duration - Duration of the chord (pattern length)
+     */
+    playBassPattern(chordRoot, startTime, duration) {
+        if (!this.settings.bassEnabled) {
+            return;
+        }
+
+        // Play root note on beat 1 (start of chord) - longer, more sustained
+        this.createBassNote(chordRoot, this.settings.bassOctave, startTime, duration * 0.7);
+
+        // Play root note again on beat 3 (halfway through) for rhythmic interest
+        this.createBassNote(chordRoot, this.settings.bassOctave, startTime + duration / 2, duration * 0.7);
+    }
+
+    /**
      * Enable or disable percussion
      * @param {boolean} enabled - Whether percussion should be enabled
      */
@@ -1736,6 +1887,22 @@ class AudioEngine {
      */
     isPercussionEnabled() {
         return this.settings.percussionEnabled;
+    }
+
+    /**
+     * Enable or disable bass
+     * @param {boolean} enabled - Whether bass should be enabled
+     */
+    setBassEnabled(enabled) {
+        this.settings.bassEnabled = enabled;
+    }
+
+    /**
+     * Check if bass is currently enabled
+     * @returns {boolean} True if bass is active
+     */
+    isBassEnabled() {
+        return this.settings.bassEnabled;
     }
 
     /**
@@ -2129,6 +2296,15 @@ class AudioEngine {
     dispose() {
         this.stopScheduler();
         this.stopAll();
+
+        // Clear all pending cleanup timeouts to prevent nodes from old context
+        // being released into new pools after reinitialization
+        if (this.cleanupTimeouts) {
+            this.cleanupTimeouts.forEach(timeoutId => {
+                clearTimeout(timeoutId);
+            });
+            this.cleanupTimeouts.clear();
+        }
 
         // Clear node pools
         if (this.nodePools) {
