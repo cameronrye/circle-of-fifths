@@ -31,6 +31,8 @@ class CircleOfFifthsApp {
         this.logger = loggers.app;
         this.musicTheory = null;
         this.audioEngine = null;
+        this.audioEngineLoading = false;
+        this.audioEngineLoadPromise = null;
         this.circleRenderer = null;
         this.interactionsHandler = null;
         this.themeManager = null;
@@ -50,13 +52,10 @@ class CircleOfFifthsApp {
 
             // Initialize core components
             this.musicTheory = new MusicTheory();
-            this.audioEngine = new AudioEngine();
-            this.audioEngine.logger = loggers.audio; // Set logger for audio engine
             this.themeManager = new ThemeManager();
 
-            // Note: Audio engine will initialize lazily on first user interaction
-            // This is required by browser autoplay policies
-            this.logger.info('Audio engine will initialize on first user interaction');
+            // Audio engine will be lazy loaded on first use
+            this.logger.info('Audio engine will be lazy loaded on first audio interaction');
 
             // Get DOM elements
             const svg = document.getElementById('circle-svg');
@@ -93,6 +92,51 @@ class CircleOfFifthsApp {
             this.handleInitializationError(error);
             return false;
         }
+    }
+
+    /**
+     * Lazy load and initialize the audio engine
+     * Only loads when user first interacts with audio features
+     * @async
+     * @returns {Promise<AudioEngine>} The initialized audio engine
+     * @since 1.1.0
+     */
+    async getAudioEngine() {
+        // Return existing instance if already loaded
+        if (this.audioEngine) {
+            return this.audioEngine;
+        }
+
+        // Return existing promise if already loading
+        if (this.audioEngineLoadPromise) {
+            return this.audioEngineLoadPromise;
+        }
+
+        // Start loading
+        this.audioEngineLoading = true;
+
+        this.audioEngineLoadPromise = (async () => {
+            try {
+                this.logger.info('Lazy loading audio engine...');
+
+                // Create and initialize
+                this.audioEngine = new AudioEngine();
+                this.audioEngine.logger = loggers.audio;
+                await this.audioEngine.initialize();
+
+                this.logger.info('Audio engine loaded and initialized successfully');
+
+                this.audioEngineLoading = false;
+                return this.audioEngine;
+            } catch (error) {
+                this.audioEngineLoading = false;
+                this.audioEngineLoadPromise = null;
+                this.logger.error('Failed to lazy load audio engine:', error);
+                throw error;
+            }
+        })();
+
+        return this.audioEngineLoadPromise;
     }
 
     /**
