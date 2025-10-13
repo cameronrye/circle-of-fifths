@@ -21,10 +21,7 @@
 
         <!-- Preload critical resources -->
         <link rel="preload" href="css/styles.css" as="style" />
-        <link rel="preload" href="js/polyfills.js" as="script" />
-        <link rel="preload" href="js/logger.js" as="script" />
-        <link rel="preload" href="js/musicTheory.js" as="script" />
-        <link rel="preload" href="js/app.js" as="script" />
+        <link rel="modulepreload" href="js/main.js" />
 
         <!-- DNS prefetch for potential external resources -->
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
@@ -450,20 +447,15 @@
             aria-atomic="true"
         ></div>
 
+        <!-- Tooltip for key hover -->
+        <div id="key-tooltip" class="key-tooltip" role="tooltip" aria-hidden="true">
+            <div class="tooltip-key"></div>
+            <div class="tooltip-mode"></div>
+            <div class="tooltip-signature"></div>
+        </div>
+
         <!-- Scripts - optimized loading order -->
-        <!-- Critical polyfills loaded synchronously -->
-        <script src="js/polyfills.js"></script>
-
-        <!-- Core modules loaded with defer for better performance -->
-        <script src="js/logger.js" defer></script>
-        <script src="js/musicTheory.js" defer></script>
-        <script src="js/themeManager.js" defer></script>
-        <script src="js/audioEngine.js" defer></script>
-        <script src="js/circleRenderer.js" defer></script>
-        <script src="js/interactions.js" defer></script>
-        <script src="js/themeToggle.js" defer></script>
-
-        <!-- Main app loaded last -->
-        <script src="js/app.js" defer></script>
+        <!-- Main application module (loads all dependencies including polyfills) -->
+        <script type="module" src="js/main.js"></script>
     </body>
 </html>

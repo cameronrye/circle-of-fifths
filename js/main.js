@@ -69,10 +69,10 @@ class CircleOfFifthsApp {
             // Initialize renderer
             this.circleRenderer = new CircleRenderer(svg, this.musicTheory);
 
-            // Initialize interactions
+            // Initialize interactions (pass app instance for lazy audio loading)
             this.interactionsHandler = new InteractionsHandler(
                 this.circleRenderer,
-                this.audioEngine,
+                this, // Pass app instance for lazy audio loading
                 this.musicTheory
             );
 
