@@ -1,21 +1,5 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
-import { renameSync, existsSync } from 'fs';
-
-// Plugin to rename index-vite.html to index.html after build
-function renameIndexPlugin() {
-    return {
-        name: 'rename-index',
-        closeBundle() {
-            const oldPath = resolve(__dirname, 'dist/index-vite.html');
-            const newPath = resolve(__dirname, 'dist/index.html');
-            if (existsSync(oldPath)) {
-                renameSync(oldPath, newPath);
-                console.log('✅ Renamed index-vite.html to index.html');
-            }
-        }
-    };
-}
 
 export default defineConfig({
     // Base public path
@@ -35,7 +19,7 @@ export default defineConfig({
         },
         rollupOptions: {
             input: {
-                main: resolve(__dirname, 'index-vite.html')
+                main: resolve(__dirname, 'index.html')
             },
             output: {
                 // Manual chunk splitting for better caching
@@ -68,7 +52,7 @@ export default defineConfig({
     },
 
     // Plugin configuration
-    plugins: [renameIndexPlugin()],
+    plugins: [],
 
     // Optimize dependencies
     optimizeDeps: {

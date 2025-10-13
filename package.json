@@ -29,7 +29,6 @@
         "test:visual": "playwright test tests/e2e/visual-regression.spec.js",
         "test:visual:update": "playwright test tests/e2e/visual-regression.spec.js --update-snapshots",
         "serve": "vite preview",
-        "serve:legacy": "npx http-server -p 8000 -c-1",
         "dev": "vite",
         "preview": "vite preview",
         "lint": "eslint js/ tests/ *.js",
