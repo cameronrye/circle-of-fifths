@@ -1209,7 +1209,12 @@ class InteractionsHandler {
      */
     togglePercussion() {
         this.playbackState.percussion = !this.playbackState.percussion;
-        this.audioEngine.setPercussionEnabled(this.playbackState.percussion);
+
+        // Only update audio engine if it's loaded
+        if (this.isAudioInitialized && this.audioEngine) {
+            this.audioEngine.setPercussionEnabled(this.playbackState.percussion);
+        }
+
         this.updateToggleButtonState('percussion', this.playbackState.percussion);
 
         // Announce to screen readers
@@ -1222,7 +1227,12 @@ class InteractionsHandler {
      */
     toggleBass() {
         this.playbackState.bass = !this.playbackState.bass;
-        this.audioEngine.setBassEnabled(this.playbackState.bass);
+
+        // Only update audio engine if it's loaded
+        if (this.isAudioInitialized && this.audioEngine) {
+            this.audioEngine.setBassEnabled(this.playbackState.bass);
+        }
+
         this.updateToggleButtonState('bass', this.playbackState.bass);
 
         // Announce to screen readers
@@ -1237,7 +1247,7 @@ class InteractionsHandler {
         this.playbackState.loop = !this.playbackState.loop;
 
         // If disabling loop while playing, stop the loop
-        if (!this.playbackState.loop) {
+        if (!this.playbackState.loop && this.isAudioInitialized && this.audioEngine) {
             this.audioEngine.setLoopingEnabled(false);
         }
 
@@ -1254,7 +1264,10 @@ class InteractionsHandler {
      * this.stopAudio(); // Stops all scales, chords, and progressions
      */
     stopAudio() {
-        this.audioEngine.stopAll();
+        // Only stop if audio engine is loaded
+        if (this.isAudioInitialized && this.audioEngine) {
+            this.audioEngine.stopAll();
+        }
 
         // Reset all playback states
         this.playbackState.scale = false;
