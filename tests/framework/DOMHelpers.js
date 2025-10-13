@@ -593,7 +593,17 @@ class MockWindow {
             hash: ''
         };
         this.navigator = {
-            userAgent: 'MockBrowser/1.0'
+            userAgent: 'MockBrowser/1.0',
+            serviceWorker: {
+                register: () =>
+                    Promise.resolve({
+                        installing: null,
+                        waiting: null,
+                        active: null,
+                        scope: '/',
+                        updateViaCache: 'imports'
+                    })
+            }
         };
         this.eventListeners = {};
         this.AudioContext = MockAudioContext;
@@ -673,6 +683,7 @@ function setupDOMEnvironment() {
         // Set up DOM and Web API mocks
         global.window = mockWindow;
         global.document = mockWindow.document;
+        global.navigator = mockWindow.navigator;
         global.localStorage = mockWindow.localStorage;
         global.sessionStorage = mockWindow.sessionStorage;
         global.AudioContext = MockAudioContext;
