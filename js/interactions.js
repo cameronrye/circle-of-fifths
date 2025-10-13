@@ -638,9 +638,12 @@ class InteractionsHandler {
                 this.updateVolumeIcon(volume);
 
                 // Debounce audio engine updates to reduce CPU usage
+                // Only update if audio engine is loaded
                 clearTimeout(volumeTimeout);
-                volumeTimeout = setTimeout(() => {
-                    this.audioEngine.setVolume(volumeDecimal);
+                volumeTimeout = setTimeout(async () => {
+                    if (this.isAudioInitialized && this.audioEngine) {
+                        this.audioEngine.setVolume(volumeDecimal);
+                    }
                 }, 50);
             });
 
@@ -696,68 +699,84 @@ class InteractionsHandler {
 
         // Waveform selection
         if (waveformSelect) {
-            waveformSelect.value = this.audioEngine.settings.waveform;
-            waveformSelect.addEventListener('change', e => {
-                this.audioEngine.settings.waveform = e.target.value;
+            // Set default value
+            waveformSelect.value = 'warm-sine';
+            waveformSelect.addEventListener('change', async e => {
+                const audioEngine = await this.getAudioEngine();
+                audioEngine.settings.waveform = e.target.value;
                 this.logger.info(`Waveform changed to: ${e.target.value}`);
             });
         }
 
         // Reverb type selection
         if (reverbTypeSelect) {
-            reverbTypeSelect.value = this.audioEngine.settings.reverbType;
-            reverbTypeSelect.addEventListener('change', e => {
-                this.audioEngine.settings.reverbType = e.target.value;
+            // Set default value
+            reverbTypeSelect.value = 'room';
+            reverbTypeSelect.addEventListener('change', async e => {
+                const audioEngine = await this.getAudioEngine();
+                audioEngine.settings.reverbType = e.target.value;
                 // Reinitialize audio engine to apply new reverb
-                this.audioEngine.isInitialized = false;
-                this.initializeAudio();
+                audioEngine.isInitialized = false;
+                await this.initializeAudio();
                 this.logger.info(`Reverb type changed to: ${e.target.value}`);
             });
         }
 
         // Stereo width slider
         if (stereoWidthSlider) {
-            stereoWidthSlider.value = this.audioEngine.settings.stereoWidth;
-            document.getElementById('stereo-width-value').textContent =
-                this.audioEngine.settings.stereoWidth.toFixed(2);
+            // Set default value
+            stereoWidthSlider.value = '0.25';
+            document.getElementById('stereo-width-value').textContent = '0.25';
 
-            stereoWidthSlider.addEventListener('input', e => {
+            stereoWidthSlider.addEventListener('input', async e => {
                 const value = parseFloat(e.target.value);
-                this.audioEngine.settings.stereoWidth = value;
                 document.getElementById('stereo-width-value').textContent = value.toFixed(2);
+                if (this.isAudioInitialized && this.audioEngine) {
+                    this.audioEngine.settings.stereoWidth = value;
+                }
             });
         }
 
         // Reverb level slider
         if (reverbLevelSlider) {
-            reverbLevelSlider.value = this.audioEngine.settings.reverbLevel;
-            document.getElementById('reverb-level-value').textContent =
-                this.audioEngine.settings.reverbLevel.toFixed(2);
+            // Set default value
+            reverbLevelSlider.value = '0.20';
+            document.getElementById('reverb-level-value').textContent = '0.20';
 
-            reverbLevelSlider.addEventListener('input', e => {
+            reverbLevelSlider.addEventListener('input', async e => {
                 const value = parseFloat(e.target.value);
-                this.audioEngine.settings.reverbLevel = value;
                 document.getElementById('reverb-level-value').textContent = value.toFixed(2);
+                if (this.isAudioInitialized && this.audioEngine) {
+                    this.audioEngine.settings.reverbLevel = value;
+                }
             });
         }
 
         // Filter envelope toggle
         if (filterEnvelopeToggle) {
-            filterEnvelopeToggle.checked = this.audioEngine.settings.useFilterEnvelope;
-            filterEnvelopeToggle.addEventListener('change', e => {
-                this.audioEngine.settings.useFilterEnvelope = e.target.checked;
-                this.logger.info(`Filter envelope: ${e.target.checked ? 'enabled' : 'disabled'}`);
+            // Set default value
+            filterEnvelopeToggle.checked = true;
+            filterEnvelopeToggle.addEventListener('change', async e => {
+                if (this.isAudioInitialized && this.audioEngine) {
+                    this.audioEngine.settings.useFilterEnvelope = e.target.checked;
+                    this.logger.info(
+                        `Filter envelope: ${e.target.checked ? 'enabled' : 'disabled'}`
+                    );
+                }
             });
         }
 
         // Stereo enhancement toggle
         if (stereoEnhancementToggle) {
-            stereoEnhancementToggle.checked = this.audioEngine.settings.useStereoEnhancement;
-            stereoEnhancementToggle.addEventListener('change', e => {
-                this.audioEngine.settings.useStereoEnhancement = e.target.checked;
-                this.logger.info(
-                    `Stereo enhancement: ${e.target.checked ? 'enabled' : 'disabled'}`
-                );
+            // Set default value
+            stereoEnhancementToggle.checked = true;
+            stereoEnhancementToggle.addEventListener('change', async e => {
+                if (this.isAudioInitialized && this.audioEngine) {
+                    this.audioEngine.settings.useStereoEnhancement = e.target.checked;
+                    this.logger.info(
+                        `Stereo enhancement: ${e.target.checked ? 'enabled' : 'disabled'}`
+                    );
+                }
             });
         }
     }
