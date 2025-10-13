@@ -6,7 +6,7 @@
 import { test, expect } from '@playwright/test';
 
 // Base URL for tests
-const BASE_URL = 'http://localhost:8000/index-vite.html';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
 
 // Test viewport sizes
 const VIEWPORTS = {

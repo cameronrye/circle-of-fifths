@@ -10,7 +10,7 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
 test.describe('Circle of Fifths Application', () => {
     test.beforeEach(async ({ page }) => {
         // Navigate to the app before each test
-        await page.goto(`${BASE_URL}/index-vite.html`);
+        await page.goto(`${BASE_URL}/`);
 
         // Wait for the app to load
         await page.waitForSelector('#circle-svg', { timeout: 10000 });
@@ -232,7 +232,7 @@ test.describe('Circle of Fifths Application', () => {
 
 test.describe('Accessibility', () => {
     test('should have proper ARIA labels', async ({ page }) => {
-        await page.goto(`${BASE_URL}/index-vite.html`);
+        await page.goto(`${BASE_URL}/`);
         await page.waitForSelector('#circle-svg');
 
         // Check for ARIA labels on key elements
@@ -244,7 +244,7 @@ test.describe('Accessibility', () => {
     });
 
     test('should announce changes to screen readers', async ({ page }) => {
-        await page.goto(`${BASE_URL}/index-vite.html`);
+        await page.goto(`${BASE_URL}/`);
         await page.waitForSelector('#circle-svg');
 
         // Check for live regions
@@ -257,7 +257,7 @@ test.describe('Performance', () => {
     test('should load within acceptable time', async ({ page }) => {
         const startTime = Date.now();
 
-        await page.goto(`${BASE_URL}/index-vite.html`);
+        await page.goto(`${BASE_URL}/`);
         await page.waitForSelector('#circle-svg');
         await page.waitForSelector('#loading', { state: 'hidden' });
 
@@ -268,7 +268,7 @@ test.describe('Performance', () => {
     });
 
     test('should handle rapid interactions without lag', async ({ page }) => {
-        await page.goto(`${BASE_URL}/index-vite.html`);
+        await page.goto(`${BASE_URL}/`);
         await page.waitForSelector('#circle-svg');
 
         const startTime = Date.now();
