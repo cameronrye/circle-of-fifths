@@ -3,6 +3,8 @@
  * Handles the theme toggle UI interactions
  */
 
+import { loggers } from './logger.js';
+
 /**
  * UI component for theme selection with dropdown interface.
  * Provides user interface for switching between light, dark, and system themes.
@@ -31,7 +33,7 @@ class ThemeToggle {
         this.isOpen = false;
 
         // Initialize logger
-        this.logger = window.loggers?.theme || window.logger || console;
+        this.logger = loggers?.theme || console;
 
         // Bind methods
         this.handleToggleClick = this.handleToggleClick.bind(this);
@@ -328,9 +330,10 @@ class ThemeToggle {
     }
 }
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ThemeToggle;
-} else {
+// ES6 module export
+export { ThemeToggle };
+
+// Set on window for debugging in console (development only)
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     window.ThemeToggle = ThemeToggle;
 }

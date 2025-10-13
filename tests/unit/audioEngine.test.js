@@ -376,7 +376,12 @@ describe('AudioEngine Module', () => {
 
             await audioEngine.playProgression('C', 'major', 'unknown-progression');
 
-            expect(consoleSpy).toHaveBeenCalledWith(
+            // Logger formats messages with timestamp and prefix
+            // Check that console.warn was called with the expected message
+            expect(consoleSpy).toHaveBeenCalled();
+            const callArgs = consoleSpy.calls[0];
+            // The message should contain the progression name and key
+            expect(callArgs.join(' ')).toContain(
                 'Progression unknown-progression not found for C major'
             );
 

@@ -3,7 +3,7 @@
  * Enhanced PWA functionality with improved caching strategies and offline support
  */
 
-const CACHE_VERSION = '2.0.0';
+const CACHE_VERSION = '2.0.1';
 const STATIC_CACHE_NAME = `circle-of-fifths-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `circle-of-fifths-dynamic-v${CACHE_VERSION}`;
 const _OFFLINE_PAGE = '/offline.html';

@@ -21,7 +21,10 @@
 
         <!-- Preload critical resources -->
         <link rel="preload" href="css/styles.css" as="style" />
-        <link rel="modulepreload" href="js/main.js" />
+        <link rel="preload" href="js/polyfills.js" as="script" />
+        <link rel="preload" href="js/logger.js" as="script" />
+        <link rel="preload" href="js/musicTheory.js" as="script" />
+        <link rel="preload" href="js/app.js" as="script" />
 
         <!-- DNS prefetch for potential external resources -->
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
@@ -425,10 +428,32 @@
             </div>
         </footer>
 
-        <!-- Loading indicator -->
-        <div id="loading" class="loading" aria-hidden="true">
-            <div class="loading-spinner"></div>
-            <p class="loading-text">Loading audio system...</p>
+        <!-- Loading skeleton -->
+        <div id="loading" class="loading-skeleton" aria-hidden="true">
+            <div class="skeleton-container">
+                <!-- Circle skeleton -->
+                <div class="skeleton-circle">
+                    <div class="skeleton-circle-ring"></div>
+                    <div class="skeleton-circle-center"></div>
+                </div>
+
+                <!-- Info panel skeleton -->
+                <div class="skeleton-info-panel">
+                    <div class="skeleton-line skeleton-title"></div>
+                    <div class="skeleton-line skeleton-subtitle"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line skeleton-short"></div>
+                </div>
+
+                <!-- Controls skeleton -->
+                <div class="skeleton-controls">
+                    <div class="skeleton-button"></div>
+                    <div class="skeleton-button"></div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </div>
+            <p class="loading-text">Loading Circle of Fifths...</p>
         </div>
 
         <!-- ARIA live regions for screen reader announcements -->
@@ -455,7 +480,7 @@
         </div>
 
         <!-- Scripts - optimized loading order -->
-        <!-- Main application module (loads all dependencies including polyfills) -->
+        <!-- Main application module (Vite will bundle all dependencies including polyfills) -->
         <script type="module" src="js/main.js"></script>
     </body>
 </html>

@@ -53,7 +53,7 @@ const testConfig = {
 /**
  * Global test setup
  */
-function setupTestEnvironment() {
+async function setupTestEnvironment() {
     // Setup DOM environment if needed
     if (testConfig.environment.setupDOM) {
         setupDOMEnvironment();
@@ -63,6 +63,15 @@ function setupTestEnvironment() {
     if (!global.CustomEvent || typeof global.CustomEvent !== 'function') {
         const { MockCustomEvent } = require('./framework/DOMHelpers');
         global.CustomEvent = MockCustomEvent;
+    }
+
+    // Load ES6 modules using the loader
+    const { loadAllModules } = require('./loaders/es6-loader.cjs');
+    const modulesLoaded = await loadAllModules();
+
+    if (!modulesLoaded) {
+        console.error('❌ Failed to load ES6 modules');
+        process.exit(1);
     }
 
     // Setup global test utilities
@@ -373,7 +382,7 @@ async function runTests(options = {}) {
         if (testConfig.runner.verbose) {
             console.log('🔍 Setting up test environment...');
         }
-        setupTestEnvironment();
+        await setupTestEnvironment();
 
         // Determine which tests to run
         const patterns = [];

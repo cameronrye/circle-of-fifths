@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .circle-1 { fill: #3498db; opacity: 0.85; }
+      .circle-2 { fill: #3182c7; opacity: 0.85; }
+      .circle-3 { fill: #2e6cb3; opacity: 0.85; }
+      .circle-4 { fill: #2b569f; opacity: 0.85; }
+      .circle-5 { fill: #2c3e50; opacity: 0.85; }
+      .center-dot { fill: #ffffff; }
+    </style>
+  </defs>
+
+  <!-- Five interlocking circles arranged in a circular pattern -->
+  <!-- Circle 1: Top (12 o'clock) -->
+  <circle class="circle-1" cx="50" cy="22" r="18" />
+
+  <!-- Circle 2: Top-right (2 o'clock) -->
+  <circle class="circle-2" cx="71.5" cy="35.5" r="18" />
+
+  <!-- Circle 3: Bottom-right (5 o'clock) -->
+  <circle class="circle-3" cx="65" cy="65" r="18" />
+
+  <!-- Circle 4: Bottom-left (7 o'clock) -->
+  <circle class="circle-4" cx="35" cy="65" r="18" />
+
+  <!-- Circle 5: Top-left (10 o'clock) -->
+  <circle class="circle-5" cx="28.5" cy="35.5" r="18" />
+
+  <!-- Small center dot to anchor the design -->
+  <circle class="center-dot" cx="50" cy="47" r="3" />
+</svg>
+

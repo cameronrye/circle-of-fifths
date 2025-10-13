@@ -3,6 +3,8 @@
  * Manages user input, events, and UI updates
  */
 
+import { loggers } from './logger.js';
+
 /**
  * Handles all user interactions with the Circle of Fifths interface.
  * Manages mouse/touch events, keyboard shortcuts, audio controls, and UI updates.
@@ -18,18 +20,18 @@ class InteractionsHandler {
      *
      * @constructor
      * @param {CircleRenderer} circleRenderer - The circle visualization renderer
-     * @param {AudioEngine} audioEngine - The audio synthesis engine
+     * @param {CircleOfFifthsApp} app - The main app instance (for lazy audio loading)
      * @param {MusicTheory} musicTheory - The music theory calculation engine
      */
-    constructor(circleRenderer, audioEngine, musicTheory) {
+    constructor(circleRenderer, app, musicTheory) {
         this.circleRenderer = circleRenderer;
-        this.audioEngine = audioEngine;
+        this.app = app; // Store app reference for lazy audio loading
         this.musicTheory = musicTheory;
 
         this.isAudioInitialized = false;
 
         // Initialize logger
-        this.logger = window.loggers?.interactions || window.logger || console;
+        this.logger = loggers?.interactions || console;
 
         // Audio playback state tracking
         this.playbackState = {
@@ -54,6 +56,12 @@ class InteractionsHandler {
         this.audioStatusLiveRegion = document.getElementById('audio-status-live-region');
         this.playbackLiveRegion = document.getElementById('playback-live-region');
 
+        // Tooltip element
+        this.tooltip = document.getElementById('key-tooltip');
+        this.tooltipKey = this.tooltip?.querySelector('.tooltip-key');
+        this.tooltipMode = this.tooltip?.querySelector('.tooltip-mode');
+        this.tooltipSignature = this.tooltip?.querySelector('.tooltip-signature');
+
         // UI elements
         this.elements = {
             svg: document.getElementById('circle-svg'),
@@ -76,7 +84,7 @@ class InteractionsHandler {
         };
 
         this.init();
-        this.setupAudioVisualSync();
+        // Audio visual sync will be set up when audio engine is first loaded
     }
 
     /**
@@ -94,11 +102,32 @@ class InteractionsHandler {
     }
 
     /**
-     * Setup audio-visual synchronization for note highlighting
+     * Get audio engine (lazy loads if not yet loaded)
+     * @async
+     * @returns {Promise<AudioEngine>} The audio engine instance
      */
-    setupAudioVisualSync() {
+    async getAudioEngine() {
+        return await this.app.getAudioEngine();
+    }
+
+    /**
+     * Get audio engine synchronously (returns null if not loaded)
+     * Use this for settings access when audio engine might not be loaded yet
+     * @returns {AudioEngine|null} The audio engine instance or null
+     */
+    get audioEngine() {
+        return this.app.audioEngine;
+    }
+
+    /**
+     * Setup audio-visual synchronization for note highlighting
+     * Called after audio engine is loaded
+     */
+    async setupAudioVisualSync() {
+        const audioEngine = await this.getAudioEngine();
+
         // Listen for note events from audio engine
-        this.audioEngine.addNoteEventListener(event => {
+        audioEngine.addNoteEventListener(event => {
             const { note, eventType } = event;
 
             switch (eventType) {
@@ -110,7 +139,7 @@ class InteractionsHandler {
                     // Chord note highlighting - longer duration
                     this.circleRenderer.highlightNote(
                         note,
-                        this.audioEngine.settings.chordLength * 1000,
+                        audioEngine.settings.chordLength * 1000,
                         'chord'
                     );
                     break;
@@ -118,7 +147,7 @@ class InteractionsHandler {
                     // Progression chord highlighting - duration of chord in progression
                     this.circleRenderer.highlightNote(
                         note,
-                        this.audioEngine.settings.progressionNoteLength * 1000,
+                        audioEngine.settings.progressionNoteLength * 1000,
                         'progression'
                     );
                     break;
@@ -569,16 +598,8 @@ class InteractionsHandler {
      * Initialize default toggle button states (percussion and loop enabled by default, bass disabled)
      */
     initializeDefaultToggleStates() {
-        // Set percussion enabled in audio engine
-        this.audioEngine.setPercussionEnabled(this.playbackState.percussion);
-
-        // Set bass enabled in audio engine
-        this.audioEngine.setBassEnabled(this.playbackState.bass);
-
-        // Set loop enabled in audio engine
-        this.audioEngine.setLoopingEnabled(this.playbackState.loop);
-
-        // Update button visual states to match
+        // Audio engine settings will be applied when it's loaded
+        // For now, just update button visual states
         this.updateToggleButtonState('percussion', this.playbackState.percussion);
         this.updateToggleButtonState('bass', this.playbackState.bass);
         this.updateToggleButtonState('loop', this.playbackState.loop);
@@ -593,11 +614,13 @@ class InteractionsHandler {
      */
     setupVolumeControl() {
         if (this.elements.volumeSlider && this.elements.volumeDisplay) {
-            // Set initial volume from audio engine settings
-            const initialVolume = Math.round(this.audioEngine.settings.masterVolume * 100);
+            // Set initial volume (default 70% if audio engine not loaded yet)
+            const initialVolume = this.audioEngine
+                ? Math.round(this.audioEngine.settings.masterVolume * 100)
+                : 70;
             this.elements.volumeSlider.value = initialVolume;
             this.elements.volumeDisplay.textContent = `${initialVolume}%`;
-            this.elements.volumeSlider.setAttribute('aria-valuenow', initialVolume);
+            this.elements.volumeSlider.setAttribute('aria-valuenow', String(initialVolume));
             this.elements.volumeSlider.setAttribute('aria-valuetext', `${initialVolume}%`);
 
             // Handle volume changes with debouncing for performance
@@ -667,8 +690,8 @@ class InteractionsHandler {
         // Toggle panel visibility
         toggleBtn.addEventListener('click', () => {
             const isHidden = panel.getAttribute('aria-hidden') === 'true';
-            panel.setAttribute('aria-hidden', !isHidden);
-            toggleBtn.setAttribute('aria-expanded', isHidden);
+            panel.setAttribute('aria-hidden', String(!isHidden));
+            toggleBtn.setAttribute('aria-expanded', String(isHidden));
         });
 
         // Waveform selection
@@ -790,8 +813,8 @@ class InteractionsHandler {
         this.elements.majorModeBtn?.classList.toggle('active', mode === 'major');
         this.elements.minorModeBtn?.classList.toggle('active', mode === 'minor');
 
-        this.elements.majorModeBtn?.setAttribute('aria-pressed', mode === 'major');
-        this.elements.minorModeBtn?.setAttribute('aria-pressed', mode === 'minor');
+        this.elements.majorModeBtn?.setAttribute('aria-pressed', String(mode === 'major'));
+        this.elements.minorModeBtn?.setAttribute('aria-pressed', String(mode === 'minor'));
 
         // Update circle renderer
         this.circleRenderer.switchMode(mode);
@@ -908,13 +931,29 @@ class InteractionsHandler {
             this.showLoading('Initializing audio...');
             this.announceAudioStatus('Initializing audio system');
 
-            const success = await this.audioEngine.initialize();
-            this.isAudioInitialized = success;
-            this.hideLoading();
+            try {
+                // Lazy load audio engine
+                const audioEngine = await this.getAudioEngine();
 
-            if (success) {
+                // Apply saved playback states
+                audioEngine.setPercussionEnabled(this.playbackState.percussion);
+                audioEngine.setBassEnabled(this.playbackState.bass);
+                audioEngine.setLoopingEnabled(this.playbackState.loop);
+
+                // Setup audio-visual sync on first load
+                if (!this.audioVisualSyncSetup) {
+                    await this.setupAudioVisualSync();
+                    this.audioVisualSyncSetup = true;
+                }
+
+                this.isAudioInitialized = true;
+                this.hideLoading();
                 this.announceAudioStatus('Audio system ready');
-            } else {
+                this.logger.info('Audio engine lazy loaded and initialized successfully');
+            } catch (error) {
+                this.logger.error('Failed to initialize audio:', error);
+                this.isAudioInitialized = false;
+                this.hideLoading();
                 this.showError('Failed to initialize audio. Please check your browser settings.');
                 this.announceAudioStatus('Audio initialization failed');
             }
@@ -939,6 +978,8 @@ class InteractionsHandler {
         }
 
         if (this.isAudioInitialized) {
+            const audioEngine = await this.getAudioEngine();
+
             // Toggle behavior: stop if currently playing, play if stopped
             if (this.playbackState.scale) {
                 this.stopAudio();
@@ -956,11 +997,11 @@ class InteractionsHandler {
             // Announce to screen readers
             this.announcePlaybackStatus(`Playing ${state.selectedKey} ${state.currentMode} scale`);
 
-            this.audioEngine.playScale(state.selectedKey, state.currentMode);
+            audioEngine.playScale(state.selectedKey, state.currentMode);
 
             // Calculate approximate duration for scale playback
             // 16 notes (complete octave cycle) * note duration * overlap factor
-            const noteDuration = this.audioEngine.settings.noteLength * 0.6;
+            const noteDuration = audioEngine.settings.noteLength * 0.6;
             const totalDuration = 16 * noteDuration * 0.8 * 1000; // Convert to milliseconds
 
             // Reset state when playback completes
@@ -1422,22 +1463,72 @@ class InteractionsHandler {
     }
 
     /**
-     * Show tooltip for a key (placeholder for future implementation)
-     * @param {string} _key - The key to show tooltip for
-     * @param {Event} _event - The event that triggered the tooltip
+     * Show tooltip for a key
+     * @param {string} key - The key to show tooltip for
+     * @param {Event} event - The event that triggered the tooltip
      * @private
      */
-    showKeyTooltip(_key, _event) {
-        // Could implement tooltip functionality here
-        // For now, we rely on the info panel updates
+    showKeyTooltip(key, event) {
+        if (!this.tooltip || !this.tooltipKey || !this.tooltipMode || !this.tooltipSignature) {
+            return;
+        }
+
+        const state = this.circleRenderer.getState();
+        const mode = state.currentMode;
+
+        // Get key signature
+        const keySignature = this.musicTheory.getKeySignature(key, mode);
+        const signatureText =
+            keySignature.sharps > 0
+                ? `${keySignature.sharps} sharp${keySignature.sharps > 1 ? 's' : ''}`
+                : keySignature.flats > 0
+                  ? `${keySignature.flats} flat${keySignature.flats > 1 ? 's' : ''}`
+                  : 'No sharps or flats';
+
+        // Update tooltip content
+        this.tooltipKey.textContent = `${key} ${mode}`;
+        this.tooltipMode.textContent = mode === 'major' ? 'Major Key' : 'Minor Key';
+        this.tooltipSignature.textContent = signatureText;
+
+        // Position tooltip near cursor
+        const x = event.clientX || event.touches?.[0]?.clientX || 0;
+        const y = event.clientY || event.touches?.[0]?.clientY || 0;
+
+        // Offset tooltip to avoid cursor overlap
+        const offsetX = 15;
+        const offsetY = 15;
+
+        // Ensure tooltip stays within viewport
+        const tooltipRect = this.tooltip.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let left = x + offsetX;
+        let top = y + offsetY;
+
+        // Adjust if tooltip would go off right edge
+        if (left + tooltipRect.width > viewportWidth) {
+            left = x - tooltipRect.width - offsetX;
+        }
+
+        // Adjust if tooltip would go off bottom edge
+        if (top + tooltipRect.height > viewportHeight) {
+            top = y - tooltipRect.height - offsetY;
+        }
+
+        this.tooltip.style.left = `${left}px`;
+        this.tooltip.style.top = `${top}px`;
+        this.tooltip.setAttribute('aria-hidden', 'false');
     }
 
     /**
-     * Hide key tooltip (placeholder for future implementation)
+     * Hide key tooltip
      * @private
      */
     hideKeyTooltip() {
-        // Tooltip cleanup if implemented
+        if (this.tooltip) {
+            this.tooltip.setAttribute('aria-hidden', 'true');
+        }
     }
 
     /**
@@ -1452,9 +1543,10 @@ class InteractionsHandler {
     }
 }
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = InteractionsHandler;
-} else {
+// ES6 module export
+export { InteractionsHandler };
+
+// Set on window for debugging in console (development only)
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     window.InteractionsHandler = InteractionsHandler;
 }

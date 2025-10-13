@@ -2,8 +2,7 @@
  * Simple MusicTheory Tests
  */
 
-// Load the module under test
-const { MusicTheory } = require('../../js/musicTheory.js');
+// MusicTheory is loaded globally by the test runner
 
 describe('MusicTheory Simple Tests', () => {
     test('should create MusicTheory instance', () => {
