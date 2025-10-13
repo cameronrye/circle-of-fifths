@@ -1,0 +1,78 @@
+name: Lighthouse Performance Audit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lighthouse:
+    name: Lighthouse Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Start preview server
+        run: |
+          npm run preview &
+          echo "Waiting for server to start..."
+          sleep 10
+          timeout 30 bash -c 'until curl -f http://localhost:8000; do sleep 1; done' || (echo "Server failed to start" && exit 1)
+      
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            http://localhost:8000
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          runs: 3
+          budgetPath: ./.lighthouserc.json
+      
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results
+          path: '.lighthouseci'
+      
+      - name: Comment PR with Lighthouse results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const resultsPath = '.lighthouseci';
+            
+            // Read Lighthouse results
+            let comment = '## 🔦 Lighthouse Performance Audit\n\n';
+            comment += '| Category | Score |\n';
+            comment += '|----------|-------|\n';
+            comment += '| Performance | ⏳ |\n';
+            comment += '| Accessibility | ⏳ |\n';
+            comment += '| Best Practices | ⏳ |\n';
+            comment += '| SEO | ⏳ |\n';
+            comment += '| PWA | ⏳ |\n\n';
+            comment += '_Full results will be available in the artifacts._';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+

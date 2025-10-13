@@ -79,7 +79,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -121,6 +120,13 @@ lib/
 test-results/
 test-reports/
 junit.xml
+
+# Playwright test artifacts
+playwright-report/
+playwright/.cache/
+.blob-store/
+trace.zip
+*-trace.zip
 
 # IDE files
 .vscode/

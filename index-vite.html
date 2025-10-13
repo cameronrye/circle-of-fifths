@@ -428,10 +428,32 @@
             </div>
         </footer>
 
-        <!-- Loading indicator -->
-        <div id="loading" class="loading" aria-hidden="true">
-            <div class="loading-spinner"></div>
-            <p class="loading-text">Loading audio system...</p>
+        <!-- Loading skeleton -->
+        <div id="loading" class="loading-skeleton" aria-hidden="true">
+            <div class="skeleton-container">
+                <!-- Circle skeleton -->
+                <div class="skeleton-circle">
+                    <div class="skeleton-circle-ring"></div>
+                    <div class="skeleton-circle-center"></div>
+                </div>
+
+                <!-- Info panel skeleton -->
+                <div class="skeleton-info-panel">
+                    <div class="skeleton-line skeleton-title"></div>
+                    <div class="skeleton-line skeleton-subtitle"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line skeleton-short"></div>
+                </div>
+
+                <!-- Controls skeleton -->
+                <div class="skeleton-controls">
+                    <div class="skeleton-button"></div>
+                    <div class="skeleton-button"></div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </div>
+            <p class="loading-text">Loading Circle of Fifths...</p>
         </div>
 
         <!-- ARIA live regions for screen reader announcements -->
@@ -450,20 +472,15 @@
             aria-atomic="true"
         ></div>
 
+        <!-- Tooltip for key hover -->
+        <div id="key-tooltip" class="key-tooltip" role="tooltip" aria-hidden="true">
+            <div class="tooltip-key"></div>
+            <div class="tooltip-mode"></div>
+            <div class="tooltip-signature"></div>
+        </div>
+
         <!-- Scripts - optimized loading order -->
-        <!-- Critical polyfills loaded synchronously -->
-        <script src="js/polyfills.js"></script>
-
-        <!-- Core modules loaded with defer for better performance -->
-        <script src="js/logger.js" defer></script>
-        <script src="js/musicTheory.js" defer></script>
-        <script src="js/themeManager.js" defer></script>
-        <script src="js/audioEngine.js" defer></script>
-        <script src="js/circleRenderer.js" defer></script>
-        <script src="js/interactions.js" defer></script>
-        <script src="js/themeToggle.js" defer></script>
-
-        <!-- Main app loaded last -->
-        <script src="js/app.js" defer></script>
+        <!-- Main application module (Vite will bundle all dependencies including polyfills) -->
+        <script type="module" src="js/main.js"></script>
     </body>
 </html>

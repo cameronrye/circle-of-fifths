@@ -120,24 +120,39 @@ class Logger {
     }
 
     /**
+     * Log a performance metric
+     * @param {string} metric - Metric name
+     * @param {number} value - Metric value
+     * @param {string} unit - Unit of measurement (ms, s, etc.)
+     */
+    performance(metric, value, unit = 'ms') {
+        if (this.isDevelopment && this.shouldLog(LOG_LEVELS.INFO)) {
+            const formattedValue = typeof value === 'number' ? value.toFixed(2) : value;
+            console.log(...this.formatMessage('PERF', `${metric}: ${formattedValue}${unit}`));
+        }
+    }
+
+    /**
+     * Start a performance timer
+     * @param {string} label - Timer label
+     * @returns {Function} Function to call to end the timer and log the result
+     */
+    startTimer(label) {
+        const startTime = performance.now();
+        return () => {
+            const duration = performance.now() - startTime;
+            this.performance(label, duration, 'ms');
+            return duration;
+        };
+    }
+
+    /**
      * Log application lifecycle events
      * @param {string} event - Event name
      * @param {Object} data - Event data
      */
     lifecycle(event, data = {}) {
         this.info(`Lifecycle: ${event}`, data);
-    }
-
-    /**
-     * Log performance metrics
-     * @param {string} metric - Metric name
-     * @param {number} value - Metric value
-     * @param {string} unit - Metric unit
-     */
-    performance(metric, value, unit = 'ms') {
-        if (this.isDevelopment) {
-            this.debug(`Performance: ${metric} = ${value}${unit}`);
-        }
     }
 
     /**
@@ -176,10 +191,11 @@ const loggers = {
     musicTheory: logger.child('MusicTheory')
 };
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { Logger, LOG_LEVELS, logger, loggers };
-} else {
+// ES6 module exports
+export { Logger, LOG_LEVELS, logger, loggers };
+
+// Set on window for debugging in console (development only)
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     window.Logger = Logger;
     window.LOG_LEVELS = LOG_LEVELS;
     window.logger = logger;

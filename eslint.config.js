@@ -7,7 +7,7 @@ module.exports = [
     {
         languageOptions: {
             ecmaVersion: 2022,
-            sourceType: 'script', // Use script mode for browser compatibility
+            sourceType: 'module', // Use module for ES6 imports/exports
             globals: {
                 // Browser globals
                 window: 'readonly',

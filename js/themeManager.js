@@ -3,6 +3,8 @@
  * Handles theme switching, persistence, and system preference detection
  */
 
+import { loggers } from './logger.js';
+
 /**
  * Manages application themes including light, dark, and system preference modes.
  * Handles theme persistence, system preference detection, and cross-tab synchronization.
@@ -25,7 +27,7 @@ class ThemeManager {
         this.storageKey = 'circle-of-fifths-theme';
 
         // Initialize logger
-        this.logger = window.loggers?.theme || window.logger || console;
+        this.logger = loggers?.theme || console;
 
         // Bind methods
         this.handleSystemThemeChange = this.handleSystemThemeChange.bind(this);
@@ -341,9 +343,10 @@ class ThemeManager {
     }
 }
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ThemeManager;
-} else {
+// ES6 module export
+export { ThemeManager };
+
+// Set on window for debugging in console (development only)
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     window.ThemeManager = ThemeManager;
 }

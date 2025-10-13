@@ -53,8 +53,16 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      - name: Build project
+      - name: Build project with Vite
         run: npm run build
+        # Note: Vite config automatically renames index-vite.html to index.html
+
+      - name: Copy legacy files to dist (for backward compatibility)
+        run: |
+          cp index.html dist/index-legacy.html
+          cp sw.js dist/
+          cp -r js dist/ 2>/dev/null || true
+          echo "Legacy files copied for backward compatibility"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -62,8 +70,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          # Upload optimized Vite build
+          path: './dist'
 
   # Deployment job
   deploy:

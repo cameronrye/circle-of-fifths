@@ -3,10 +3,7 @@
  * Tests audio latency, rendering performance, memory usage, and resource loading
  */
 
-// Load required modules
-const { MusicTheory } = require('../../js/musicTheory.js');
-const AudioEngine = require('../../js/audioEngine.js');
-const CircleRenderer = require('../../js/circleRenderer.js');
+// MusicTheory, AudioEngine, and CircleRenderer are loaded globally by the test runner
 
 describe('Performance Tests', () => {
     let musicTheory;

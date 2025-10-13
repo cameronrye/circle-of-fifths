@@ -3,9 +3,7 @@
  * Tests UI rendering, theme consistency, and responsive design
  */
 
-// Load required modules
-const { MusicTheory } = require('../../js/musicTheory.js');
-const CircleRenderer = require('../../js/circleRenderer.js');
+// MusicTheory and CircleRenderer are loaded globally by the test runner
 
 describe('Visual Regression Tests', () => {
     let mockSvgElement;

@@ -3,8 +3,7 @@
  * Tests for improved chord voicing and voice leading algorithms
  */
 
-const AudioEngine = require('../../js/audioEngine.js');
-const { MusicTheory } = require('../../js/musicTheory.js');
+// AudioEngine and MusicTheory are loaded globally by the test runner
 
 describe('Voice Leading', () => {
     let audioEngine;

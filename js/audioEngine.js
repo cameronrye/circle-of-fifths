@@ -3,6 +3,9 @@
  * Handles Web Audio API synthesis and playback
  */
 
+import { MusicTheory } from './musicTheory.js';
+import { loggers } from './logger.js';
+
 /**
  * Node pool for reusing audio nodes to improve performance
  * @class NodePool
@@ -88,6 +91,9 @@ class AudioEngine {
         this.currentlyPlaying = new Set();
         this.musicTheory = new MusicTheory();
         this.cleanupTimeouts = new Set(); // Track cleanup timeouts for proper disposal
+
+        // Initialize logger
+        this.logger = loggers?.audio || console;
 
         // Custom waveforms for enhanced sound quality
         this.customWaves = null;
@@ -209,10 +215,10 @@ class AudioEngine {
             }
 
             this.isInitialized = true;
-            console.log('Audio engine initialized successfully');
+            this.logger.info('Audio engine initialized successfully');
             return true;
         } catch (error) {
-            console.error('Failed to initialize audio engine:', error);
+            this.logger.error('Failed to initialize audio engine:', error);
             return false;
         }
     }
@@ -249,7 +255,7 @@ class AudioEngine {
     createCustomWaveforms() {
         // Check if createPeriodicWave is available (browser environment)
         if (!this.audioContext.createPeriodicWave) {
-            console.warn('createPeriodicWave not available, using basic waveforms');
+            this.logger.warn('createPeriodicWave not available, using basic waveforms');
             this.customWaves = null;
             return;
         }
@@ -262,7 +268,7 @@ class AudioEngine {
                 organ: this.createOrganWave()
             };
         } catch (error) {
-            console.warn('Failed to create custom waveforms:', error);
+            this.logger.warn('Failed to create custom waveforms:', error);
             this.customWaves = null;
         }
     }
@@ -473,7 +479,7 @@ class AudioEngine {
     createConvolutionReverb(type = 'room') {
         // Check if createConvolver is available (browser environment)
         if (!this.audioContext.createConvolver) {
-            console.warn('createConvolver not available, using simple delay-based reverb');
+            this.logger.warn('createConvolver not available, using simple delay-based reverb');
             return this.createSimpleDelayReverb();
         }
 
@@ -506,7 +512,7 @@ class AudioEngine {
                 convolver
             };
         } catch (error) {
-            console.warn(
+            this.logger.warn(
                 'Failed to create convolution reverb, using simple delay-based reverb:',
                 error
             );
@@ -695,7 +701,7 @@ class AudioEngine {
             if (this.customWaves && this.customWaves[waveform]) {
                 osc.setPeriodicWave(this.customWaves[waveform]);
             } else {
-                osc.type = waveform;
+                osc.type = /** @type {OscillatorType} */ (waveform);
             }
         });
 
@@ -734,7 +740,7 @@ class AudioEngine {
                 if (this.customWaves && this.customWaves[waveform]) {
                     osc.setPeriodicWave(this.customWaves[waveform]);
                 } else {
-                    osc.type = waveform;
+                    osc.type = /** @type {OscillatorType} */ (waveform);
                 }
             });
 
@@ -814,7 +820,7 @@ class AudioEngine {
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
 
-        oscillator.type = waveform;
+        oscillator.type = /** @type {OscillatorType} */ (waveform);
         oscillator.frequency.setValueAtTime(frequency, startTime);
 
         this.createADSREnvelope(gainNode, startTime, duration);
@@ -849,9 +855,11 @@ class AudioEngine {
      * await audioEngine.playNote('A', 4, 2.0);
      */
     async playNote(note, octave = 4, duration = null) {
+        const perfStart = performance.now();
+
         // Validate input parameters
         if (!note || typeof note !== 'string') {
-            console.warn('playNote: Invalid note parameter');
+            this.logger.warn('playNote: Invalid note parameter');
             return;
         }
 
@@ -888,6 +896,16 @@ class AudioEngine {
                     });
                 }
             });
+
+            // Log audio latency (time from call to scheduled start)
+            const latency = (startTime - this.audioContext.currentTime) * 1000;
+            const processingTime = performance.now() - perfStart;
+            this.logger.performance(
+                `playNote(${note}${octave}) - Processing`,
+                processingTime,
+                'ms'
+            );
+            this.logger.performance(`playNote(${note}${octave}) - Audio latency`, latency, 'ms');
         }
     }
 
@@ -971,7 +989,7 @@ class AudioEngine {
     async playChord(notes, octave = 4, duration = null) {
         // Validate input parameters
         if (!Array.isArray(notes) || notes.length === 0) {
-            console.warn('playChord: Invalid notes array - must be a non-empty array');
+            this.logger.warn('playChord: Invalid notes array - must be a non-empty array');
             return;
         }
 
@@ -1069,7 +1087,7 @@ class AudioEngine {
     async playScale(key, mode = 'major', octave = 4) {
         // Validate input parameters
         if (!key || typeof key !== 'string') {
-            console.warn('playScale: Invalid key parameter');
+            this.logger.warn('playScale: Invalid key parameter');
             return;
         }
 
@@ -1407,7 +1425,7 @@ class AudioEngine {
         const progression = progressions[progressionName];
 
         if (!progression) {
-            console.warn(`Progression ${progressionName} not found for ${key} ${mode}`);
+            this.logger.warn(`Progression ${progressionName} not found for ${key} ${mode}`);
             return { finalVoicing: null, totalDuration: 0 };
         }
 
@@ -1964,7 +1982,7 @@ class AudioEngine {
                 // Oscillator might already be stopped - this is expected behavior
                 // Only log if it's an unexpected error
                 if (error.name !== 'InvalidStateError') {
-                    console.warn('Unexpected error stopping oscillator:', error);
+                    this.logger.warn('Unexpected error stopping oscillator:', error);
                 }
             }
         });
@@ -1993,7 +2011,7 @@ class AudioEngine {
             try {
                 callback({ note, eventType, timestamp: this.audioContext.currentTime });
             } catch (e) {
-                console.warn('Error in note event listener:', e);
+                this.logger.warn('Error in note event listener:', e);
             }
         });
     }
@@ -2083,7 +2101,7 @@ class AudioEngine {
         this.settings.useEffects = !this.settings.useEffects;
         // Note: Toggling effects requires reinitializing the audio context
         // for the change to take effect on new notes
-        console.log(`Effects ${this.settings.useEffects ? 'enabled' : 'disabled'}`);
+        this.logger.info(`Effects ${this.settings.useEffects ? 'enabled' : 'disabled'}`);
     }
 
     /**
@@ -2298,7 +2316,7 @@ class AudioEngine {
         const progression = progressions[progressionName];
 
         if (!progression) {
-            console.warn(`Progression ${progressionName} not found for ${key} ${mode}`);
+            this.logger.warn(`Progression ${progressionName} not found for ${key} ${mode}`);
             return;
         }
 
@@ -2357,9 +2375,10 @@ class AudioEngine {
     }
 }
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AudioEngine;
-} else {
+// ES6 module export
+export { AudioEngine };
+
+// Set on window for debugging in console (development only)
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     window.AudioEngine = AudioEngine;
 }

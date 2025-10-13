@@ -204,8 +204,8 @@ class CircleRenderer {
         const x = this.centerX + textRadius * Math.cos(angle);
         const y = this.centerY + textRadius * Math.sin(angle);
 
-        text.setAttribute('x', x);
-        text.setAttribute('y', y);
+        text.setAttribute('x', String(x));
+        text.setAttribute('y', String(y));
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('pointer-events', 'none');
@@ -632,9 +632,10 @@ class CircleRenderer {
     // scales responsively without needing to re-render on window resize.
 }
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = CircleRenderer;
-} else {
+// ES6 module export
+export { CircleRenderer };
+
+// Set on window for debugging in console (development only)
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     window.CircleRenderer = CircleRenderer;
 }

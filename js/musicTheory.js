@@ -469,10 +469,10 @@ class MusicTheory {
      *
      * @param {string} key - The root key (e.g., 'C', 'F#', 'Bb')
      * @param {string} [mode='major'] - The mode ('major' or 'minor')
-     * @returns {Object|null} Object with dominant, subdominant, and relative keys
-     * @returns {Object} returns.dominant - Dominant key information
-     * @returns {Object} returns.subdominant - Subdominant key information
-     * @returns {Object} returns.relative - Relative key information
+     * @returns {Object|null} Object with properties:
+     *   - dominant {Object} - Dominant key information
+     *   - subdominant {Object} - Subdominant key information
+     *   - relative {Object} - Relative key information
      * @example
      * theory.getRelatedKeys('C', 'major');
      * // Returns: { dominant: {key: 'G', mode: 'major'}, subdominant: {key: 'F', mode: 'major'}, relative: {key: 'A', mode: 'minor'} }
@@ -727,10 +727,19 @@ class MusicTheory {
     }
 }
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { MusicTheory, CIRCLE_OF_FIFTHS, MAJOR_KEYS, MINOR_KEYS, CHORD_PROGRESSIONS };
-} else {
+// ES6 module exports
+export {
+    MusicTheory,
+    CIRCLE_OF_FIFTHS,
+    MAJOR_KEYS,
+    MINOR_KEYS,
+    CHORD_PROGRESSIONS,
+    NOTES,
+    SCALE_PATTERNS
+};
+
+// Set on window for debugging in console (development only)
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     window.MusicTheory = MusicTheory;
     window.CIRCLE_OF_FIFTHS = CIRCLE_OF_FIFTHS;
     window.MAJOR_KEYS = MAJOR_KEYS;

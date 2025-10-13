@@ -1,0 +1,50 @@
+{
+    "compilerOptions": {
+        // Enable JavaScript checking
+        "allowJs": true,
+        "checkJs": true,
+        "noEmit": true,
+
+        // Target and module settings
+        "target": "ES2020",
+        "module": "ES2020",
+        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "moduleResolution": "node",
+
+        // Strict type checking - relaxed for JavaScript project
+        "strict": false,
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "strictFunctionTypes": false,
+        "strictBindCallApply": false,
+        "strictPropertyInitialization": false,
+        "noImplicitThis": false,
+        "alwaysStrict": true,
+
+        // Additional checks - relaxed for JavaScript
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noImplicitReturns": false,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": false,
+
+        // Module resolution
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+
+        // Source maps
+        "sourceMap": true,
+        "inlineSourceMap": false,
+        "inlineSources": false,
+
+        // Skip lib check for faster builds
+        "skipLibCheck": true,
+
+        // Force consistent casing
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["js/**/*.js", "js/**/*.d.ts"],
+    "exclude": ["node_modules", "tests", "dist", "coverage", "*.config.js", "scripts"]
+}

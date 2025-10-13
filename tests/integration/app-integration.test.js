@@ -3,10 +3,7 @@
  * Tests component interactions, data flow, and end-to-end functionality
  */
 
-// Load all modules
-const { MusicTheory } = require('../../js/musicTheory.js');
-const AudioEngine = require('../../js/audioEngine.js');
-const CircleRenderer = require('../../js/circleRenderer.js');
+// MusicTheory, AudioEngine, and CircleRenderer are loaded globally by the test runner
 
 describe('Circle of Fifths Application Integration', () => {
     let musicTheory;

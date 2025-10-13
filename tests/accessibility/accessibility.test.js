@@ -3,9 +3,7 @@
  * Tests ARIA attributes, keyboard navigation, screen reader compatibility, and WCAG compliance
  */
 
-// Load required modules
-const { MusicTheory } = require('../../js/musicTheory.js');
-const CircleRenderer = require('../../js/circleRenderer.js');
+// MusicTheory and CircleRenderer are loaded globally by the test runner
 
 describe('Accessibility Tests', () => {
     let mockSvgElement;

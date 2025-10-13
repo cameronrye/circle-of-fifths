@@ -1153,6 +1153,150 @@ body {
 }
 
 /* ===== LOADING ===== */
+.loading-skeleton {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--background-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity var(--transition-normal);
+}
+
+.loading-skeleton.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.skeleton-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xl);
+    max-width: 1200px;
+    width: 90%;
+}
+
+/* Circle skeleton */
+.skeleton-circle {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.skeleton-circle-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 20px solid var(--border-color);
+    border-radius: var(--radius-full);
+    opacity: 0.3;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-circle-center {
+    width: 120px;
+    height: 120px;
+    background: var(--border-color);
+    border-radius: var(--radius-full);
+    opacity: 0.2;
+    animation: pulse 1.5s ease-in-out infinite 0.3s;
+}
+
+/* Info panel skeleton */
+.skeleton-info-panel {
+    width: 100%;
+    max-width: 400px;
+    padding: var(--spacing-lg);
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.skeleton-line {
+    height: 16px;
+    background: var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-sm);
+    opacity: 0.3;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line.skeleton-title {
+    height: 24px;
+    width: 60%;
+    margin-bottom: var(--spacing-md);
+}
+
+.skeleton-line.skeleton-subtitle {
+    height: 18px;
+    width: 40%;
+    margin-bottom: var(--spacing-lg);
+}
+
+.skeleton-line.skeleton-short {
+    width: 70%;
+}
+
+/* Controls skeleton */
+.skeleton-controls {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+.skeleton-button {
+    width: 100px;
+    height: 40px;
+    background: var(--border-color);
+    border-radius: var(--radius-md);
+    opacity: 0.3;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-button:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.skeleton-button:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-size: var(--font-size-base);
+    margin-top: var(--spacing-lg);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Legacy loading spinner (kept for backward compatibility) */
 .loading {
     position: fixed;
     top: 0;
@@ -1181,20 +1325,6 @@ body {
     border-radius: var(--radius-full);
     animation: spin 1s linear infinite;
     margin-bottom: var(--spacing-md);
-}
-
-.loading-text {
-    color: var(--text-secondary);
-    font-size: var(--font-size-base);
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
 }
 
 /* ===== PERFORMANCE OPTIMIZATIONS ===== */
@@ -1787,4 +1917,48 @@ a:focus {
         box-shadow: none;
         border: 1px solid var(--text-primary);
     }
+}
+
+/* ===== KEY TOOLTIP ===== */
+.key-tooltip {
+    position: fixed;
+    background: var(--surface-color);
+    border: 2px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 200px;
+}
+
+.key-tooltip[aria-hidden='false'] {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.key-tooltip .tooltip-key {
+    font-weight: bold;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.key-tooltip .tooltip-mode {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.key-tooltip .tooltip-signature {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: italic;
 }
