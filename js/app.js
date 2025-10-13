@@ -181,6 +181,7 @@ class CircleOfFifthsApp {
      * Only loads when user first interacts with audio features
      * @async
      * @returns {Promise<AudioEngine>} The initialized audio engine
+     * @since 1.1.0
      */
     async getAudioEngine() {
         // Return existing instance if already loaded
