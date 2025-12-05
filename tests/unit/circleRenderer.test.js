@@ -146,7 +146,10 @@ describe('CircleRenderer Module', () => {
             expect(circleRenderer.keySegments).toBeInstanceOf(global.Map);
         });
 
-        test('should call init during construction', () => {
+        test('should call init during construction', async () => {
+            // Wait for requestAnimationFrame to complete (mocked as setTimeout with 16ms)
+            await new Promise(resolve => setTimeout(resolve, 20));
+
             expect(mockKeySegmentsGroup.innerHTML).toBe('');
             expect(mockKeySegmentsGroup.appendChild).toHaveBeenCalled();
         });
@@ -229,7 +232,9 @@ describe('CircleRenderer Module', () => {
 
     describe('createSegmentPath()', () => {
         test('should create SVG path element', () => {
-            const path = circleRenderer.createSegmentPath(0, Math.PI / 6);
+            // Use geometry utility to get points
+            const points = circleRenderer.geometry.calculateSegmentPoints(0, 12);
+            const path = circleRenderer.createSegmentPath(points);
 
             expect(path).toBeTruthy();
             expect(path.tagName).toBe('PATH');
@@ -237,9 +242,9 @@ describe('CircleRenderer Module', () => {
         });
 
         test('should calculate correct path data', () => {
-            const startAngle = 0;
-            const endAngle = Math.PI / 6;
-            const path = circleRenderer.createSegmentPath(startAngle, endAngle);
+            // Use geometry utility to get points
+            const points = circleRenderer.geometry.calculateSegmentPoints(0, 12);
+            const path = circleRenderer.createSegmentPath(points);
 
             const pathData = path.getAttribute('d');
             expect(pathData).toContain('M '); // Move command
@@ -251,7 +256,8 @@ describe('CircleRenderer Module', () => {
 
     describe('createSegmentText()', () => {
         test('should create SVG text element', () => {
-            const text = circleRenderer.createSegmentText('F', 11);
+            const points = circleRenderer.geometry.calculateSegmentPoints(11, 12);
+            const text = circleRenderer.createSegmentText('F', 11, points.midPoint);
 
             expect(text).toBeTruthy();
             expect(text.tagName).toBe('TEXT');
@@ -259,7 +265,8 @@ describe('CircleRenderer Module', () => {
         });
 
         test('should set correct text attributes', () => {
-            const text = circleRenderer.createSegmentText('E', 4);
+            const points = circleRenderer.geometry.calculateSegmentPoints(4, 12);
+            const text = circleRenderer.createSegmentText('E', 4, points.midPoint);
 
             expect(text.getAttribute('text-anchor')).toBe('middle');
             expect(text.getAttribute('dominant-baseline')).toBe('middle');
@@ -268,13 +275,15 @@ describe('CircleRenderer Module', () => {
         });
 
         test('should set text content to key name', () => {
-            const text = circleRenderer.createSegmentText('B', 5);
+            const points = circleRenderer.geometry.calculateSegmentPoints(5, 12);
+            const text = circleRenderer.createSegmentText('B', 5, points.midPoint);
 
             expect(text.textContent).toBe('B');
         });
 
         test('should calculate text position correctly', () => {
-            const text = circleRenderer.createSegmentText('A', 3);
+            const points = circleRenderer.geometry.calculateSegmentPoints(3, 12);
+            const text = circleRenderer.createSegmentText('A', 3, points.midPoint);
 
             expect(text.getAttribute('x')).toBeTruthy();
             expect(text.getAttribute('y')).toBeTruthy();

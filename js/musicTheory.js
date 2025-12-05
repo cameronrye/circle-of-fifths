@@ -90,6 +90,7 @@ const MAJOR_KEYS = {
 };
 
 // Minor key signatures (relative to major)
+// Note: Enharmonic equivalents (Db=C#, etc.) are handled via lookups
 const MINOR_KEYS = {
     A: { relative: 'C', sharps: 0, flats: 0, signature: 'No sharps or flats', accidentals: [] },
     E: { relative: 'G', sharps: 1, flats: 0, signature: '1 sharp (F#)', accidentals: ['F#'] },
@@ -113,6 +114,15 @@ const MINOR_KEYS = {
         flats: 0,
         signature: '4 sharps (F#, C#, G#, D#)',
         accidentals: ['F#', 'C#', 'G#', 'D#']
+    },
+    // Db minor is enharmonically equivalent to C# minor - use same data
+    Db: {
+        relative: 'E',
+        sharps: 4,
+        flats: 0,
+        signature: '4 sharps (F#, C#, G#, D#)',
+        accidentals: ['F#', 'C#', 'G#', 'D#'],
+        enharmonicOf: 'C#'
     },
     'G#': {
         relative: 'B',
@@ -518,10 +528,10 @@ class MusicTheory {
             return null;
         }
 
-        // Determine if we should use flat notation based on the normalized key
-        const useFlats =
-            normalizedKey.includes('b') ||
-            ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(normalizedKey);
+        // Determine if we should use flat notation based on the key signature
+        // For minor mode, check the minor key signature; for major, check major key signature
+        const keySignature = this.getKeySignature(key, mode);
+        const useFlats = keySignature.flats > 0;
 
         const dominantRaw = CIRCLE_OF_FIFTHS[(keyIndex + 1) % 12];
         const subdominantRaw = CIRCLE_OF_FIFTHS[(keyIndex - 1 + 12) % 12];
@@ -541,8 +551,14 @@ class MusicTheory {
             relative = this.getProperNoteName(relativeIndex, null, useFlats);
         } else {
             // Relative major is a minor third up
-            const relativeIndex = (this.getNoteIndex(key) + 3) % 12;
-            relative = this.getProperNoteName(relativeIndex, null, useFlats);
+            // Use the stored relative from MINOR_KEYS if available for correct enharmonic spelling
+            const minorKeyData = MINOR_KEYS[key];
+            if (minorKeyData && minorKeyData.relative) {
+                relative = minorKeyData.relative;
+            } else {
+                const relativeIndex = (this.getNoteIndex(key) + 3) % 12;
+                relative = this.getProperNoteName(relativeIndex, null, useFlats);
+            }
         }
 
         return {

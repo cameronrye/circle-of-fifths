@@ -3,9 +3,12 @@
  * Handles SVG rendering and visual updates
  */
 
+import { SVGPathBuilder } from './utils/SVGPathBuilder.js';
+import { CircleGeometry } from './utils/CircleGeometry.js';
+
 // Circle dimension constants (based on 800x800 viewBox)
 const SVG_SIZE = 800;
-const CIRCLE_CENTER = SVG_SIZE / 2; // 400
+const _CIRCLE_CENTER = SVG_SIZE / 2; // 400 - reserved for future use
 const OUTER_RADIUS_RATIO = 0.4; // 40% of SVG size
 const INNER_RADIUS_RATIO = 0.225; // 22.5% of SVG size
 const KEYS_IN_CIRCLE = 12;
@@ -37,14 +40,15 @@ class CircleRenderer {
         this.selectedKey = 'C';
         this.highlightedKeys = new Set();
 
-        // Circle dimensions (calculated from constants for maintainability)
-        this.centerX = CIRCLE_CENTER;
-        this.centerY = CIRCLE_CENTER;
-        this.outerRadius = SVG_SIZE * OUTER_RADIUS_RATIO; // 320
-        this.innerRadius = SVG_SIZE * INNER_RADIUS_RATIO; // 180
-        this.segmentAngle = 360 / KEYS_IN_CIRCLE; // 30 degrees per segment
+        // Initialize geometry utility
+        this.geometry = new CircleGeometry(SVG_SIZE, OUTER_RADIUS_RATIO, INNER_RADIUS_RATIO);
 
-        // Remove hardcoded colors - now using CSS custom properties via classes
+        // Keep these for backward compatibility
+        this.centerX = this.geometry.center;
+        this.centerY = this.geometry.center;
+        this.outerRadius = this.geometry.outerRadius;
+        this.innerRadius = this.geometry.innerRadius;
+        this.segmentAngle = 360 / KEYS_IN_CIRCLE; // 30 degrees per segment
 
         this.keySegments = new Map();
         this.init();
@@ -58,9 +62,37 @@ class CircleRenderer {
      * renderer.init(); // Re-render the entire circle
      */
     init() {
-        this.clearCircle();
-        this.renderKeySegments();
-        this.updateCenterInfo();
+        this.showSkeleton();
+
+        // Use requestAnimationFrame for smooth rendering
+        requestAnimationFrame(() => {
+            this.clearCircle();
+            this.renderKeySegments();
+            this.updateCenterInfo();
+            this.hideSkeleton();
+        });
+    }
+
+    /**
+     * Show the loading skeleton
+     */
+    showSkeleton() {
+        const skeleton = document.getElementById('circle-skeleton');
+        if (skeleton) {
+            skeleton.classList.remove('hidden');
+            skeleton.setAttribute('aria-hidden', 'false');
+        }
+    }
+
+    /**
+     * Hide the loading skeleton
+     */
+    hideSkeleton() {
+        const skeleton = document.getElementById('circle-skeleton');
+        if (skeleton) {
+            skeleton.classList.add('hidden');
+            skeleton.setAttribute('aria-hidden', 'true');
+        }
     }
 
     /**
@@ -103,17 +135,16 @@ class CircleRenderer {
         group.setAttribute('tabindex', '0');
         group.setAttribute('aria-label', this.getKeyAriaLabel(key, index));
 
-        // Calculate angles (start from top, go clockwise)
-        const startAngle = ((index * this.segmentAngle - 90) * Math.PI) / 180;
-        const endAngle = (((index + 1) * this.segmentAngle - 90) * Math.PI) / 180;
+        // Use geometry utility to calculate segment points
+        const points = this.geometry.calculateSegmentPoints(index, KEYS_IN_CIRCLE);
 
-        // Create path for segment
-        const path = this.createSegmentPath(startAngle, endAngle);
+        // Create path for segment using the new utility
+        const path = this.createSegmentPath(points);
         path.classList.add('segment-path');
         this.updateSegmentClasses(path, key);
 
         // Create text label
-        const text = this.createSegmentText(key, index);
+        const text = this.createSegmentText(key, index, points.midPoint);
 
         group.appendChild(path);
         group.appendChild(text);
@@ -122,30 +153,38 @@ class CircleRenderer {
     }
 
     /**
-     * Create SVG path for a segment
+     * Create SVG path for a segment using SVGPathBuilder
+     * @param {Object} points - Segment points from CircleGeometry
+     * @returns {SVGPathElement} The created path element
      */
-    createSegmentPath(startAngle, endAngle) {
+    createSegmentPath(points) {
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
-        // Calculate points
-        const x1 = this.centerX + this.innerRadius * Math.cos(startAngle);
-        const y1 = this.centerY + this.innerRadius * Math.sin(startAngle);
-        const x2 = this.centerX + this.outerRadius * Math.cos(startAngle);
-        const y2 = this.centerY + this.outerRadius * Math.sin(startAngle);
-        const x3 = this.centerX + this.outerRadius * Math.cos(endAngle);
-        const y3 = this.centerY + this.outerRadius * Math.sin(endAngle);
-        const x4 = this.centerX + this.innerRadius * Math.cos(endAngle);
-        const y4 = this.centerY + this.innerRadius * Math.sin(endAngle);
-
-        // Create path data
-        const pathData = [
-            `M ${x1} ${y1}`, // Move to inner start
-            `L ${x2} ${y2}`, // Line to outer start
-            `A ${this.outerRadius} ${this.outerRadius} 0 0 1 ${x3} ${y3}`, // Arc along outer edge
-            `L ${x4} ${y4}`, // Line to inner end
-            `A ${this.innerRadius} ${this.innerRadius} 0 0 0 ${x1} ${y1}`, // Arc along inner edge
-            'Z' // Close path
-        ].join(' ');
+        // Use SVGPathBuilder for cleaner, more maintainable path generation
+        const pathData = new SVGPathBuilder()
+            .moveTo(points.innerStart.x, points.innerStart.y)
+            .lineTo(points.outerStart.x, points.outerStart.y)
+            .arc(
+                this.outerRadius,
+                this.outerRadius,
+                0, // rotation
+                0, // large arc flag
+                1, // sweep flag (clockwise)
+                points.outerEnd.x,
+                points.outerEnd.y
+            )
+            .lineTo(points.innerEnd.x, points.innerEnd.y)
+            .arc(
+                this.innerRadius,
+                this.innerRadius,
+                0, // rotation
+                0, // large arc flag
+                0, // sweep flag (counter-clockwise)
+                points.innerStart.x,
+                points.innerStart.y
+            )
+            .close()
+            .build();
 
         path.setAttribute('d', pathData);
         return path;
@@ -193,19 +232,18 @@ class CircleRenderer {
 
     /**
      * Create text label for segment
+     * @param {string} key - The key name
+     * @param {number} index - Segment index
+     * @param {Object} midPoint - Midpoint coordinates from geometry
+     * @returns {SVGTextElement} The created text element
      */
-    createSegmentText(key, index) {
+    createSegmentText(key, index, midPoint) {
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         text.classList.add('key-text');
 
-        // Calculate text position (middle of segment)
-        const angle = ((index * this.segmentAngle - 90 + this.segmentAngle / 2) * Math.PI) / 180;
-        const textRadius = (this.innerRadius + this.outerRadius) / 2;
-        const x = this.centerX + textRadius * Math.cos(angle);
-        const y = this.centerY + textRadius * Math.sin(angle);
-
-        text.setAttribute('x', String(x));
-        text.setAttribute('y', String(y));
+        // Use the midpoint from geometry calculation
+        text.setAttribute('x', String(midPoint.x));
+        text.setAttribute('y', String(midPoint.y));
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('pointer-events', 'none');
@@ -215,12 +253,33 @@ class CircleRenderer {
 
         // Adjust font size for enharmonic labels (they're longer)
         const isEnharmonic = displayText.includes('/');
-        text.setAttribute('font-size', isEnharmonic ? '14' : '18');
-        text.setAttribute('font-weight', '600');
 
-        // Add mode indicator for minor mode (e.g., 'Cm' instead of 'C')
-        const modeIndicator = this.currentMode === 'minor' ? 'm' : '';
-        text.textContent = isEnharmonic ? displayText : `${displayText}${modeIndicator}`;
+        // For enharmonic equivalents, use tspan for better layout
+        if (isEnharmonic) {
+            const [sharp, flat] = displayText.split('/');
+            text.setAttribute('font-size', '14');
+            text.setAttribute('font-weight', '600');
+
+            const tspan1 = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+            tspan1.textContent = sharp;
+            tspan1.setAttribute('x', String(midPoint.x));
+            tspan1.setAttribute('dy', '-0.3em');
+
+            const tspan2 = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+            tspan2.textContent = `/${flat}`;
+            tspan2.setAttribute('x', String(midPoint.x));
+            tspan2.setAttribute('dy', '1.2em');
+
+            text.appendChild(tspan1);
+            text.appendChild(tspan2);
+        } else {
+            text.setAttribute('font-size', '18');
+            text.setAttribute('font-weight', '600');
+
+            // Add mode indicator for minor mode (e.g., 'Cm' instead of 'C')
+            const modeIndicator = this.currentMode === 'minor' ? 'm' : '';
+            text.textContent = `${displayText}${modeIndicator}`;
+        }
 
         return text;
     }
@@ -282,6 +341,7 @@ class CircleRenderer {
         const centerKey = this.svg.querySelector('.center-key');
         const centerMode = this.svg.querySelector('.center-mode');
         const centerSignature = this.svg.querySelector('.center-signature');
+        const centerRelative = this.svg.querySelector('.center-relative');
 
         if (centerKey) {
             centerKey.textContent = this.selectedKey;
@@ -298,6 +358,13 @@ class CircleRenderer {
                 this.currentMode
             );
             centerSignature.textContent = keySignature.signature;
+        }
+
+        if (centerRelative) {
+            const relatedKeys = this.musicTheory.getRelatedKeys(this.selectedKey, this.currentMode);
+            if (relatedKeys && relatedKeys.relative) {
+                centerRelative.textContent = `Relative: ${relatedKeys.relative.key} ${relatedKeys.relative.mode}`;
+            }
         }
     }
 
@@ -625,6 +692,25 @@ class CircleRenderer {
             currentMode: this.currentMode,
             highlightedKeys: Array.from(this.highlightedKeys)
         };
+    }
+
+    /**
+     * Cleanup and destroy the circle renderer
+     * Clears all segments and resets state
+     */
+    destroy() {
+        // Clear all segments
+        this.clearCircle();
+
+        // Clear the key segments map
+        this.keySegments.clear();
+
+        // Clear highlights
+        this.highlightedKeys.clear();
+
+        // Reset state
+        this.selectedKey = 'C';
+        this.currentMode = 'major';
     }
 
     // Note: Resize method removed - SVG viewBox handles scaling automatically

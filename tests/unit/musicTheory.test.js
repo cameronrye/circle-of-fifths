@@ -305,29 +305,55 @@ describe('MusicTheory Module', () => {
         });
 
         test('should handle enharmonic equivalents (C# vs Db, F# vs Gb, etc.)', () => {
+            // Helper to check if two keys are enharmonically equivalent
+            const areEnharmonic = (key1, key2) => {
+                if (key1 === key2) {
+                    return true;
+                }
+                const enharmonics = {
+                    'C#': 'Db',
+                    Db: 'C#',
+                    'D#': 'Eb',
+                    Eb: 'D#',
+                    'F#': 'Gb',
+                    Gb: 'F#',
+                    'G#': 'Ab',
+                    Ab: 'G#',
+                    'A#': 'Bb',
+                    Bb: 'A#'
+                };
+                return enharmonics[key1] === key2;
+            };
+
             // C# should work like Db
             const relatedCSharp = musicTheory.getRelatedKeys('C#', 'major');
             const relatedDb = musicTheory.getRelatedKeys('Db', 'major');
             expect(relatedCSharp).not.toBeNull();
             expect(relatedDb).not.toBeNull();
-            expect(relatedCSharp.dominant.key).toBe(relatedDb.dominant.key);
-            expect(relatedCSharp.subdominant.key).toBe(relatedDb.subdominant.key);
+            expect(areEnharmonic(relatedCSharp.dominant.key, relatedDb.dominant.key)).toBe(true);
+            expect(areEnharmonic(relatedCSharp.subdominant.key, relatedDb.subdominant.key)).toBe(
+                true
+            );
 
             // G# should work like Ab
             const relatedGSharp = musicTheory.getRelatedKeys('G#', 'major');
             const relatedAb = musicTheory.getRelatedKeys('Ab', 'major');
             expect(relatedGSharp).not.toBeNull();
             expect(relatedAb).not.toBeNull();
-            expect(relatedGSharp.dominant.key).toBe(relatedAb.dominant.key);
-            expect(relatedGSharp.subdominant.key).toBe(relatedAb.subdominant.key);
+            expect(areEnharmonic(relatedGSharp.dominant.key, relatedAb.dominant.key)).toBe(true);
+            expect(areEnharmonic(relatedGSharp.subdominant.key, relatedAb.subdominant.key)).toBe(
+                true
+            );
 
             // Gb should work like F#
             const relatedGb = musicTheory.getRelatedKeys('Gb', 'major');
             const relatedFSharp = musicTheory.getRelatedKeys('F#', 'major');
             expect(relatedGb).not.toBeNull();
             expect(relatedFSharp).not.toBeNull();
-            expect(relatedGb.dominant.key).toBe(relatedFSharp.dominant.key);
-            expect(relatedGb.subdominant.key).toBe(relatedFSharp.subdominant.key);
+            expect(areEnharmonic(relatedGb.dominant.key, relatedFSharp.dominant.key)).toBe(true);
+            expect(areEnharmonic(relatedGb.subdominant.key, relatedFSharp.subdominant.key)).toBe(
+                true
+            );
         });
     });
 
@@ -544,7 +570,7 @@ describe('MusicTheory Module', () => {
         });
 
         test('MINOR_KEYS should contain all minor key signatures', () => {
-            expect(Object.keys(global.MINOR_KEYS)).toHaveLength(15); // Including enharmonic equivalents
+            expect(Object.keys(global.MINOR_KEYS)).toHaveLength(16); // Including enharmonic equivalents
             expect(global.MINOR_KEYS['A']).toBeDefined();
             expect(global.MINOR_KEYS['F#']).toBeDefined();
             expect(global.MINOR_KEYS['Ab']).toBeDefined();

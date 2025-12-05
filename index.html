@@ -41,7 +41,7 @@
         <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
         <link rel="manifest" href="manifest.json" />
-        <meta name="theme-color" content="#3498db" />
+        <meta name="theme-color" content="#6366f1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Circle of Fifths" />
@@ -73,67 +73,89 @@
                     </button>
                 </div>
 
-                <!-- Theme Toggle -->
-                <div class="theme-toggle" role="group" aria-label="Theme selection">
-                    <button
-                        id="theme-toggle-btn"
-                        class="theme-btn"
-                        aria-label="Change theme"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                    >
-                        <span class="theme-icon">💻</span>
-                        <span class="theme-text">System</span>
-                        <span class="theme-arrow">▼</span>
-                    </button>
-                    <div id="theme-dropdown" class="theme-dropdown" role="menu" aria-hidden="true">
+                <!-- Theme Toggle - Modern Segmented Control -->
+                <div class="theme-switcher" role="radiogroup" aria-label="Theme selection">
+                    <div class="theme-switcher-track">
+                        <div class="theme-switcher-indicator" aria-hidden="true"></div>
                         <button
-                            class="theme-option"
-                            role="menuitem"
+                            class="theme-segment"
+                            role="radio"
+                            aria-checked="false"
                             data-theme="light"
-                            tabindex="-1"
+                            aria-label="Light theme"
                         >
-                            <span class="theme-option-icon">☀️</span>
-                            <span class="theme-option-text">Light</span>
+                            <svg
+                                class="theme-icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
                         </button>
                         <button
-                            class="theme-option"
-                            role="menuitem"
-                            data-theme="dark"
-                            tabindex="-1"
-                        >
-                            <span class="theme-option-icon">🌙</span>
-                            <span class="theme-option-text">Dark</span>
-                        </button>
-                        <button
-                            class="theme-option active"
-                            role="menuitem"
+                            class="theme-segment active"
+                            role="radio"
+                            aria-checked="true"
                             data-theme="system"
-                            tabindex="-1"
+                            aria-label="System theme"
                         >
-                            <span class="theme-option-icon">💻</span>
-                            <span class="theme-option-text">System</span>
+                            <svg
+                                class="theme-icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
                         </button>
                         <button
-                            class="theme-option"
-                            role="menuitem"
-                            data-theme="high-contrast"
-                            tabindex="-1"
+                            class="theme-segment"
+                            role="radio"
+                            aria-checked="false"
+                            data-theme="dark"
+                            aria-label="Dark theme"
                         >
-                            <span class="theme-option-icon">🔲</span>
-                            <span class="theme-option-text">High Contrast</span>
-                        </button>
-                        <button
-                            class="theme-option"
-                            role="menuitem"
-                            data-theme="sepia"
-                            tabindex="-1"
-                        >
-                            <span class="theme-option-icon">📜</span>
-                            <span class="theme-option-text">Sepia</span>
+                            <svg
+                                class="theme-icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
                         </button>
                     </div>
                 </div>
+
+                <!-- Help Button -->
+                <button
+                    id="help-btn"
+                    class="help-btn"
+                    aria-label="Keyboard shortcuts (Press ?)"
+                    title="Keyboard shortcuts"
+                >
+                    <span class="help-icon">?</span>
+                </button>
             </div>
         </header>
 
@@ -146,6 +168,30 @@
                     role="application"
                     aria-label="Interactive Circle of Fifths"
                 >
+                    <!-- Loading Skeleton -->
+                    <div id="circle-skeleton" class="circle-skeleton" aria-hidden="true">
+                        <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+                            <circle
+                                cx="400"
+                                cy="400"
+                                r="250"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="140"
+                                opacity="0.1"
+                                class="skeleton-ring"
+                            />
+                            <circle
+                                cx="400"
+                                cy="400"
+                                r="180"
+                                fill="currentColor"
+                                opacity="0.05"
+                                class="skeleton-center"
+                            />
+                        </svg>
+                    </div>
+
                     <svg
                         id="circle-svg"
                         class="circle-svg"
@@ -160,70 +206,132 @@
                             relationships
                         </desc>
 
-                        <!-- Background circle -->
-                        <circle cx="400" cy="400" r="350" class="background-circle" />
+                        <!-- Background circle - matches outer segment radius -->
+                        <circle cx="400" cy="400" r="320" class="background-circle" />
 
                         <!-- Key segments will be dynamically generated -->
                         <g id="key-segments" class="key-segments"></g>
 
-                        <!-- Center circle for key information -->
-                        <circle cx="400" cy="400" r="120" class="center-circle" />
+                        <!-- Center circle - matches inner segment radius for seamless connection -->
+                        <circle cx="400" cy="400" r="180" class="center-circle" />
                         <g id="center-content" class="center-content">
-                            <text x="400" y="380" class="center-key" text-anchor="middle">C</text>
-                            <text x="400" y="410" class="center-mode" text-anchor="middle">
+                            <text x="400" y="355" class="center-key" text-anchor="middle">C</text>
+                            <text x="400" y="390" class="center-mode" text-anchor="middle">
                                 Major
                             </text>
-                            <text x="400" y="430" class="center-signature" text-anchor="middle">
+                            <text x="400" y="420" class="center-signature" text-anchor="middle">
                                 No sharps or flats
+                            </text>
+                            <text x="400" y="455" class="center-relative" text-anchor="middle">
+                                Relative: A minor
                             </text>
                         </g>
                     </svg>
 
+                    <!-- Piano Keyboard Visualization -->
+                    <div
+                        id="piano-keyboard"
+                        class="piano-keyboard"
+                        role="img"
+                        aria-label="Piano keyboard showing current scale notes"
+                    >
+                        <div class="piano-keys">
+                            <!-- One octave of piano keys -->
+                            <div class="piano-key white-key" data-note="C"></div>
+                            <div class="piano-key black-key" data-note="C#"></div>
+                            <div class="piano-key white-key" data-note="D"></div>
+                            <div class="piano-key black-key" data-note="D#"></div>
+                            <div class="piano-key white-key" data-note="E"></div>
+                            <div class="piano-key white-key" data-note="F"></div>
+                            <div class="piano-key black-key" data-note="F#"></div>
+                            <div class="piano-key white-key" data-note="G"></div>
+                            <div class="piano-key black-key" data-note="G#"></div>
+                            <div class="piano-key white-key" data-note="A"></div>
+                            <div class="piano-key black-key" data-note="A#"></div>
+                            <div class="piano-key white-key" data-note="B"></div>
+                        </div>
+                    </div>
+
                     <!-- Audio Controls -->
                     <div class="audio-controls" role="group" aria-label="Audio playback controls">
-                        <button id="play-scale" class="audio-btn" aria-label="Play scale">
-                            <span class="btn-icon">♪</span>
-                            Scale
-                        </button>
-                        <button id="play-chord" class="audio-btn" aria-label="Play chord">
-                            <span class="btn-icon">♫</span>
-                            Chord
-                        </button>
-                        <button
-                            id="play-progression"
-                            class="audio-btn"
-                            aria-label="Play chord progression"
-                        >
-                            <span class="btn-icon">♬</span>
-                            Progression
-                        </button>
-                        <button
-                            id="toggle-percussion"
-                            class="audio-btn toggle-btn"
-                            aria-label="Toggle percussion"
-                            aria-pressed="true"
-                        >
-                            <span class="btn-icon">🥁</span>
-                            Percussion
-                        </button>
-                        <button
-                            id="toggle-bass"
-                            class="audio-btn toggle-btn"
-                            aria-label="Toggle bass"
-                            aria-pressed="false"
-                        >
-                            <span class="btn-icon">🎸</span>
-                            Bass
-                        </button>
-                        <button
-                            id="toggle-loop"
-                            class="audio-btn toggle-btn"
-                            aria-label="Toggle loop"
-                            aria-pressed="true"
-                        >
-                            <span class="btn-icon">🔁</span>
-                            Loop
-                        </button>
+                        <!-- Primary Actions -->
+                        <div class="primary-controls">
+                            <button
+                                id="play-scale"
+                                class="audio-btn audio-btn-primary"
+                                aria-label="Play scale (Press S)"
+                            >
+                                <span class="btn-icon">♪</span>
+                                <span class="btn-text">Scale</span>
+                                <span class="keyboard-hint" aria-hidden="true">S</span>
+                            </button>
+                            <button
+                                id="play-chord"
+                                class="audio-btn audio-btn-primary"
+                                aria-label="Play chord (Press C)"
+                            >
+                                <span class="btn-icon">♫</span>
+                                <span class="btn-text">Chord</span>
+                                <span class="keyboard-hint" aria-hidden="true">C</span>
+                            </button>
+                            <button
+                                id="play-progression"
+                                class="audio-btn audio-btn-primary"
+                                aria-label="Play chord progression (Press P)"
+                            >
+                                <span class="btn-icon">♬</span>
+                                <span class="btn-text">Progression</span>
+                                <span class="keyboard-hint" aria-hidden="true">P</span>
+                            </button>
+                            <button
+                                id="stop-audio"
+                                class="audio-btn audio-btn-stop"
+                                aria-label="Stop all audio (Press Escape)"
+                                disabled
+                            >
+                                <span class="btn-icon">⏹️</span>
+                                <span class="btn-text">Stop</span>
+                                <span class="keyboard-hint" aria-hidden="true">Esc</span>
+                            </button>
+                        </div>
+
+                        <!-- Secondary Controls (Collapsible) -->
+                        <details class="secondary-controls-wrapper" open>
+                            <summary class="secondary-controls-toggle">
+                                <span class="toggle-icon">⚙️</span>
+                                <span class="toggle-text">Audio Options</span>
+                                <span class="toggle-arrow" aria-hidden="true">▼</span>
+                            </summary>
+                            <div class="secondary-controls">
+                                <button
+                                    id="toggle-percussion"
+                                    class="audio-btn audio-btn-secondary toggle-btn"
+                                    aria-label="Toggle percussion"
+                                    aria-pressed="true"
+                                >
+                                    <span class="btn-icon">🥁</span>
+                                    <span class="btn-text">Percussion</span>
+                                </button>
+                                <button
+                                    id="toggle-bass"
+                                    class="audio-btn audio-btn-secondary toggle-btn"
+                                    aria-label="Toggle bass"
+                                    aria-pressed="false"
+                                >
+                                    <span class="btn-icon">🎸</span>
+                                    <span class="btn-text">Bass</span>
+                                </button>
+                                <button
+                                    id="toggle-loop"
+                                    class="audio-btn audio-btn-secondary toggle-btn"
+                                    aria-label="Toggle loop"
+                                    aria-pressed="true"
+                                >
+                                    <span class="btn-icon">🔁</span>
+                                    <span class="btn-text">Loop</span>
+                                </button>
+                            </div>
+                        </details>
 
                         <!-- Volume Control -->
                         <div class="volume-control" role="group" aria-label="Volume control">
@@ -313,6 +421,23 @@
                                     step="0.05"
                                     value="0.25"
                                     aria-label="Stereo width"
+                                />
+                            </div>
+
+                            <div class="setting-group setting-group-full">
+                                <label for="tempo-slider" class="setting-label">
+                                    Tempo
+                                    <span class="setting-value" id="tempo-value">120 BPM</span>
+                                </label>
+                                <input
+                                    type="range"
+                                    id="tempo-slider"
+                                    class="setting-slider"
+                                    min="60"
+                                    max="200"
+                                    step="5"
+                                    value="120"
+                                    aria-label="Tempo in BPM"
                                 />
                             </div>
 
@@ -477,6 +602,59 @@
             <div class="tooltip-key"></div>
             <div class="tooltip-mode"></div>
             <div class="tooltip-signature"></div>
+        </div>
+
+        <!-- Keyboard Shortcuts Modal -->
+        <div
+            id="shortcuts-modal"
+            class="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="shortcuts-title"
+            aria-hidden="true"
+        >
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="shortcuts-title" class="modal-title">Keyboard Shortcuts</h2>
+                    <button
+                        id="close-shortcuts"
+                        class="modal-close"
+                        aria-label="Close shortcuts modal"
+                    >
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="shortcuts-grid">
+                        <div class="shortcut-group">
+                            <h3 class="shortcut-group-title">Audio Playback</h3>
+                            <div class="shortcut-item"><kbd>S</kbd><span>Play Scale</span></div>
+                            <div class="shortcut-item"><kbd>C</kbd><span>Play Chord</span></div>
+                            <div class="shortcut-item">
+                                <kbd>P</kbd><span>Play Progression</span>
+                            </div>
+                            <div class="shortcut-item">
+                                <kbd>Esc</kbd><span>Stop All Audio</span>
+                            </div>
+                        </div>
+                        <div class="shortcut-group">
+                            <h3 class="shortcut-group-title">Navigation</h3>
+                            <div class="shortcut-item"><kbd>←</kbd><span>Previous Key</span></div>
+                            <div class="shortcut-item"><kbd>→</kbd><span>Next Key</span></div>
+                            <div class="shortcut-item">
+                                <kbd>M</kbd><span>Toggle Major/Minor</span>
+                            </div>
+                            <div class="shortcut-item"><kbd>?</kbd><span>Show This Help</span></div>
+                        </div>
+                        <div class="shortcut-group">
+                            <h3 class="shortcut-group-title">Volume</h3>
+                            <div class="shortcut-item"><kbd>↑</kbd><span>Volume Up</span></div>
+                            <div class="shortcut-item"><kbd>↓</kbd><span>Volume Down</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Scripts - optimized loading order -->

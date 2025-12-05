@@ -202,3 +202,25 @@ local/
 
 # Release files
 CHANGELOG.md.bak
+
+# Vite
+.vite/
+
+# Augment Code
+.augment/
+
+# Turbo
+.turbo/
+
+# Biome
+.biome/
+
+# Bun
+bun.lockb
+
+# Editor directories and files
+*.sublime-workspace
+*.code-workspace
+
+# Debug logs
+*.log.gz

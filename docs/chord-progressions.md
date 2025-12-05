@@ -39,12 +39,14 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Example in C Major:** C - G - Am - F
 
 **Characteristics:**
+
 - Most popular progression in modern pop music
 - Strong harmonic motion with circle of fifths elements
 - Smooth voice leading with multiple common tones
 - Works well for upbeat, positive songs
 
 **Music Theory:**
+
 - I (C): Tonic - home, stable
 - V (G): Dominant - tension, wants to resolve
 - vi (Am): Submediant - relative minor, adds color
@@ -53,6 +55,7 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Loop Transition:** F → C (smooth, common tone C)
 
 **Voice Leading:**
+
 - C → G: Common tone G
 - G → Am: Common tone G, smooth movement
 - Am → F: Common tone C
@@ -63,12 +66,14 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Example in C Major:** Dm - G - C
 
 **Characteristics:**
+
 - Classic jazz cadence
 - Strong functional harmony
 - Excellent voice leading
 - Foundation of jazz improvisation
 
 **Music Theory:**
+
 - ii (Dm): Supertonic - pre-dominant function
 - V (G): Dominant - creates tension
 - I (C): Tonic - resolution
@@ -76,11 +81,13 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Loop Transition:** C → Dm (smooth, 5 semitone movement)
 
 **Voice Leading:**
+
 - Dm → G: Common tone D, total movement ~4 semitones
 - G → C: Common tone G, total movement ~4 semitones
 - C → Dm (loop): No common tones, total movement ~5 semitones
 
 **Verified in Multiple Keys:**
+
 - C major: Dm - G - C ✓
 - G major: Am - D - G ✓
 - D major: Em - A - D ✓
@@ -93,12 +100,14 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Example in C Major:** Am - F - C - G
 
 **Characteristics:**
+
 - Follows circle of fifths backwards
 - Strong harmonic motion
 - Popular in rock and pop
 - Smooth voice leading
 
 **Music Theory:**
+
 - vi (Am): Relative minor
 - IV (F): Subdominant
 - I (C): Tonic
@@ -111,12 +120,14 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Example in C Major:** C - Am - Dm - G
 
 **Characteristics:**
+
 - Classic 1950s progression
 - Smooth stepwise motion
 - Excellent voice leading
 - Nostalgic, vintage sound
 
 **Music Theory:**
+
 - I (C): Tonic
 - vi (Am): Relative minor
 - ii (Dm): Supertonic
@@ -129,12 +140,14 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Example in C Major:** C - F - G - C
 
 **Characteristics:**
+
 - Fundamental progression
 - Perfect cadence (V-I)
 - Simple and effective
 - Foundation of Western harmony
 
 **Music Theory:**
+
 - I (C): Tonic
 - IV (F): Subdominant
 - V (G): Dominant
@@ -149,12 +162,14 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Example in A Minor:** Am - G - F - G
 
 **Characteristics:**
+
 - Popular in modern music
 - Uses natural minor scale
 - Smooth voice leading
 - Melancholic but accessible
 
 **Music Theory:**
+
 - i (Am): Tonic minor
 - VII (G): Subtonic (natural minor)
 - VI (F): Submediant
@@ -167,12 +182,14 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Example in A Minor:** Am - Dm - E - Am
 
 **Characteristics:**
+
 - Classic minor cadence
 - Uses harmonic minor for V chord
 - Strong resolution
 - Traditional sound
 
 **Music Theory:**
+
 - i (Am): Tonic minor
 - iv (Dm): Subdominant minor
 - V (E): Dominant major (uses G# from harmonic minor)
@@ -187,12 +204,14 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Example in A Minor:** Am - F - C - G
 
 **Characteristics:**
+
 - Spanish/Flamenco character
 - Descending bass line
 - Exotic, dramatic sound
 - Popular in rock and metal
 
 **Music Theory:**
+
 - i (Am): Tonic minor
 - VI (F): Submediant
 - III (C): Mediant
@@ -205,12 +224,14 @@ All progressions use correct Roman numeral notation based on scale degrees.
 **Example in A Minor:** Am - Em - Dm - Am
 
 **Characteristics:**
+
 - Pure natural minor sound
 - All natural minor chords
 - Smooth voice leading
 - Dark, modal character
 
 **Music Theory:**
+
 - i (Am): Tonic minor
 - v (Em): Dominant minor (natural minor)
 - iv (Dm): Subdominant minor
@@ -226,21 +247,21 @@ The application uses sophisticated voice leading optimization to create smooth, 
 
 1. **Multiple Voicing Candidates**: Generates inversions and octave placements
 2. **Scoring System**: Evaluates based on:
-   - Total voice movement (40% weight)
-   - Top voice smoothness (40% weight)
-   - Maximum leap penalty (20% weight)
-   - Range preference (comfortable vocal range)
-   - Spacing optimization
+    - Total voice movement (40% weight)
+    - Top voice smoothness (40% weight)
+    - Maximum leap penalty (20% weight)
+    - Range preference (comfortable vocal range)
+    - Spacing optimization
 3. **Loop Continuity**: Preserves final voicing and uses it for the next iteration
 
 ### Voice Leading Principles Applied
 
-✅ Minimal voice movement
-✅ Common tone retention
-✅ Stepwise motion preferred
-✅ Smooth top voice (melody)
-✅ Comfortable range (C3-C5)
-✅ Proper spacing in upper voices
+- Minimal voice movement
+- Common tone retention
+- Stepwise motion preferred
+- Smooth top voice (melody)
+- Comfortable range (C3-C5)
+- Proper spacing in upper voices
 
 ## Implementation Details
 
@@ -277,21 +298,25 @@ CHORD_PROGRESSIONS: {
 
 ### Validation Results
 
-✅ All chord progressions are musically valid
-✅ Roman numeral analysis is correct
-✅ Voice leading optimization is sophisticated and effective
-✅ Loop transitions are handled with voice leading continuity
-✅ Progressions do NOT change keys when looping
+All validation checks pass:
+
+- All chord progressions are musically valid
+- Roman numeral analysis is correct
+- Voice leading optimization is sophisticated and effective
+- Loop transitions are handled with voice leading continuity
+- Progressions do NOT change keys when looping
 
 ### Diatonic Integrity
 
 All progressions use notes from the appropriate scale:
+
 - Major progressions: Major scale
 - Minor progressions: Natural minor scale (with harmonic minor for V chords where appropriate)
 
 ### Cross-Key Verification
 
 All progressions have been verified to work correctly in all 12 keys, maintaining proper:
+
 - Key signatures
 - Chord qualities
 - Voice leading
@@ -316,10 +341,10 @@ This is correct music theory. In minor keys, the V chord is typically major (usi
 ## Future Enhancements
 
 Potential improvements:
+
 1. Add more progressions (blues, modal, extended jazz)
 2. Add chord extensions (7ths, 9ths, etc.)
 3. Add progression variations and substitutions
 4. Add visual/audio feedback to reinforce key center
 5. Add user controls for voicing preferences
 6. Add educational mode with roman numeral display during playback
-

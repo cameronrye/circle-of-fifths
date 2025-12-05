@@ -40,6 +40,8 @@ module.exports = [
                 URLSearchParams: 'readonly',
                 performance: 'readonly',
                 matchMedia: 'readonly',
+                requestAnimationFrame: 'readonly',
+                cancelAnimationFrame: 'readonly',
 
                 // Web Audio API
                 AudioContext: 'readonly',

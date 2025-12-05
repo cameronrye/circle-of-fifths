@@ -35,7 +35,8 @@ class CircleOfFifthsApp {
         this.initializationPromise = null;
 
         // Initialize logger
-        this.logger = loggers?.app || console;
+        /** @type {Logger} */
+        this.logger = /** @type {Logger} */ (/** @type {unknown} */ (loggers?.app || console));
 
         // Bind methods
         this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
@@ -47,8 +48,7 @@ class CircleOfFifthsApp {
      * Can be called multiple times safely - subsequent calls return the same promise.
      *
      * @async
-     * @returns {Promise<void>} Promise that resolves when initialization is complete
-     * @throws {Error} If initialization fails
+     * @returns {Promise<boolean>} Promise that resolves to true on success, false on failure
      * @example
      * try {
      *     await app.init();
@@ -72,8 +72,7 @@ class CircleOfFifthsApp {
      *
      * @private
      * @async
-     * @returns {Promise<void>} Promise that resolves when initialization is complete
-     * @throws {Error} If any initialization step fails
+     * @returns {Promise<boolean>} Promise that resolves to true on success, false on failure
      */
     async _performInitialization() {
         const initTimer = this.logger.startTimer('Total initialization');
@@ -158,7 +157,9 @@ class CircleOfFifthsApp {
         this.logger.debug('Audio engine will be lazy loaded on first audio interaction');
 
         // Get SVG element
-        const svgElement = document.getElementById('circle-svg');
+        const svgElement = /** @type {SVGElement} */ (
+            /** @type {unknown} */ (document.getElementById('circle-svg'))
+        );
         if (!svgElement) {
             throw new Error('Circle SVG element not found');
         }
@@ -530,7 +531,7 @@ class CircleOfFifthsApp {
      * Useful for recovering from errors or applying configuration changes.
      *
      * @async
-     * @returns {Promise<void>} Promise that resolves when restart is complete
+     * @returns {Promise<boolean>} Promise that resolves to true on success, false on failure
      * @example
      * // Restart after an error
      * await app.restart();

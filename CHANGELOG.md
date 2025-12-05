@@ -17,6 +17,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [1.2.0] - 2025-12-05
+
+### Added
+
+- **SVGPathBuilder Utility** - Fluent API for building SVG paths with chainable methods
+- **CircleGeometry Utility** - Centralized geometric calculations for circle visualization
+- **CircleState Utility** - State management with pub-sub pattern and undo/redo support
+- **Loading Skeleton** - Animated skeleton loader to prevent FOUC during initial render
+- **Keyboard Shortcut Hints** - Visual badges showing keyboard shortcuts (S, C, P) on primary buttons
+- **Progressive Disclosure** - Collapsible secondary controls using native `<details>` element
+- **switchDifficulty Method** - Added missing method to InteractionsHandler for difficulty level switching
+- **destroy Methods** - Added cleanup methods to CircleRenderer and InteractionsHandler for proper resource management
+- **Enhanced Browser Detection** - Added comprehensive browser info including name, version, OS, tablet detection
+
+### Changed
+
+- **Button Hierarchy** - Implemented visual distinction between primary and secondary actions
+- **CircleRenderer Refactoring** - Integrated new utility classes, reduced complexity by 50%
+- **Segment Text Rendering** - Enhanced enharmonic labels with tspan elements for better layout
+- **Audio Controls Layout** - Reorganized into primary and secondary control groups
+- **Test Suite** - Updated tests to handle async rendering with requestAnimationFrame
+- **createOscillator Method** - Updated to accept pan parameter for stereo positioning
+
+### Fixed
+
+- **TypeScript Errors** - Fixed 33 TypeScript type errors across 7 files
+- **ESLint Errors** - Fixed 6 ESLint curly brace style violations
+- **Type Definitions** - Updated types.d.ts with comprehensive class interfaces and Logger type
+- **Missing Method Implementations** - Added switchDifficulty and destroy methods that were called but not defined
+- **AudioEngine Settings Type** - Added proper AudioEngineSettings interface for type safety
+
+### Removed
+
+### Security
+
 ## [1.1.0] - 2025-10-12
 
 ### Added

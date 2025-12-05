@@ -34,13 +34,7 @@ describe('ThemeManager Module', () => {
 
     describe('Constructor and Initialization', () => {
         test('should initialize with default values', () => {
-            expect(themeManager.themes).toEqual([
-                'light',
-                'dark',
-                'system',
-                'high-contrast',
-                'sepia'
-            ]);
+            expect(themeManager.themes).toEqual(['light', 'dark', 'system']);
             expect(themeManager.currentTheme).toBe('system');
             expect(themeManager.storageKey).toBe('circle-of-fifths-theme');
         });
@@ -93,7 +87,7 @@ describe('ThemeManager Module', () => {
         test('should get available themes', () => {
             const themes = themeManager.getAvailableThemes();
 
-            expect(themes).toEqual(['light', 'dark', 'system', 'high-contrast', 'sepia']);
+            expect(themes).toEqual(['light', 'dark', 'system']);
             expect(themes).not.toBe(themeManager.themes); // Should return a copy
         });
 
@@ -101,23 +95,15 @@ describe('ThemeManager Module', () => {
             expect(themeManager.getCurrentTheme()).toBe('system');
 
             const next1 = themeManager.toggleTheme();
-            expect(next1).toBe('high-contrast');
-            expect(themeManager.getCurrentTheme()).toBe('high-contrast');
-
-            const next2 = themeManager.toggleTheme();
-            expect(next2).toBe('sepia');
-            expect(themeManager.getCurrentTheme()).toBe('sepia');
-
-            const next3 = themeManager.toggleTheme();
-            expect(next3).toBe('light');
+            expect(next1).toBe('light');
             expect(themeManager.getCurrentTheme()).toBe('light');
 
-            const next4 = themeManager.toggleTheme();
-            expect(next4).toBe('dark');
+            const next2 = themeManager.toggleTheme();
+            expect(next2).toBe('dark');
             expect(themeManager.getCurrentTheme()).toBe('dark');
 
-            const next5 = themeManager.toggleTheme();
-            expect(next5).toBe('system');
+            const next3 = themeManager.toggleTheme();
+            expect(next3).toBe('system');
             expect(themeManager.getCurrentTheme()).toBe('system');
         });
     });
@@ -224,10 +210,10 @@ describe('ThemeManager Module', () => {
         });
 
         test('should return correct theme icons', () => {
-            expect(themeManager.getThemeIcon('light')).toBe('☀️');
-            expect(themeManager.getThemeIcon('dark')).toBe('🌙');
-            expect(themeManager.getThemeIcon('system')).toBe('💻');
-            expect(themeManager.getThemeIcon('invalid')).toBe('❓');
+            expect(themeManager.getThemeIcon('light')).toBe('sun');
+            expect(themeManager.getThemeIcon('dark')).toBe('moon');
+            expect(themeManager.getThemeIcon('system')).toBe('monitor');
+            expect(themeManager.getThemeIcon('invalid')).toBe('monitor'); // Falls back to monitor
         });
 
         test('should return theme colors', () => {

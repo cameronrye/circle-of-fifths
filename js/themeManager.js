@@ -22,7 +22,7 @@ class ThemeManager {
      * @constructor
      */
     constructor() {
-        this.themes = ['light', 'dark', 'system', 'high-contrast', 'sepia'];
+        this.themes = ['light', 'dark', 'system'];
         this.currentTheme = 'system'; // Default to system preference
         this.storageKey = 'circle-of-fifths-theme';
 
@@ -191,23 +191,17 @@ class ThemeManager {
     updateMetaThemeColor(theme) {
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         if (metaThemeColor) {
-            let color = '#3498db'; // Default blue
+            let color;
 
             switch (theme) {
                 case 'dark':
-                    color = '#2c2c2c';
-                    break;
-                case 'high-contrast':
-                    color = '#ffffff';
-                    break;
-                case 'sepia':
-                    color = '#fdf6e3';
+                    color = '#0a0a0b';
                     break;
                 case 'system':
-                    color = this.getSystemTheme() === 'dark' ? '#2c2c2c' : '#ffffff';
+                    color = this.getSystemTheme() === 'dark' ? '#0a0a0b' : '#fafafa';
                     break;
                 default:
-                    color = '#ffffff'; // Light theme
+                    color = '#fafafa'; // Light theme
             }
 
             metaThemeColor.setAttribute('content', color);
@@ -281,27 +275,23 @@ class ThemeManager {
         const displayNames = {
             light: 'Light',
             dark: 'Dark',
-            system: 'System',
-            'high-contrast': 'High Contrast',
-            sepia: 'Sepia'
+            system: 'System'
         };
 
         return displayNames[theme] || 'Unknown';
     }
 
     /**
-     * Get theme icon
+     * Get theme icon (SVG paths for modern icons)
      */
     getThemeIcon(theme) {
         const icons = {
-            light: '☀️',
-            dark: '🌙',
-            system: '💻',
-            'high-contrast': '🔲',
-            sepia: '📜'
+            light: 'sun',
+            dark: 'moon',
+            system: 'monitor'
         };
 
-        return icons[theme] || '❓';
+        return icons[theme] || 'monitor';
     }
 
     /**
@@ -309,14 +299,12 @@ class ThemeManager {
      */
     getThemeColor(theme) {
         const colors = {
-            light: '#ffffff',
-            dark: '#2c2c2c',
-            system: this.getSystemTheme() === 'dark' ? '#2c2c2c' : '#ffffff',
-            'high-contrast': '#ffffff',
-            sepia: '#fdf6e3'
+            light: '#fafafa',
+            dark: '#0a0a0b',
+            system: this.getSystemTheme() === 'dark' ? '#0a0a0b' : '#fafafa'
         };
 
-        return colors[theme] || '#3498db';
+        return colors[theme] || '#fafafa';
     }
 
     /**

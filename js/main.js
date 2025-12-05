@@ -58,8 +58,10 @@ class CircleOfFifthsApp {
             this.logger.info('Audio engine will be lazy loaded on first audio interaction');
 
             // Get DOM elements
-            const svg = document.getElementById('circle-svg');
-            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const svg = /** @type {SVGElement} */ (
+                /** @type {unknown} */ (document.getElementById('circle-svg'))
+            );
+            const themeSwitcher = document.querySelector('.theme-switcher');
 
             if (!svg) {
                 throw new Error('Required SVG element not found');
@@ -75,8 +77,8 @@ class CircleOfFifthsApp {
                 this.musicTheory
             );
 
-            // Initialize theme toggle if button exists
-            if (themeToggleBtn) {
+            // Initialize theme toggle if switcher exists
+            if (themeSwitcher) {
                 this.themeToggle = new ThemeToggle(this.themeManager);
             }
 
@@ -121,7 +123,9 @@ class CircleOfFifthsApp {
 
                 // Create and initialize
                 this.audioEngine = new AudioEngine();
-                this.audioEngine.logger = loggers.audio;
+                this.audioEngine.logger = /** @type {Logger} */ (
+                    /** @type {unknown} */ (loggers.audio)
+                );
                 await this.audioEngine.initialize();
 
                 this.logger.info('Audio engine loaded and initialized successfully');

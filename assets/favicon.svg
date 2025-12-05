@@ -1,32 +1,87 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <style>
-      .circle-1 { fill: #3498db; opacity: 0.85; }
-      .circle-2 { fill: #3182c7; opacity: 0.85; }
-      .circle-3 { fill: #2e6cb3; opacity: 0.85; }
-      .circle-4 { fill: #2b569f; opacity: 0.85; }
-      .circle-5 { fill: #2c3e50; opacity: 0.85; }
-      .center-dot { fill: #ffffff; }
-    </style>
+    <!-- Main gradient for the outer ring -->
+    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="50%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+    <!-- Accent gradient for musical fifth markers -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f43f5e"/>
+      <stop offset="100%" style="stop-color:#fb7185"/>
+    </linearGradient>
+    <!-- Inner circle gradient -->
+    <radialGradient id="centerGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#f8fafc"/>
+    </radialGradient>
+    <!-- Shadow filter for depth -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#6366f1" flood-opacity="0.3"/>
+    </filter>
   </defs>
 
-  <!-- Five interlocking circles arranged in a circular pattern -->
-  <!-- Circle 1: Top (12 o'clock) -->
-  <circle class="circle-1" cx="50" cy="22" r="18" />
+  <!-- Background circle for contrast on any background -->
+  <circle cx="50" cy="50" r="48" fill="#0f172a" opacity="0.05"/>
 
-  <!-- Circle 2: Top-right (2 o'clock) -->
-  <circle class="circle-2" cx="71.5" cy="35.5" r="18" />
+  <!-- Outer ring representing the circle of fifths -->
+  <circle cx="50" cy="50" r="44" fill="none" stroke="url(#ringGradient)" stroke-width="8" filter="url(#shadow)"/>
 
-  <!-- Circle 3: Bottom-right (5 o'clock) -->
-  <circle class="circle-3" cx="65" cy="65" r="18" />
+  <!-- 12 key position markers (representing the 12 keys) -->
+  <g fill="url(#ringGradient)">
+    <!-- C (12 o'clock) - emphasized as tonic -->
+    <circle cx="50" cy="8" r="4" fill="url(#accentGradient)"/>
+    <!-- G (1 o'clock) -->
+    <circle cx="71" cy="13" r="3"/>
+    <!-- D (2 o'clock) -->
+    <circle cx="86" cy="29" r="3"/>
+    <!-- A (3 o'clock) -->
+    <circle cx="92" cy="50" r="3"/>
+    <!-- E (4 o'clock) -->
+    <circle cx="86" cy="71" r="3"/>
+    <!-- B (5 o'clock) -->
+    <circle cx="71" cy="87" r="3"/>
+    <!-- F#/Gb (6 o'clock) -->
+    <circle cx="50" cy="92" r="3"/>
+    <!-- Db (7 o'clock) -->
+    <circle cx="29" cy="87" r="3"/>
+    <!-- Ab (8 o'clock) -->
+    <circle cx="14" cy="71" r="3"/>
+    <!-- Eb (9 o'clock) -->
+    <circle cx="8" cy="50" r="3"/>
+    <!-- Bb (10 o'clock) -->
+    <circle cx="14" cy="29" r="3"/>
+    <!-- F (11 o'clock) -->
+    <circle cx="29" cy="13" r="3"/>
+  </g>
 
-  <!-- Circle 4: Bottom-left (7 o'clock) -->
-  <circle class="circle-4" cx="35" cy="65" r="18" />
+  <!-- Perfect fifth connection lines (the "fifth" relationship) -->
+  <g stroke="url(#accentGradient)" stroke-width="1.5" stroke-linecap="round" opacity="0.6">
+    <!-- Connect every 7 semitones - showing the fifth relationship -->
+    <line x1="50" y1="8" x2="71" y2="13"/>
+    <line x1="71" y1="13" x2="86" y2="29"/>
+    <line x1="86" y1="29" x2="92" y2="50"/>
+    <line x1="92" y1="50" x2="86" y2="71"/>
+    <line x1="86" y1="71" x2="71" y2="87"/>
+    <line x1="71" y1="87" x2="50" y2="92"/>
+    <line x1="50" y1="92" x2="29" y2="87"/>
+    <line x1="29" y1="87" x2="14" y2="71"/>
+    <line x1="14" y1="71" x2="8" y2="50"/>
+    <line x1="8" y1="50" x2="14" y2="29"/>
+    <line x1="14" y1="29" x2="29" y2="13"/>
+    <line x1="29" y1="13" x2="50" y2="8"/>
+  </g>
 
-  <!-- Circle 5: Top-left (10 o'clock) -->
-  <circle class="circle-5" cx="28.5" cy="35.5" r="18" />
+  <!-- Inner circle - represents harmonic center -->
+  <circle cx="50" cy="50" r="22" fill="url(#centerGradient)" stroke="url(#ringGradient)" stroke-width="2"/>
 
-  <!-- Small center dot to anchor the design -->
-  <circle class="center-dot" cx="50" cy="47" r="3" />
+  <!-- Musical fifth symbol (stylized "5" or perfect fifth interval marker) -->
+  <g fill="url(#ringGradient)">
+    <!-- Stylized treble clef inspired center mark -->
+    <path d="M45 42 Q50 38, 55 42 Q58 46, 55 50 Q52 54, 50 58 Q48 54, 45 50 Q42 46, 45 42" opacity="0.9"/>
+    <!-- Inner accent dot -->
+    <circle cx="50" cy="50" r="3" fill="url(#accentGradient)"/>
+  </g>
 </svg>
 

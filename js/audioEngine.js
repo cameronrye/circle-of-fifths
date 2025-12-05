@@ -93,7 +93,8 @@ class AudioEngine {
         this.cleanupTimeouts = new Set(); // Track cleanup timeouts for proper disposal
 
         // Initialize logger
-        this.logger = loggers?.audio || console;
+        /** @type {Logger} */
+        this.logger = /** @type {Logger} */ (/** @type {unknown} */ (loggers?.audio || console));
 
         // Custom waveforms for enhanced sound quality
         this.customWaves = null;
@@ -833,9 +834,14 @@ class AudioEngine {
 
     /**
      * Create oscillator (main method - uses enhanced synthesis)
+     * @param {number} frequency - Note frequency in Hz
+     * @param {number} startTime - Start time in audio context time
+     * @param {number} duration - Duration in seconds
+     * @param {string} waveform - Waveform type
+     * @param {number} pan - Pan position (-1 to 1)
      */
-    createOscillator(frequency, startTime, duration, waveform = 'sine') {
-        return this.createEnhancedOscillator(frequency, startTime, duration, waveform);
+    createOscillator(frequency, startTime, duration, waveform = 'sine', pan = 0) {
+        return this.createEnhancedOscillator(frequency, startTime, duration, waveform, pan);
     }
 
     /**
@@ -1395,7 +1401,7 @@ class AudioEngine {
      * @param {string} mode - Major or minor
      * @param {string} progressionName - Name of the progression (e.g., 'ii-V-I', 'I-V-vi-IV')
      * @param {Object} previousVoicing - Previous voicing for voice leading (optional)
-     * @returns {Object} Object containing finalVoicing and totalDuration
+     * @returns {Promise<{finalVoicing: any, totalDuration: number}>} Object containing finalVoicing and totalDuration
      *
      * @description
      * This method plays a chord progression with sophisticated voice leading optimization:

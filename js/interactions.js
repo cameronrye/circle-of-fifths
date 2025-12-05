@@ -70,6 +70,7 @@ class InteractionsHandler {
             playScaleBtn: document.getElementById('play-scale'),
             playChordBtn: document.getElementById('play-chord'),
             playProgressionBtn: document.getElementById('play-progression'),
+            stopAudioBtn: document.getElementById('stop-audio'),
             togglePercussionBtn: document.getElementById('toggle-percussion'),
             toggleBassBtn: document.getElementById('toggle-bass'),
             toggleLoopBtn: document.getElementById('toggle-loop'),
@@ -80,7 +81,11 @@ class InteractionsHandler {
             scaleNotes: document.getElementById('scale-notes'),
             relatedKeys: document.getElementById('related-keys'),
             chordProgressions: document.getElementById('chord-progressions'),
-            loading: document.getElementById('loading')
+            loading: document.getElementById('loading'),
+            helpBtn: document.getElementById('help-btn'),
+            shortcutsModal: document.getElementById('shortcuts-modal'),
+            closeShortcutsBtn: document.getElementById('close-shortcuts'),
+            pianoKeyboard: document.getElementById('piano-keyboard')
         };
 
         this.init();
@@ -134,6 +139,9 @@ class InteractionsHandler {
                 case 'start':
                     // Scale note highlighting - brief flash
                     this.circleRenderer.highlightNote(note, 600, 'note');
+                    // Piano keyboard highlighting
+                    this.highlightPianoNote(note);
+                    setTimeout(() => this.clearPianoHighlight(note), 500);
                     break;
                 case 'chord-start':
                     // Chord note highlighting - longer duration
@@ -142,6 +150,12 @@ class InteractionsHandler {
                         audioEngine.settings.chordLength * 1000,
                         'chord'
                     );
+                    // Piano keyboard highlighting
+                    this.highlightPianoNote(note);
+                    setTimeout(
+                        () => this.clearPianoHighlight(note),
+                        audioEngine.settings.chordLength * 900
+                    );
                     break;
                 case 'progression-chord':
                     // Progression chord highlighting - duration of chord in progression
@@ -149,6 +163,12 @@ class InteractionsHandler {
                         note,
                         audioEngine.settings.progressionNoteLength * 1000,
                         'progression'
+                    );
+                    // Piano keyboard highlighting
+                    this.highlightPianoNote(note);
+                    setTimeout(
+                        () => this.clearPianoHighlight(note),
+                        audioEngine.settings.progressionNoteLength * 900
                     );
                     break;
             }
@@ -170,6 +190,7 @@ class InteractionsHandler {
         this.setupAudioSettings();
         this.setupKeyboardNavigation();
         this.setupInfoPanelInteractions();
+        this.setupHelpModal();
         this.updateInfoPanel();
         this.initializeDefaultToggleStates();
 
@@ -367,8 +388,17 @@ class InteractionsHandler {
                     }
                     break;
                 case 'Escape':
-                    // Close any open dropdowns
-                    this.closeDropdowns();
+                    // Close shortcuts modal if open, otherwise close dropdowns and stop audio
+                    if (this.elements.shortcutsModal?.getAttribute('aria-hidden') === 'false') {
+                        this.closeShortcutsModal();
+                    } else {
+                        this.closeDropdowns();
+                        this.stopAudio();
+                    }
+                    break;
+                case '?':
+                    event.preventDefault();
+                    this.openShortcutsModal();
                     break;
             }
         });
@@ -592,6 +622,12 @@ class InteractionsHandler {
                 this.toggleLoop();
             });
         }
+
+        if (this.elements.stopAudioBtn) {
+            this.elements.stopAudioBtn.addEventListener('click', () => {
+                this.stopAudio();
+            });
+        }
     }
 
     /**
@@ -779,6 +815,35 @@ class InteractionsHandler {
                 }
             });
         }
+
+        // Tempo slider
+        const tempoSlider = document.getElementById('tempo-slider');
+        const tempoValue = document.getElementById('tempo-value');
+        if (tempoSlider && tempoValue) {
+            // Set default value
+            tempoSlider.value = '120';
+            tempoValue.textContent = '120 BPM';
+
+            tempoSlider.addEventListener('input', async e => {
+                const bpm = parseInt(e.target.value, 10);
+                tempoValue.textContent = `${bpm} BPM`;
+
+                // Convert BPM to note durations
+                // At 120 BPM, a quarter note is 0.5 seconds
+                // We use this as a baseline for our note lengths
+                const quarterNoteDuration = 60 / bpm;
+
+                if (this.isAudioInitialized && this.audioEngine) {
+                    // Scale note lengths based on tempo
+                    // Base values at 120 BPM: noteLength=0.8, chordLength=1.5, progressionNoteLength=1.0
+                    const tempoRatio = 120 / bpm;
+                    this.audioEngine.settings.noteLength = 0.8 * tempoRatio;
+                    this.audioEngine.settings.chordLength = 1.5 * tempoRatio;
+                    this.audioEngine.settings.progressionNoteLength = quarterNoteDuration * 2; // Half note
+                    this.logger.info(`Tempo changed to: ${bpm} BPM`);
+                }
+            });
+        }
     }
 
     /**
@@ -808,6 +873,68 @@ class InteractionsHandler {
                     this.playSpecificProgression(progression);
                 }
             });
+        }
+    }
+
+    /**
+     * Setup help modal interactions
+     */
+    setupHelpModal() {
+        const { helpBtn, shortcutsModal, closeShortcutsBtn } = this.elements;
+
+        if (helpBtn && shortcutsModal) {
+            // Open modal on help button click
+            helpBtn.addEventListener('click', () => {
+                this.openShortcutsModal();
+            });
+
+            // Close modal on close button click
+            if (closeShortcutsBtn) {
+                closeShortcutsBtn.addEventListener('click', () => {
+                    this.closeShortcutsModal();
+                });
+            }
+
+            // Close modal on backdrop click
+            const backdrop = shortcutsModal.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.addEventListener('click', () => {
+                    this.closeShortcutsModal();
+                });
+            }
+
+            // Close modal on Escape key
+            shortcutsModal.addEventListener('keydown', event => {
+                if (event.key === 'Escape') {
+                    this.closeShortcutsModal();
+                }
+            });
+        }
+    }
+
+    /**
+     * Open the keyboard shortcuts modal
+     */
+    openShortcutsModal() {
+        const { shortcutsModal, closeShortcutsBtn } = this.elements;
+        if (shortcutsModal) {
+            shortcutsModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            // Focus the close button for accessibility
+            closeShortcutsBtn?.focus();
+        }
+    }
+
+    /**
+     * Close the keyboard shortcuts modal
+     */
+    closeShortcutsModal() {
+        const { shortcutsModal, helpBtn } = this.elements;
+        if (shortcutsModal) {
+            shortcutsModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            // Return focus to help button
+            helpBtn?.focus();
         }
     }
 
@@ -867,10 +994,11 @@ class InteractionsHandler {
         // Update related keys
         this.updateRelatedKeys(selectedKey, currentMode);
 
-        // Update chord progressions (advanced mode only)
-        if (this.currentDifficulty === 'advanced') {
-            this.updateChordProgressions(selectedKey, currentMode);
-        }
+        // Update chord progressions (always update to reflect current mode)
+        this.updateChordProgressions(selectedKey, currentMode);
+
+        // Update piano keyboard
+        this.updatePianoKeyboard(selectedKey, currentMode);
     }
 
     /**
@@ -895,19 +1023,37 @@ class InteractionsHandler {
         this.elements.relatedKeys.replaceChildren();
 
         const relationships = [
-            { key: relatedKeys.dominant.key, type: 'dominant', label: 'Dominant' },
-            { key: relatedKeys.subdominant.key, type: 'subdominant', label: 'Subdominant' },
-            { key: relatedKeys.relative.key, type: 'relative', label: 'Relative' }
+            {
+                key: relatedKeys.dominant.key,
+                mode: relatedKeys.dominant.mode,
+                type: 'dominant',
+                label: 'Dominant'
+            },
+            {
+                key: relatedKeys.subdominant.key,
+                mode: relatedKeys.subdominant.mode,
+                type: 'subdominant',
+                label: 'Subdominant'
+            },
+            {
+                key: relatedKeys.relative.key,
+                mode: relatedKeys.relative.mode,
+                type: 'relative',
+                label: 'Relative'
+            }
         ];
 
-        relationships.forEach(({ key: relKey, type, label }) => {
+        relationships.forEach(({ key: relKey, mode: relMode, type, label }) => {
             const span = document.createElement('span');
             span.className = 'related-key';
             span.setAttribute('data-relationship', type);
-            span.textContent = `${label}: ${relKey}`;
+            span.setAttribute('data-key', relKey);
+            span.setAttribute('data-mode', relMode);
+            span.textContent = `${label}: ${relKey} ${relMode}`;
             span.style.cursor = 'pointer';
             span.setAttribute('role', 'button');
             span.setAttribute('tabindex', '0');
+            span.setAttribute('aria-label', `${label}: ${relKey} ${relMode}. Click to select.`);
 
             this.elements.relatedKeys.appendChild(span);
         });
@@ -940,6 +1086,121 @@ class InteractionsHandler {
 
             this.elements.chordProgressions.appendChild(button);
         });
+    }
+
+    /**
+     * Update piano keyboard to show scale notes
+     * @param {string} key - The root key (e.g., 'C', 'G')
+     * @param {string} mode - The mode ('major' or 'minor')
+     */
+    updatePianoKeyboard(key, mode) {
+        if (!this.elements.pianoKeyboard) {
+            return;
+        }
+
+        const pianoKeys = this.elements.pianoKeyboard.querySelectorAll('.piano-key');
+        const scaleNotes = this.musicTheory.getScaleNotes(key, mode);
+
+        // Normalize note names for comparison (handle enharmonics)
+        const normalizeNote = note => {
+            const enharmonics = {
+                Db: 'C#',
+                Eb: 'D#',
+                Gb: 'F#',
+                Ab: 'G#',
+                Bb: 'A#',
+                'C#': 'C#',
+                'D#': 'D#',
+                'F#': 'F#',
+                'G#': 'G#',
+                'A#': 'A#'
+            };
+            return enharmonics[note] || note;
+        };
+
+        const normalizedScaleNotes = scaleNotes.map(normalizeNote);
+        const rootNote = normalizeNote(key);
+
+        pianoKeys.forEach(pianoKey => {
+            const keyNote = pianoKey.getAttribute('data-note');
+
+            // Remove all highlight classes
+            pianoKey.classList.remove('in-scale', 'root-note', 'playing');
+
+            // Check if this key is in the scale
+            if (normalizedScaleNotes.includes(keyNote)) {
+                pianoKey.classList.add('in-scale');
+            }
+
+            // Check if this is the root note
+            if (keyNote === rootNote) {
+                pianoKey.classList.add('root-note');
+            }
+        });
+    }
+
+    /**
+     * Highlight a specific note on the piano keyboard during playback
+     * @param {string} note - The note to highlight (e.g., 'C', 'F#')
+     */
+    highlightPianoNote(note) {
+        if (!this.elements.pianoKeyboard) {
+            return;
+        }
+
+        const normalizeNote = n => {
+            const enharmonics = {
+                Db: 'C#',
+                Eb: 'D#',
+                Gb: 'F#',
+                Ab: 'G#',
+                Bb: 'A#'
+            };
+            return enharmonics[n] || n;
+        };
+
+        const normalizedNote = normalizeNote(note);
+        const pianoKeys = this.elements.pianoKeyboard.querySelectorAll('.piano-key');
+
+        pianoKeys.forEach(pianoKey => {
+            const keyNote = pianoKey.getAttribute('data-note');
+            if (keyNote === normalizedNote) {
+                pianoKey.classList.add('playing');
+            }
+        });
+    }
+
+    /**
+     * Clear playing highlight from piano keyboard
+     * @param {string} [note] - Specific note to clear, or all if not provided
+     */
+    clearPianoHighlight(note) {
+        if (!this.elements.pianoKeyboard) {
+            return;
+        }
+
+        if (note) {
+            const normalizeNote = n => {
+                const enharmonics = {
+                    Db: 'C#',
+                    Eb: 'D#',
+                    Gb: 'F#',
+                    Ab: 'G#',
+                    Bb: 'A#'
+                };
+                return enharmonics[n] || n;
+            };
+            const normalizedNote = normalizeNote(note);
+            const pianoKey = this.elements.pianoKeyboard.querySelector(
+                `.piano-key[data-note="${normalizedNote}"]`
+            );
+            if (pianoKey) {
+                pianoKey.classList.remove('playing');
+            }
+        } else {
+            const pianoKeys = this.elements.pianoKeyboard.querySelectorAll('.piano-key.playing');
+            pianoKeys.forEach(key => key.classList.remove('playing'));
+        }
     }
 
     /**
@@ -1010,6 +1271,7 @@ class InteractionsHandler {
             this.stopAudio();
             this.playbackState.scale = true;
             this.updateButtonState('scale', true);
+            this.updateStopButtonState(true);
 
             const state = this.circleRenderer.getState();
 
@@ -1061,6 +1323,7 @@ class InteractionsHandler {
             this.stopAudio();
             this.playbackState.chord = true;
             this.updateButtonState('chord', true);
+            this.updateStopButtonState(true);
 
             const state = this.circleRenderer.getState();
             const chordType = state.currentMode === 'major' ? 'major' : 'minor';
@@ -1076,6 +1339,7 @@ class InteractionsHandler {
             setTimeout(() => {
                 this.playbackState.chord = false;
                 this.updateButtonState('chord', false);
+                this.updateStopButtonState(false);
                 this.announcePlaybackStatus('Chord playback complete');
             }, chordDuration);
         }
@@ -1110,6 +1374,7 @@ class InteractionsHandler {
             this.stopAudio();
             this.playbackState.progression = true;
             this.updateButtonState('progression', true);
+            this.updateStopButtonState(true);
 
             const state = this.circleRenderer.getState();
             // Play the first available progression
@@ -1164,6 +1429,7 @@ class InteractionsHandler {
             this.currentPlayingProgression = progressionName;
             this.playbackState.progression = true;
             this.updateProgressionButtonStates(progressionName, true);
+            this.updateStopButtonState(true);
 
             const state = this.circleRenderer.getState();
 
@@ -1287,6 +1553,20 @@ class InteractionsHandler {
         this.updateButtonState('scale', false);
         this.updateButtonState('chord', false);
         this.updateButtonState('progression', false);
+
+        // Disable stop button when nothing is playing
+        this.updateStopButtonState(false);
+    }
+
+    /**
+     * Update the stop button state (enabled/disabled based on playback)
+     * @param {boolean} isPlaying - Whether any audio is currently playing
+     */
+    updateStopButtonState(isPlaying) {
+        if (this.elements.stopAudioBtn) {
+            this.elements.stopAudioBtn.disabled = !isPlaying;
+            this.elements.stopAudioBtn.classList.toggle('active', isPlaying);
+        }
     }
 
     /**
@@ -1304,12 +1584,12 @@ class InteractionsHandler {
         }
 
         if (isActive) {
-            button.classList.add('active');
-            button.innerHTML = `<span class="btn-icon">${icon}</span>${activeText}`;
+            button.classList.add('active', 'playing');
+            button.innerHTML = `<span class="btn-icon">${icon}</span><span class="btn-text">${activeText}</span>`;
             button.setAttribute('aria-label', activeText);
         } else {
-            button.classList.remove('active');
-            button.innerHTML = `<span class="btn-icon">${icon}</span>${inactiveText}`;
+            button.classList.remove('active', 'playing');
+            button.innerHTML = `<span class="btn-icon">${icon}</span><span class="btn-text">${inactiveText}</span>`;
             button.setAttribute('aria-label', `Play ${inactiveText}`);
         }
     }
@@ -1572,6 +1852,52 @@ class InteractionsHandler {
             isAudioInitialized: this.isAudioInitialized,
             circleState: this.circleRenderer.getState()
         };
+    }
+
+    /**
+     * Switch difficulty level between beginner and advanced
+     * @param {string} difficulty - The difficulty level ('beginner' or 'advanced')
+     */
+    switchDifficulty(difficulty) {
+        if (difficulty !== 'beginner' && difficulty !== 'advanced') {
+            this.logger.warn(`Invalid difficulty: ${difficulty}`);
+            return;
+        }
+
+        this.currentDifficulty = difficulty;
+        this.logger.info(`Difficulty switched to: ${difficulty}`);
+
+        // Announce to screen readers
+        this.announceToScreenReader(`Difficulty set to ${difficulty}`);
+
+        // Dispatch custom event for other components
+        document.dispatchEvent(
+            new CustomEvent('difficultyChanged', {
+                detail: { difficulty }
+            })
+        );
+    }
+
+    /**
+     * Cleanup and destroy the interactions handler
+     * Removes event listeners and cleans up resources
+     */
+    destroy() {
+        this.logger.info('Destroying InteractionsHandler...');
+
+        // Stop any playing audio
+        this.stopAudio();
+
+        // Clear any pending timeouts
+        this.currentPlayingProgression = null;
+
+        // Remove live regions
+        const liveRegion = document.getElementById('sr-live-region');
+        if (liveRegion) {
+            liveRegion.remove();
+        }
+
+        this.logger.info('InteractionsHandler destroyed');
     }
 }
 
