@@ -213,46 +213,33 @@ class BrowserTestRunner {
     async testThemeSwitch() {
         console.log('  Testing theme switch...');
 
-        // Get initial theme
-        const initialTheme = await this.page.evaluate(() => {
-            return document.documentElement.getAttribute('data-theme') || 'system';
-        });
-
-        // Click theme toggle button to open dropdown
-        const themeToggleBtn = await this.page.$('#theme-toggle-btn');
-        if (themeToggleBtn) {
-            await themeToggleBtn.click();
+        // The theme switcher uses a segmented control with .theme-segment buttons
+        // Click on the light theme segment button directly
+        const lightThemeBtn = await this.page.$('.theme-segment[data-theme="light"]');
+        if (lightThemeBtn) {
+            await lightThemeBtn.click();
             await this.delay(100);
 
-            // Check if dropdown is visible
-            const isDropdownVisible = await this.page.evaluate(() => {
-                const dropdown = document.querySelector('#theme-dropdown');
-                return dropdown && dropdown.getAttribute('aria-hidden') === 'false';
+            // Check that theme changed
+            const newTheme = await this.page.evaluate(() => {
+                return document.documentElement.getAttribute('data-theme');
             });
 
-            if (isDropdownVisible) {
-                // Click on a different theme option (light theme)
-                const lightThemeOption = await this.page.$('[data-theme="light"]');
-                if (lightThemeOption) {
-                    await lightThemeOption.click();
-                    await this.delay(100);
+            if (newTheme !== 'light') {
+                throw new Error(`Theme did not change to 'light', got '${newTheme}'`);
+            }
 
-                    // Check that theme changed
-                    const newTheme = await this.page.evaluate(() => {
-                        return document.documentElement.getAttribute('data-theme');
-                    });
+            // Verify the button is now active
+            const isActive = await this.page.evaluate(() => {
+                const btn = document.querySelector('.theme-segment[data-theme="light"]');
+                return btn && btn.classList.contains('active');
+            });
 
-                    if (newTheme === initialTheme) {
-                        throw new Error(`Theme did not change from '${initialTheme}' to 'light'`);
-                    }
-                } else {
-                    throw new Error('Light theme option not found in dropdown');
-                }
-            } else {
-                throw new Error('Theme dropdown did not open');
+            if (!isActive) {
+                throw new Error('Light theme button is not marked as active');
             }
         } else {
-            throw new Error('Theme toggle button not found');
+            throw new Error('Theme segment button not found');
         }
 
         console.log('    ✅ Theme switch test passed');
