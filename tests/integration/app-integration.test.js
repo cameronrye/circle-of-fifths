@@ -82,6 +82,24 @@ describe('Circle of Fifths Application Integration', () => {
                 querySelector: jest.fn(),
                 textContent: '',
                 style: {}
+            })),
+            getElementById: jest.fn(() => null),
+            querySelector: jest.fn(() => null),
+            querySelectorAll: jest.fn(() => []),
+            createElement: jest.fn(tagName => ({
+                tagName: tagName.toUpperCase(),
+                classList: {
+                    add: jest.fn(),
+                    remove: jest.fn(),
+                    toggle: jest.fn(),
+                    contains: jest.fn(() => false)
+                },
+                setAttribute: jest.fn(),
+                getAttribute: jest.fn(() => ''),
+                appendChild: jest.fn(),
+                querySelector: jest.fn(),
+                textContent: '',
+                style: {}
             }))
         };
 
@@ -143,7 +161,10 @@ describe('Circle of Fifths Application Integration', () => {
     }
 
     describe('MusicTheory and CircleRenderer Integration', () => {
-        test('should render all keys from music theory', () => {
+        test('should render all keys from music theory', async () => {
+            // Wait for requestAnimationFrame to complete the rendering
+            await new Promise(resolve => setTimeout(resolve, 20));
+
             const keys = musicTheory.getCircleOfFifthsKeys();
 
             expect(circleRenderer.keySegments.size).toBe(keys.length);

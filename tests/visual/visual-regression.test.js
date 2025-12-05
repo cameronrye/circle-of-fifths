@@ -64,7 +64,25 @@ describe('Visual Regression Tests', () => {
                 });
 
                 return element;
-            })
+            }),
+            getElementById: jest.fn(() => null),
+            querySelector: jest.fn(() => null),
+            querySelectorAll: jest.fn(() => []),
+            createElement: jest.fn(tagName => ({
+                tagName: tagName.toUpperCase(),
+                classList: {
+                    add: jest.fn(),
+                    remove: jest.fn(),
+                    toggle: jest.fn(),
+                    contains: jest.fn(() => false)
+                },
+                setAttribute: jest.fn(),
+                getAttribute: jest.fn(() => ''),
+                appendChild: jest.fn(),
+                querySelector: jest.fn(),
+                textContent: '',
+                style: {}
+            }))
         };
 
         const mockKeySegmentsGroup = {
